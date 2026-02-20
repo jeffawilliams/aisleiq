@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AisleManager } from "./components/AisleManager.js";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
@@ -20,10 +20,26 @@ const DEFAULT_AISLES: StoreAisle[] = [
   { name: "Personal Care", categories: ["Hair Care", "Skin Care", "Oral Care"] },
 ];
 
+const STORAGE_KEY = "aisleiq:aisles";
+
+function loadAisles(): StoreAisle[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved) as StoreAisle[];
+  } catch {
+    // ignore parse errors and fall through to defaults
+  }
+  return DEFAULT_AISLES;
+}
+
 export function App() {
   const [view, setView] = useState<View>("shop");
-  const [aisles, setAisles] = useState<StoreAisle[]>(DEFAULT_AISLES);
+  const [aisles, setAisles] = useState<StoreAisle[]>(loadAisles);
   const { categorize, result, isLoading, error } = useCategorize();
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(aisles));
+  }, [aisles]);
 
   const addAisle = (name: string) => {
     if (!aisles.find((a) => a.name === name)) {
