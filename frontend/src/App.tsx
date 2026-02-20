@@ -6,6 +6,8 @@ import { LoadingSpinner } from "./components/LoadingSpinner.js";
 import { useCategorize } from "./hooks/useCategorize.js";
 import { StoreAisle } from "./types/index.js";
 
+type View = "config" | "shop";
+
 const DEFAULT_AISLES: StoreAisle[] = [
   { name: "Produce", categories: ["Vegetables", "Fruits", "Fresh Herbs"] },
   { name: "Dairy & Eggs", categories: ["Milk & Cream", "Cheese", "Yogurt", "Eggs"] },
@@ -19,6 +21,7 @@ const DEFAULT_AISLES: StoreAisle[] = [
 ];
 
 export function App() {
+  const [view, setView] = useState<View>("shop");
   const [aisles, setAisles] = useState<StoreAisle[]>(DEFAULT_AISLES);
   const { categorize, result, isLoading, error } = useCategorize();
 
@@ -67,29 +70,47 @@ export function App() {
     <div className="app">
       <header className="app-header">
         <h1>AisleIQ</h1>
-        <p>Paste your shopping list. We'll sort it by aisle and category.</p>
+        <nav className="mode-switcher">
+          <button
+            className={`mode-btn ${view === "shop" ? "active" : ""}`}
+            onClick={() => setView("shop")}
+          >
+            Organize My List
+          </button>
+          <button
+            className={`mode-btn ${view === "config" ? "active" : ""}`}
+            onClick={() => setView("config")}
+          >
+            Configure Store
+          </button>
+        </nav>
       </header>
 
       <main className="app-main">
-        <div className="input-panel">
-          <AisleManager
-            aisles={aisles}
-            onAddAisle={addAisle}
-            onRemoveAisle={removeAisle}
-            onRenameAisle={renameAisle}
-            onAddCategory={addCategory}
-            onRemoveCategory={removeCategory}
-          />
-          <ShoppingListInput onSubmit={handleSubmit} isLoading={isLoading} />
-          {aisles.length === 0 && (
-            <p className="warning">Add at least one aisle before organizing.</p>
-          )}
-          {error && <p className="error">{error}</p>}
-        </div>
+        {view === "config" && (
+          <div className="config-view">
+            <AisleManager
+              aisles={aisles}
+              onAddAisle={addAisle}
+              onRemoveAisle={removeAisle}
+              onRenameAisle={renameAisle}
+              onAddCategory={addCategory}
+              onRemoveCategory={removeCategory}
+            />
+          </div>
+        )}
 
-        {isLoading && <LoadingSpinner />}
-
-        {result && !isLoading && <ResultsGrid result={result} />}
+        {view === "shop" && (
+          <div className="shop-view">
+            <ShoppingListInput onSubmit={handleSubmit} isLoading={isLoading} />
+            {aisles.length === 0 && (
+              <p className="warning">No store layout configured. Switch to Configure Store to set up aisles.</p>
+            )}
+            {error && <p className="error">{error}</p>}
+            {isLoading && <LoadingSpinner />}
+            {result && !isLoading && <ResultsGrid result={result} />}
+          </div>
+        )}
       </main>
     </div>
   );

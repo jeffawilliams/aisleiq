@@ -36,24 +36,52 @@ body {
   font-size: 1.1rem;
 }
 
+/* Mode switcher */
+.mode-switcher {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.mode-btn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #e8f5e9;
+  color: #2d6a4f;
+  border: 2px solid transparent;
+}
+
+.mode-btn:hover:not(:disabled) {
+  background: #c8e6c9;
+}
+
+.mode-btn.active {
+  background: #2d6a4f;
+  color: #fff;
+  border-color: #2d6a4f;
+}
+
+/* View containers */
+.config-view {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.shop-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .app-main {
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
 }
 
-.input-panel {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-@media (max-width: 700px) {
-  .input-panel {
-    grid-template-columns: 1fr;
-  }
-}
 
 /* Sections */
 section {
