@@ -5,9 +5,10 @@ Paste your shopping list. AisleIQ uses Claude AI to sort every item into the rig
 ## How it works
 
 1. Define your store layout — aisles and the product categories inside each one
-2. Paste your shopping list
-3. Claude assigns every item to the correct category
-4. Results display as a nested aisle → category → items hierarchy
+2. Customize aisle names to match your store (click any name to rename it inline)
+3. Paste your shopping list
+4. Claude assigns every item to the correct category
+5. Results display as a nested aisle → category → items hierarchy
 
 ## Stack
 
@@ -29,7 +30,7 @@ AisleIQ/
     └── src/
         ├── App.tsx
         ├── components/
-        │   ├── AisleManager.tsx  # Accordion layout editor
+        │   ├── AisleManager.tsx  # Accordion layout editor (add, rename, remove aisles and categories)
         │   ├── AisleCard.tsx     # Result card (aisle → categories → items)
         │   ├── ResultsGrid.tsx
         │   ├── ShoppingListInput.tsx
