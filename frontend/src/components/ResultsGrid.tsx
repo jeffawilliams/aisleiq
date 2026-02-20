@@ -6,8 +6,8 @@ interface ResultsGridProps {
 }
 
 export function ResultsGrid({ result }: ResultsGridProps) {
-  const nonEmpty = result.aisles.filter((a) => a.items.length > 0);
-  const empty = result.aisles.filter((a) => a.items.length === 0);
+  const nonEmpty = result.aisles.filter((a) => a.categories.some((cat) => cat.items.length > 0));
+  const empty = result.aisles.filter((a) => !a.categories.some((cat) => cat.items.length > 0));
 
   return (
     <section className="results">

@@ -6,20 +6,28 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const SYSTEM_PROMPT = `You are a grocery shopping assistant. Your sole job is to sort shopping list items into the store aisles that the user has defined. Follow these rules precisely:
+interface StoreAisle {
+  name: string;
+  categories: string[];
+}
 
-1. Every item from the shopping list must appear in exactly one aisle — no item can be skipped or duplicated.
-2. Use only the aisle names exactly as provided. Do not rename, combine, or create new aisles.
-3. If an item does not clearly belong to any of the provided aisles, place it in an aisle named "Other".
-4. Return all provided aisle names in your response, even if an aisle has zero items.
-5. The "Other" aisle should always be included as the last entry in your response.
+const SYSTEM_PROMPT = `You are a grocery shopping assistant. Your sole job is to sort shopping list items into the store categories that the user has defined. Follow these rules precisely:
+
+1. Assign every item from the shopping list to exactly one category — no item can be skipped or duplicated.
+2. Use only the category names exactly as provided. Do not rename, combine, or create new categories.
+3. If an item does not clearly belong to any of the provided categories, place it in a category named "Other" inside an aisle named "Other".
+4. Return every aisle and every category in your response, even if a category has zero items.
+5. The "Other" aisle (if needed) should always be included as the last entry in your response.
 6. Preserve the original spelling and phrasing of each item from the shopping list.`;
 
 export async function categorizeShoppingList(
-  aisles: string[],
+  aisles: StoreAisle[],
   items: string
 ): Promise<AisleOutput> {
-  const userMessage = `Aisles: ${aisles.join(", ")}\n\nShopping list:\n${items}`;
+  const layoutLines = aisles.map((aisle) => {
+    return `${aisle.name}: ${aisle.categories.join(", ")}`;
+  });
+  const userMessage = `Store layout:\n${layoutLines.join("\n")}\n\nShopping list:\n${items}`;
 
   const response = await client.messages.create({
     model: "claude-opus-4-6",

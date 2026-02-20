@@ -76,12 +76,113 @@ h2 {
   margin-bottom: 1rem;
 }
 
+/* Accordion */
+.aisle-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.accordion-row {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f9fafb;
+}
+
+.accordion-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: none;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  border-radius: 0;
+}
+
+.accordion-toggle:hover:not(:disabled) {
+  background: #f0f4f0;
+}
+
+.accordion-arrow {
+  font-size: 0.65rem;
+  color: #888;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.accordion-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.accordion-name {
+  flex: 1;
+}
+
+.accordion-count {
+  font-size: 0.78rem;
+  color: #888;
+  font-weight: 400;
+}
+
+.accordion-remove {
+  padding: 0.4rem 0.75rem;
+  background: none;
+  color: #aaa;
+  font-size: 1.2rem;
+  line-height: 1;
+  border-radius: 0;
+}
+
+.accordion-remove:hover:not(:disabled) {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.accordion-body {
+  padding: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+  background: #fff;
+}
+
 /* Aisle chips */
 .aisle-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1rem;
+}
+
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.chip-category {
+  background: #e3f2fd;
+  color: #1565c0;
+  font-size: 0.8rem;
+}
+
+.chip-category .chip-remove {
+  color: #1565c0;
+}
+
+.aisle-add-row {
+  margin-top: 0.5rem;
 }
 
 .chip {
@@ -276,4 +377,32 @@ button:disabled {
   font-size: 0.85rem;
   color: #aaa;
   font-style: italic;
+}
+
+/* Nested categories inside AisleCard */
+.aisle-category {
+  margin-bottom: 0.75rem;
+}
+
+.aisle-category:last-child {
+  margin-bottom: 0;
+}
+
+.category-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.category-empty {
+  opacity: 0.45;
+}
+
+.category-empty .category-name {
+  color: #bbb;
 }
