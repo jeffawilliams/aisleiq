@@ -12,9 +12,9 @@ export function AisleCard({ aisle }: AisleCardProps) {
       <h3 className="aisle-card-title">{aisle.name}</h3>
       {filledCategories.map((category) => (
         <div key={category.name} className="aisle-category">
-          <h4 className="category-name">{category.name}</h4>
+          <span className="category-label">{category.name}</span>
           <ul className="aisle-card-items">
-            {category.items.map((item, i) => (
+            {[...category.items].sort((a, b) => a.localeCompare(b)).map((item, i) => (
               <li key={i}>{item}</li>
             ))}
           </ul>
