@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AisleManager } from "./components/AisleManager.js";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
@@ -20,26 +20,43 @@ const DEFAULT_AISLES: StoreAisle[] = [
   { name: "Personal Care", categories: ["Hair Care", "Skin Care", "Oral Care"] },
 ];
 
-const STORAGE_KEY = "aisleiq:aisles";
-
-function loadAisles(): StoreAisle[] {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved) as StoreAisle[];
-  } catch {
-    // ignore parse errors and fall through to defaults
-  }
-  return DEFAULT_AISLES;
-}
-
 export function App() {
   const [view, setView] = useState<View>("shop");
-  const [aisles, setAisles] = useState<StoreAisle[]>(loadAisles);
+  const [aisles, setAisles] = useState<StoreAisle[]>(DEFAULT_AISLES);
+  const [layoutLoaded, setLayoutLoaded] = useState(false);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { categorize, result, isLoading, error } = useCategorize();
 
+  // Fetch saved layout on mount
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(aisles));
-  }, [aisles]);
+    fetch("/api/layout")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.aisles && data.aisles.length > 0) {
+          setAisles(data.aisles);
+        }
+      })
+      .catch(() => {
+        // fall back to defaults on error
+      })
+      .finally(() => setLayoutLoaded(true));
+  }, []);
+
+  // Save layout to DB whenever it changes (debounced, after initial load)
+  useEffect(() => {
+    if (!layoutLoaded) return;
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      fetch("/api/layout", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aisles }),
+      });
+    }, 800);
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [aisles, layoutLoaded]);
 
   const addAisle = (name: string) => {
     if (!aisles.find((a) => a.name === name)) {
