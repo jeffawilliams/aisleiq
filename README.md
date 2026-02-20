@@ -14,7 +14,7 @@ Paste your shopping list. AisleIQ uses Claude AI to sort every item into the rig
 
 - **Frontend** — React 19, TypeScript, Vite
 - **Backend** — Node.js, Express, TypeScript
-- **AI** — Claude (`claude-opus-4-6`) via the Anthropic SDK, with structured JSON output enforced by Zod
+- **AI** — Claude (`claude-sonnet-4-6`) via the Anthropic SDK, with structured JSON output enforced by Zod
 
 ## Project structure
 
