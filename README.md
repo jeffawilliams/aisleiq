@@ -14,6 +14,8 @@ Paste your shopping list. AisleIQ uses Claude AI to sort every item into the rig
 2. Claude assigns every item to the correct category
 3. Results display as a nested aisle → category → items hierarchy
 
+> Aisles without any categories are excluded from categorization. Make sure each aisle has at least one category before submitting a list.
+
 ## Stack
 
 - **Frontend** — React 19, TypeScript, Vite
