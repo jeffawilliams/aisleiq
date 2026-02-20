@@ -401,21 +401,7 @@ button:disabled {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-}
-
-.aisle-card-items li {
-  font-size: 0.9rem;
-  color: #333;
-  padding-left: 0.75rem;
-  position: relative;
-}
-
-.aisle-card-items li::before {
-  content: "•";
-  position: absolute;
-  left: 0;
-  color: #2d6a4f;
+  gap: 0.25rem;
 }
 
 .empty-label {
@@ -428,6 +414,48 @@ button:disabled {
 .aisle-category-summary {
   font-size: 0.72rem;
   color: #aaa;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.4rem;
   line-height: 1.4;
+}
+
+/* Checklist items */
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.15rem 0;
+}
+
+.checklist-box {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1.5px solid #c0d9cc;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: #fff;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.checklist-item--checked .checklist-box {
+  background: #2d6a4f;
+  border-color: #2d6a4f;
+}
+
+.checklist-label {
+  font-size: 0.9rem;
+  color: #333;
+  transition: color 0.15s;
+}
+
+.checklist-item--checked .checklist-label {
+  color: #aaa;
+  text-decoration: line-through;
 }
