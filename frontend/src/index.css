@@ -97,21 +97,16 @@ h2 {
   background: #f9fafb;
 }
 
-.accordion-toggle {
-  flex: 1;
+.accordion-arrow-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0.75rem;
+  padding: 0.6rem 0.5rem 0.6rem 0.75rem;
   background: none;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #1a1a2e;
   border-radius: 0;
+  flex-shrink: 0;
 }
 
-.accordion-toggle:hover:not(:disabled) {
+.accordion-arrow-btn:hover:not(:disabled) {
   background: #f0f4f0;
 }
 
@@ -128,6 +123,28 @@ h2 {
 
 .accordion-name {
   flex: 1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  cursor: text;
+  padding: 0.6rem 0.25rem;
+  border-radius: 4px;
+}
+
+.accordion-name:hover {
+  background: #f0f4f0;
+  color: #2d6a4f;
+}
+
+.accordion-rename-input {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid #2d6a4f;
+  border-radius: 4px;
+  background: #fff;
+  color: #1a1a2e;
 }
 
 .accordion-count {

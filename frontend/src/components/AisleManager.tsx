@@ -1,10 +1,11 @@
-import { useState, KeyboardEvent } from "react";
+import { useState, KeyboardEvent, useRef, useEffect } from "react";
 import { StoreAisle } from "../types/index.js";
 
 interface AisleManagerProps {
   aisles: StoreAisle[];
   onAddAisle: (name: string) => void;
   onRemoveAisle: (name: string) => void;
+  onRenameAisle: (oldName: string, newName: string) => void;
   onAddCategory: (aisleName: string, category: string) => void;
   onRemoveCategory: (aisleName: string, category: string) => void;
 }
@@ -13,12 +14,44 @@ export function AisleManager({
   aisles,
   onAddAisle,
   onRemoveAisle,
+  onRenameAisle,
   onAddCategory,
   onRemoveCategory,
 }: AisleManagerProps) {
   const [expandedAisle, setExpandedAisle] = useState<string | null>(null);
   const [aisleInput, setAisleInput] = useState("");
   const [categoryInputs, setCategoryInputs] = useState<Record<string, string>>({});
+  const [editingAisle, setEditingAisle] = useState<string | null>(null);
+  const [renameInput, setRenameInput] = useState("");
+  const renameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingAisle !== null) {
+      renameRef.current?.focus();
+      renameRef.current?.select();
+    }
+  }, [editingAisle]);
+
+  const startEditing = (aisleName: string) => {
+    setEditingAisle(aisleName);
+    setRenameInput(aisleName);
+  };
+
+  const commitRename = (oldName: string) => {
+    onRenameAisle(oldName, renameInput);
+    // If rename succeeded the aisle name changed; if not, just close edit mode
+    setEditingAisle(null);
+    // Keep expanded state in sync with new name if rename went through
+    const trimmed = renameInput.trim();
+    if (trimmed && trimmed !== oldName) {
+      setExpandedAisle((prev) => (prev === oldName ? trimmed : prev));
+    }
+  };
+
+  const handleRenameKeyDown = (e: KeyboardEvent<HTMLInputElement>, oldName: string) => {
+    if (e.key === "Enter") commitRename(oldName);
+    if (e.key === "Escape") setEditingAisle(null);
+  };
 
   const handleAddAisle = () => {
     const trimmed = aisleInput.trim();
@@ -54,27 +87,48 @@ export function AisleManager({
     <section className="aisle-manager">
       <h2>Store Layout</h2>
       <p className="hint">
-        Define your store's aisles and categories. Items will be sorted into these categories.
+        Define your store's aisles and categories. Click an aisle name to rename it.
       </p>
 
       <div className="aisle-accordion">
         {aisles.map((aisle) => {
           const isExpanded = expandedAisle === aisle.name;
+          const isEditing = editingAisle === aisle.name;
           return (
             <div key={aisle.name} className="accordion-row">
               <div className="accordion-header">
                 <button
-                  className="accordion-toggle"
+                  className="accordion-arrow-btn"
                   onClick={() => toggleExpand(aisle.name)}
                   aria-expanded={isExpanded}
                   aria-label={`${isExpanded ? "Collapse" : "Expand"} ${aisle.name}`}
                 >
                   <span className={`accordion-arrow ${isExpanded ? "expanded" : ""}`}>▶</span>
-                  <span className="accordion-name">{aisle.name}</span>
-                  <span className="accordion-count">
-                    {aisle.categories.length} {aisle.categories.length === 1 ? "category" : "categories"}
-                  </span>
                 </button>
+
+                {isEditing ? (
+                  <input
+                    ref={renameRef}
+                    className="accordion-rename-input"
+                    value={renameInput}
+                    onChange={(e) => setRenameInput(e.target.value)}
+                    onKeyDown={(e) => handleRenameKeyDown(e, aisle.name)}
+                    onBlur={() => commitRename(aisle.name)}
+                    maxLength={50}
+                  />
+                ) : (
+                  <span
+                    className="accordion-name"
+                    onClick={() => startEditing(aisle.name)}
+                    title="Click to rename"
+                  >
+                    {aisle.name}
+                  </span>
+                )}
+
+                <span className="accordion-count">
+                  {aisle.categories.length} {aisle.categories.length === 1 ? "category" : "categories"}
+                </span>
                 <button
                   className="accordion-remove"
                   onClick={() => onRemoveAisle(aisle.name)}

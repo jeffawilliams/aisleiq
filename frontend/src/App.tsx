@@ -52,6 +52,12 @@ export function App() {
     );
   };
 
+  const renameAisle = (oldName: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === oldName || aisles.find((a) => a.name === trimmed)) return;
+    setAisles((prev) => prev.map((a) => (a.name === oldName ? { ...a, name: trimmed } : a)));
+  };
+
   const handleSubmit = (items: string) => {
     if (aisles.length === 0) return;
     categorize(aisles, items);
@@ -70,6 +76,7 @@ export function App() {
             aisles={aisles}
             onAddAisle={addAisle}
             onRemoveAisle={removeAisle}
+            onRenameAisle={renameAisle}
             onAddCategory={addCategory}
             onRemoveCategory={removeCategory}
           />
