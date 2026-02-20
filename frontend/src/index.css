@@ -424,21 +424,10 @@ button:disabled {
   font-style: italic;
 }
 
-/* Nested categories inside AisleCard */
-.aisle-category {
-  margin-bottom: 0.6rem;
-}
-
-.aisle-category:last-child {
-  margin-bottom: 0;
-}
-
-.category-label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: #bbb;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.2rem;
+/* Category summary line inside AisleCard */
+.aisle-category-summary {
+  font-size: 0.72rem;
+  color: #aaa;
+  margin-bottom: 0.65rem;
+  line-height: 1.4;
 }
