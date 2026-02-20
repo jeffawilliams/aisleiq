@@ -13,6 +13,7 @@ Paste your shopping list. AisleIQ uses Claude AI to sort every item into the rig
 1. Paste your shopping list
 2. Claude assigns every item to the correct category
 3. Results display as a nested aisle → category → items hierarchy
+4. Only aisles and categories with matching items are shown — empty ones are hidden
 
 > Aisles without any categories are excluded from categorization. Make sure each aisle has at least one category before submitting a list.
 
