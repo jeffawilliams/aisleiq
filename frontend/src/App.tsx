@@ -95,8 +95,9 @@ export function App() {
   };
 
   const handleSubmit = (items: string) => {
-    if (aisles.length === 0) return;
-    categorize(aisles, items);
+    const ready = aisles.filter((a) => a.categories.length > 0);
+    if (ready.length === 0) return;
+    categorize(ready, items);
   };
 
   return (
@@ -136,8 +137,8 @@ export function App() {
         {view === "shop" && (
           <div className="shop-view">
             <ShoppingListInput onSubmit={handleSubmit} isLoading={isLoading} />
-            {aisles.length === 0 && (
-              <p className="warning">No store layout configured. Switch to Configure Store to set up aisles.</p>
+            {aisles.filter((a) => a.categories.length > 0).length === 0 && (
+              <p className="warning">No categories configured. Switch to Configure Store and add categories to your aisles.</p>
             )}
             {error && <p className="error">{error}</p>}
             {isLoading && <LoadingSpinner />}
