@@ -31,12 +31,12 @@ Standard grocery categories (use these names exactly):
 - Breakfast & Cereal: cereal, granola, pancake mix, syrup, peanut butter, jelly, oatmeal, breakfast bars
 - Baking: flour, sugar, baking soda, baking powder, cake mixes, chocolate chips, vanilla, cooking spray
 - International: international and ethnic foods, specialty imports
-- Personal Care: shave, deodorant, bath soap, feminine products, hair care, skin care, oral care, cough/cold, vitamins, adult nutrition
-- Household & Cleaning: cleaning supplies, laundry detergent, dish soap, food wrap, storage bags, cups, plates, trash bags, light bulbs, pest control, charcoal
+- Personal Care: shave/shaving needs, deodorant, bath soap, feminine hygiene, hair care, shampoo, skin care, oral care, nail care, cosmetics, cough/cold, first aid, pain relief, antacids, vitamins, diet & nutrition, adult nutrition
+- Household & Cleaning: cleaning supplies, laundry detergent, dish soap, mops/brooms, food wrap, aluminum foil, parchment paper, storage bags, resealable bags, cups, plates, trash bags, light bulbs, furnace filters, pest control, bug spray
 - Paper Products: bath tissue, paper towels, napkins, facial tissue
-- Pet: cat food, dog food, pet treats, pet supplies
+- Pet: cat food, dog food, cat litter, pet treats, pet supplies
 - Baby: baby food, baby formula, diapers, baby needs
-- General Merchandise: stationery, greeting cards, kitchen gadgets, seasonal items`;
+- General Merchandise: stationery, greeting cards, gift cards, kitchen gadgets, school supplies, seasonal items, ice, charcoal`;
 
 export async function organizeShoppingList(items: string): Promise<OrganizeOutput> {
   const response = await client.messages.create({
