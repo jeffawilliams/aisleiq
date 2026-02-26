@@ -1,39 +1,52 @@
-import { AisleResult, CategorizeResponse } from "../types/index.js";
-import { AisleCard } from "./AisleCard.js";
+import { OrganizeResponse } from "../types/index.js";
+import { CategoryCard } from "./CategoryCard.js";
 
 interface ResultsGridProps {
-  result: CategorizeResponse;
+  result: OrganizeResponse;
 }
 
-function sortAisles(aisles: AisleResult[]): AisleResult[] {
-  const isNumbered = (name: string) => /^\d|^aisle\s+\d/i.test(name);
-  const isOther = (name: string) => name.toLowerCase() === "other";
+// Standard category order — common categories first, Other always last
+const CATEGORY_ORDER = [
+  "produce",
+  "meat & seafood",
+  "dairy & eggs",
+  "bakery",
+  "frozen",
+  "canned & packaged",
+  "pasta & rice",
+  "breakfast",
+  "snacks",
+  "beverages",
+  "condiments & sauces",
+  "baking",
+  "personal care",
+  "household",
+];
 
-  const numbered = aisles.filter((a) => isNumbered(a.name));
-  const other = aisles.filter((a) => isOther(a.name));
-  const general = aisles.filter((a) => !isNumbered(a.name) && !isOther(a.name));
-
-  numbered.sort((a, b) => {
-    const numA = parseInt(a.name.match(/\d+/)?.[0] ?? "0");
-    const numB = parseInt(b.name.match(/\d+/)?.[0] ?? "0");
-    return numA - numB;
+function sortCategories(categories: OrganizeResponse["categories"]) {
+  return [...categories].sort((a, b) => {
+    const aLower = a.name.toLowerCase();
+    const bLower = b.name.toLowerCase();
+    if (aLower === "other") return 1;
+    if (bLower === "other") return -1;
+    const aIdx = CATEGORY_ORDER.indexOf(aLower);
+    const bIdx = CATEGORY_ORDER.indexOf(bLower);
+    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+    if (aIdx !== -1) return -1;
+    if (bIdx !== -1) return 1;
+    return a.name.localeCompare(b.name);
   });
-
-  general.sort((a, b) => a.name.localeCompare(b.name));
-
-  return [...numbered, ...general, ...other];
 }
 
 export function ResultsGrid({ result }: ResultsGridProps) {
-  const nonEmpty = result.aisles.filter((a) => a.categories.some((cat) => cat.items.length > 0));
-  const sorted = sortAisles(nonEmpty);
+  const sorted = sortCategories(result.categories);
 
   return (
     <section className="results">
       <h2>Organized List</h2>
       <div className="results-grid">
-        {sorted.map((aisle) => (
-          <AisleCard key={aisle.name} aisle={aisle} />
+        {sorted.map((category) => (
+          <CategoryCard key={category.name} category={category} />
         ))}
       </div>
     </section>

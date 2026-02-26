@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { CategorizeResponse, StoreAisle } from "../types/index.js";
+import { OrganizeResponse } from "../types/index.js";
 
-export function useCategorize() {
-  const [result, setResult] = useState<CategorizeResponse | null>(null);
+export function useOrganize() {
+  const [result, setResult] = useState<OrganizeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const categorize = async (aisles: StoreAisle[], items: string) => {
+  const organize = async (items: string) => {
     setIsLoading(true);
     setError(null);
     setResult(null);
@@ -15,7 +15,7 @@ export function useCategorize() {
       const res = await fetch("/api/categorize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ aisles, items }),
+        body: JSON.stringify({ items }),
       });
 
       const data = await res.json();
@@ -24,7 +24,7 @@ export function useCategorize() {
         throw new Error(data.error ?? "Something went wrong");
       }
 
-      setResult(data as CategorizeResponse);
+      setResult(data as OrganizeResponse);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -32,5 +32,5 @@ export function useCategorize() {
     }
   };
 
-  return { categorize, result, isLoading, error };
+  return { organize, result, isLoading, error };
 }
