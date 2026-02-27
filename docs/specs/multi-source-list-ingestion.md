@@ -109,6 +109,16 @@ I want to add items from different sources — type some, scan some, paste some 
 - Backend/network failure → error toast with retry option
 - No error state should leave the user without a path forward
 
+### FR10 — Inline Tap-to-Type Input
+- A persistent text input field is always visible at the bottom of the list area, above the FAB
+- The field displays placeholder text: **"Add an item..."**
+- Tapping the field focuses it immediately — no bottom sheet, no extra taps
+- Pressing return/enter adds the item to the flat list and clears the field, keeping focus so the user can continue typing additional items
+- The field is always present regardless of whether the list is empty or has items
+- The existing empty state message ("Tap + to start adding items") is removed; the input field's placeholder text serves that purpose
+- The FAB remains available at all times for scan, paste, and other multi-source entry methods
+- These two entry points are complementary and non-exclusive: the inline input is optimized for fast sequential typing; the FAB is optimized for scanning and pasting
+
 ---
 
 ## UX / Screen Flows
@@ -124,6 +134,9 @@ I want to add items from different sources — type some, scan some, paste some 
 │  □  Rao's Homemade Marinara 24oz│
 │  □  Bread                       │
 │                                 │
+│  ┌─────────────────────────┐    │
+│  │ Add an item...           │    │  ← always-visible inline input
+│  └─────────────────────────┘    │
 │                             [+] │  ← FAB, always visible
 └─────────────────────────────────┘
 ```
@@ -222,6 +235,7 @@ Both modes return the same shape. Frontend routing logic determines which confir
 |---|---|
 | `App.tsx` | Add flat list state; add item-append handlers for all input sources; wire up new components |
 | Current text area | Repurpose into the "Type item" path within `AddItemSheet` — retain, relocate |
+| `ShoppingListInput.tsx` | Add persistent inline text input above the FAB; remove empty state `<p>` element ("Tap + to start adding items") — the input's placeholder text replaces it |
 
 ### Image Handling Notes
 - Resize images to max 1200px on the long edge before encoding
@@ -276,6 +290,15 @@ Both modes return the same shape. Frontend routing logic determines which confir
 - [ ] Empty list scan result shows an error with retry and manual-entry fallback
 - [ ] Network or backend failure shows an error toast with retry option
 - [ ] No error state leaves the user without a path forward
+
+### Inline Tap-to-Type Input
+- [ ] Persistent input field is visible at all times in the list-building view — empty state and populated state
+- [ ] Empty state shows no hint text paragraph; input placeholder "Add an item..." serves that purpose
+- [ ] Tapping the field focuses it without opening the bottom sheet
+- [ ] Pressing return/enter adds the item to the flat list, clears the field, and keeps focus
+- [ ] Empty input does not add a blank item
+- [ ] FAB remains visible and functional while the inline input is focused
+- [ ] Inline input and FAB-sourced items all land in the same flat list
 
 ### Flat List
 - [ ] Items from typing, pasting, and scanning all appear in a single flat list
