@@ -746,6 +746,11 @@ button:disabled {
   font-style: italic;
 }
 
+/* ── Inline tap-to-type input ─────────────────────────────── */
+.inline-add-input {
+  margin-bottom: 1rem;
+}
+
 /* ── Organize button ──────────────────────────────────────── */
 .btn-organize {
   margin-top: 1rem;

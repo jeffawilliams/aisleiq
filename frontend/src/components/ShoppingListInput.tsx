@@ -12,14 +12,23 @@ interface Props {
 
 export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading }: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [inlineValue, setInlineValue] = useState("");
+
+  function handleInlineKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      const trimmed = inlineValue.trim();
+      if (trimmed) {
+        onAddItems([trimmed]);
+        setInlineValue("");
+      }
+    }
+  }
 
   return (
     <section className="shopping-input">
       <h2>My List</h2>
 
-      {items.length === 0 ? (
-        <p className="flat-list-empty">Tap + to start adding items</p>
-      ) : (
+      {items.length > 0 && (
         <ul className="flat-list">
           {items.map((item, i) => (
             <li key={i} className="flat-list-item">
@@ -35,6 +44,16 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, i
           ))}
         </ul>
       )}
+
+      <input
+        type="text"
+        className="inline-add-input"
+        placeholder="Add an item..."
+        value={inlineValue}
+        onChange={(e) => setInlineValue(e.target.value)}
+        onKeyDown={handleInlineKeyDown}
+        disabled={isLoading}
+      />
 
       <FAB onClick={() => setIsSheetOpen(true)} disabled={isLoading} />
 
