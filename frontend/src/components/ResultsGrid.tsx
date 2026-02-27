@@ -3,6 +3,7 @@ import { CategoryCard } from "./CategoryCard.js";
 
 interface ResultsGridProps {
   result: OrganizeResponse;
+  isStale: boolean;
 }
 
 // Standard category order — common categories first, Other always last
@@ -46,7 +47,7 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale }: ResultsGridProps) {
   const sorted = sortCategories(result.categories);
 
   return (
@@ -57,6 +58,11 @@ export function ResultsGrid({ result }: ResultsGridProps) {
           Print
         </button>
       </div>
+      {isStale && (
+        <p className="stale-banner">
+          Your list has changed — tap Re-organize to update.
+        </p>
+      )}
       <div className="results-grid">
         {sorted.map((category) => (
           <CategoryCard key={category.name} category={category} />

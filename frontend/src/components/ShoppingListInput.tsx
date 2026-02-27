@@ -8,9 +8,10 @@ interface Props {
   onAddItems: (items: string[]) => void;
   onSubmit: () => void;
   isLoading: boolean;
+  isStale: boolean;
 }
 
-export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading }: Props) {
+export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading, isStale }: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [inlineValue, setInlineValue] = useState("");
 
@@ -64,11 +65,11 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, i
       />
 
       <button
-        className="btn-primary btn-organize"
+        className={`btn-primary btn-organize${isStale ? " btn-organize--stale" : ""}`}
         onClick={onSubmit}
         disabled={items.length === 0 || isLoading}
       >
-        {isLoading ? "Organizing..." : "Organize My List"}
+        {isLoading ? "Organizing..." : isStale ? "Re-organize" : "Organize My List"}
       </button>
     </section>
   );

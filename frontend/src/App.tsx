@@ -7,15 +7,23 @@ import { useOrganize } from "./hooks/useCategorize.js";
 export function App() {
   const { organize, result, isLoading, error } = useOrganize();
   const [listItems, setListItems] = useState<string[]>([]);
+  const [isStale, setIsStale] = useState(false);
 
-  const addItems = (newItems: string[]) =>
+  const addItems = (newItems: string[]) => {
     setListItems(prev => [...prev, ...newItems.filter(i => i.trim())]);
+    if (result) setIsStale(true);
+  };
 
-  const removeItem = (index: number) =>
+  const removeItem = (index: number) => {
     setListItems(prev => prev.filter((_, i) => i !== index));
+    if (result) setIsStale(true);
+  };
 
   const handleOrganize = () => {
-    if (listItems.length > 0) organize(listItems.join('\n'));
+    if (listItems.length > 0) {
+      setIsStale(false);
+      organize(listItems.join('\n'));
+    }
   };
 
   return (
@@ -32,10 +40,11 @@ export function App() {
           onAddItems={addItems}
           onSubmit={handleOrganize}
           isLoading={isLoading}
+          isStale={isStale}
         />
         {error && <p className="error">{error}</p>}
         {isLoading && <LoadingSpinner />}
-        {result && !isLoading && <ResultsGrid result={result} />}
+        {result && !isLoading && <ResultsGrid result={result} isStale={isStale} />}
       </main>
     </div>
   );
