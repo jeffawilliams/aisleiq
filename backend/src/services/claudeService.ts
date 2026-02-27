@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { OrganizeOutputSchema, OrganizeOutput } from "../schemas/aisleSchema.js";
+import { OrganizeOutputSchema, OrganizeOutput, ScanOutputSchema, ScanOutput } from "../schemas/aisleSchema.js";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -37,6 +37,33 @@ Standard grocery categories (use these names exactly):
 - Pet: cat food, dog food, cat litter, pet treats, pet supplies
 - Baby: baby food, baby formula, diapers, baby needs
 - General Merchandise: stationery, greeting cards, gift cards, kitchen gadgets, school supplies, seasonal items, ice, charcoal`;
+
+const PRODUCT_PROMPT = "Identify the product shown in this image. Return the full product name exactly as it appears on the package — include brand name, product name, flavor or variety, and size or quantity if visible. If you see multiple distinct products, return each as a separate item. Return a JSON array of strings. Return only the JSON array.";
+const LIST_PROMPT = "This image contains a shopping list or list of items. Extract every item you can read from the list. Return them as a JSON array of strings. Return only the JSON array.";
+
+export async function scanImage(image: string, mode: 'product' | 'list'): Promise<ScanOutput> {
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1024,
+    messages: [{
+      role: "user",
+      content: [
+        { type: "image", source: { type: "base64", media_type: "image/jpeg", data: image } },
+        { type: "text", text: mode === 'product' ? PRODUCT_PROMPT : LIST_PROMPT }
+      ]
+    }],
+    output_config: {
+      format: zodOutputFormat(ScanOutputSchema),
+    },
+  });
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new Error("No text response from Claude.");
+  }
+
+  return ScanOutputSchema.parse(JSON.parse(textBlock.text));
+}
 
 export async function organizeShoppingList(items: string): Promise<OrganizeOutput> {
   const response = await client.messages.create({

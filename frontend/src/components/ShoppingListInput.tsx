@@ -1,32 +1,53 @@
 import { useState } from "react";
+import { FAB } from "./FAB.js";
+import { AddItemSheet } from "./AddItemSheet.js";
 
-interface ShoppingListInputProps {
-  onSubmit: (items: string) => void;
+interface Props {
+  items: string[];
+  onRemoveItem: (index: number) => void;
+  onAddItems: (items: string[]) => void;
+  onSubmit: () => void;
   isLoading: boolean;
 }
 
-export function ShoppingListInput({ onSubmit, isLoading }: ShoppingListInputProps) {
-  const [items, setItems] = useState("");
-
-  const handleSubmit = () => {
-    if (items.trim()) onSubmit(items);
-  };
+export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading }: Props) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   return (
     <section className="shopping-input">
-      <h2>Shopping List</h2>
-      <p className="hint">Paste or type your list — one item per line, or comma-separated.</p>
-      <textarea
-        value={items}
-        onChange={(e) => setItems(e.target.value)}
-        placeholder={"milk\napples\nfrozen peas\nbread\nolive oil"}
-        rows={8}
-        disabled={isLoading}
+      <h2>My List</h2>
+
+      {items.length === 0 ? (
+        <p className="flat-list-empty">Tap + to start adding items</p>
+      ) : (
+        <ul className="flat-list">
+          {items.map((item, i) => (
+            <li key={i} className="flat-list-item">
+              <span>{item}</span>
+              <button
+                className="flat-list-item__remove"
+                onClick={() => onRemoveItem(i)}
+                aria-label={`Remove ${item}`}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <FAB onClick={() => setIsSheetOpen(true)} disabled={isLoading} />
+
+      <AddItemSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onAddItems={onAddItems}
       />
+
       <button
-        className="btn-primary"
-        onClick={handleSubmit}
-        disabled={!items.trim() || isLoading}
+        className="btn-primary btn-organize"
+        onClick={onSubmit}
+        disabled={items.length === 0 || isLoading}
       >
         {isLoading ? "Organizing..." : "Organize My List"}
       </button>

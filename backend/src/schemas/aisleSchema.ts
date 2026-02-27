@@ -20,3 +20,15 @@ export const OrganizeOutputSchema = z.object({
 
 export type OrganizeRequest = z.infer<typeof OrganizeRequestSchema>;
 export type OrganizeOutput = z.infer<typeof OrganizeOutputSchema>;
+
+export const ScanRequestSchema = z.object({
+  image: z.string().min(1),
+  mode: z.enum(['product', 'list'])
+});
+
+export const ScanOutputSchema = z.object({
+  items: z.array(z.string())
+});
+
+export type ScanRequest = z.infer<typeof ScanRequestSchema>;
+export type ScanOutput = z.infer<typeof ScanOutputSchema>;
