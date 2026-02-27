@@ -36,6 +36,96 @@ body {
   font-size: 1.1rem;
 }
 
+.auth-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.auth-email {
+  color: #555;
+}
+
+.btn-auth-link {
+  background: none;
+  border: none;
+  color: #2d6a4f;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btn-auth-link:hover {
+  color: #1b4332;
+  background: none;
+}
+
+/* ── Sign-in modal ────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.modal h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #1a1a2e;
+}
+
+.modal-body {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.875rem;
+  right: 0.875rem;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: #aaa;
+  line-height: 1;
+  padding: 0.25rem;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: #555;
+  background: none;
+}
+
+.modal-error {
+  font-size: 0.85rem;
+  color: #c0392b;
+  margin-top: 0.5rem;
+}
+
 /* Mode switcher */
 .mode-switcher {
   display: flex;
