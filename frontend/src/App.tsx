@@ -21,8 +21,8 @@ export function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>AisleIQ</h1>
-        <p>Add your groceries. We'll organize them by aisle.</p>
+        <h1>ShoppingListAssist</h1>
+        <p>Add your groceries. We'll organize them.</p>
       </header>
 
       <main className="app-main">
