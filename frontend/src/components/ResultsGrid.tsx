@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { OrganizeResponse } from "../types/index.js";
 import { CategoryCard } from "./CategoryCard.js";
 
@@ -48,38 +47,14 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
 }
 
 export function ResultsGrid({ result }: ResultsGridProps) {
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const sorted = sortCategories(result.categories);
-
-  const toggleItem = (item: string) => {
-    setCheckedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(item)) next.delete(item);
-      else next.add(item);
-      return next;
-    });
-  };
-
-  const clearAll = () => setCheckedItems(new Set());
 
   return (
     <section className="results">
-      <div className="results-header">
-        <h2>Organized List</h2>
-        {checkedItems.size > 0 && (
-          <button className="btn-clear-checks" onClick={clearAll}>
-            New trip
-          </button>
-        )}
-      </div>
+      <h2>Organized List</h2>
       <div className="results-grid">
         {sorted.map((category) => (
-          <CategoryCard
-            key={category.name}
-            category={category}
-            checkedItems={checkedItems}
-            onToggle={toggleItem}
-          />
+          <CategoryCard key={category.name} category={category} />
         ))}
       </div>
     </section>

@@ -362,31 +362,9 @@ button:disabled {
 }
 
 /* Results */
-.results-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.results-header h2 {
+.results h2 {
   font-size: 1.3rem;
-}
-
-.btn-clear-checks {
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.35rem 0.875rem;
-  background: #f5f7fa;
-  color: #555;
-  border: 1px solid #ddd;
-  border-radius: 999px;
-}
-
-.btn-clear-checks:hover:not(:disabled) {
-  background: #e8f5e9;
-  color: #2d6a4f;
-  border-color: #c8e6c9;
+  margin-bottom: 1rem;
 }
 
 .results-grid {
