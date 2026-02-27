@@ -362,9 +362,92 @@ button:disabled {
 }
 
 /* Results */
-.results h2 {
-  font-size: 1.3rem;
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1rem;
+}
+
+.results-header h2 {
+  font-size: 1.3rem;
+}
+
+.btn-print {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 0.875rem;
+  background: #f5f7fa;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+}
+
+.btn-print:hover:not(:disabled) {
+  background: #e8f5e9;
+  color: #2d6a4f;
+  border-color: #c8e6c9;
+}
+
+/* ── Print view ───────────────────────────────────────────── */
+@media print {
+  .app-header,
+  .shopping-input,
+  .loading-overlay,
+  .error,
+  .fab,
+  .bottom-sheet-overlay,
+  .bottom-sheet,
+  .btn-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .app {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .app-main {
+    gap: 0;
+  }
+
+  section.results {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .results-header h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .results-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .aisle-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+
+  /* Print items without strikethrough regardless of checked state */
+  .checklist-item--checked .checklist-label {
+    color: #333;
+    text-decoration: none;
+  }
+
+  .checklist-item--checked .checklist-box {
+    background: #fff;
+    border-color: #c0d9cc;
+    color: transparent;
+  }
 }
 
 .results-grid {

@@ -51,7 +51,12 @@ export function ResultsGrid({ result }: ResultsGridProps) {
 
   return (
     <section className="results">
-      <h2>Organized List</h2>
+      <div className="results-header">
+        <h2>Organized List</h2>
+        <button className="btn-print" onClick={() => window.print()}>
+          Print
+        </button>
+      </div>
       <div className="results-grid">
         {sorted.map((category) => (
           <CategoryCard key={category.name} category={category} />
