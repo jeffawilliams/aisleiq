@@ -1,5 +1,5 @@
 # Feature Spec: Multi-Source Shopping List Ingestion
-**Product:** AisleIQ
+**Product:** ShoppingListAssist
 **Author:** Jeff Williams
 **Status:** Draft
 **Date:** 2026-02-26
@@ -8,7 +8,7 @@
 
 ## Problem Statement
 
-AisleIQ currently supports only typed or pasted text for building a shopping list. That works fine at a desk — but the app's highest-value moments happen in the kitchen, the pantry, and standing in front of the fridge, phone in hand. Shoppers build lists from all kinds of sources: a product they're running low on, a meal plan printout, a sticky note on the counter, a photo they took at the store. The app needs to meet users where they actually are, which is primarily on mobile, and support getting items into a list from whatever source they happen to have in front of them.
+ShoppingListAssist currently supports only typed or pasted text for building a shopping list. That works fine at a desk — but the app's highest-value moments happen in the kitchen, the pantry, and standing in front of the fridge, phone in hand. Shoppers build lists from all kinds of sources: a product they're running low on, a meal plan printout, a sticky note on the counter, a photo they took at the store. The app needs to meet users where they actually are, which is primarily on mobile, and support getting items into a list from whatever source they happen to have in front of them.
 
 ---
 

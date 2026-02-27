@@ -1,4 +1,4 @@
-# AisleIQ — Project State
+# ShoppingListAssist — Project State
 
 ## Repo
 https://github.com/jeffawilliams/aisleiq
