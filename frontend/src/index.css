@@ -692,7 +692,7 @@ button:disabled {
   border-color: #2d6a4f;
 }
 
-.list-review-item--checked span:last-child {
+.list-review-item:not(.list-review-item--checked) span:last-child {
   color: #aaa;
   text-decoration: line-through;
 }
