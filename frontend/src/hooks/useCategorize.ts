@@ -12,7 +12,8 @@ export function useOrganize() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/categorize", {
+      const base = import.meta.env.VITE_API_URL ?? "";
+      const res = await fetch(`${base}/api/categorize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items }),

@@ -34,7 +34,8 @@ export function AddItemSheet({ isOpen, onClose, onAddItems }: AddItemSheetProps)
     setIsScanLoading(true);
     setScanError(null);
     try {
-      const res = await fetch('/api/scan', {
+      const base = import.meta.env.VITE_API_URL ?? "";
+      const res = await fetch(`${base}/api/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: base64, mode }),
