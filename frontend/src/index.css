@@ -9,6 +9,7 @@ body {
   background: #f5f7fa;
   color: #1a1a2e;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* Layout */
@@ -28,6 +29,21 @@ body {
   font-weight: 800;
   color: #2d6a4f;
   letter-spacing: -0.02em;
+}
+
+@media (max-width: 480px) {
+  .app-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .app-header p {
+    font-size: 0.95rem;
+  }
+
+  .auth-bar {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
 }
 
 .app-header p {
@@ -84,6 +100,7 @@ body {
   padding: 1.75rem;
   width: 100%;
   max-width: 400px;
+  box-sizing: border-box;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   position: relative;
 }
