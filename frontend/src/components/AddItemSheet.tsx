@@ -70,7 +70,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems }: AddItemSheetProps)
         onAddItems(lines);
         onClose();
       } else {
-        setScanError('Clipboard is empty — copy your list first, then tap Paste a list.');
+        setScanError('Clipboard is empty — copy your list into buffer, then tap Paste a list.');
       }
     } catch {
       setScanError('Clipboard access denied. Use "Type item" and paste there.');
