@@ -148,40 +148,39 @@ export function HamburgerMenu({
                     key={list.id}
                     className={`nav-list-item${isActive ? " nav-list-item--active" : ""}`}
                   >
-                    <button
-                      className="nav-list-item__select"
-                      onClick={() => { onSelectList(list.id); close(); }}
-                    >
-                      {isRenaming ? (
-                        <input
-                          ref={renameInputRef}
-                          className="nav-list-item__name-input"
-                          value={renameValue}
-                          onChange={e => setRenameValue(e.target.value)}
-                          onKeyDown={e => handleRenameKeyDown(e, list.id)}
-                          onBlur={() => commitRename(list.id)}
-                          onClick={e => e.stopPropagation()}
-                        />
-                      ) : (
-                        <span
-                          className="nav-list-item__name"
-                          onClick={e => { e.stopPropagation(); startRename(list); }}
+                    {isRenaming ? (
+                      <input
+                        ref={renameInputRef}
+                        className="nav-list-item__name-input"
+                        value={renameValue}
+                        onChange={e => setRenameValue(e.target.value)}
+                        onKeyDown={e => handleRenameKeyDown(e, list.id)}
+                        onBlur={() => commitRename(list.id)}
+                      />
+                    ) : (
+                      <>
+                        <button
+                          className="nav-list-item__select"
+                          onClick={() => { onSelectList(list.id); close(); }}
                         >
-                          {list.name}
-                        </span>
-                      )}
-                      <span className="nav-list-item__count">
-                        {list.items.length} item{list.items.length !== 1 ? "s" : ""}
-                      </span>
-                    </button>
-                    {!isRenaming && (
-                      <button
-                        className="nav-list-item__delete"
+                          <span
+                            className="nav-list-item__name"
+                            onClick={e => { e.stopPropagation(); startRename(list); }}
+                          >
+                            {list.name}
+                          </span>
+                          <span className="nav-list-item__count">
+                            {list.items.length} item{list.items.length !== 1 ? "s" : ""}
+                          </span>
+                        </button>
+                        <button
+                          className="nav-list-item__delete"
                         aria-label={`Delete ${list.name}`}
                         onClick={e => { e.stopPropagation(); setConfirmingDeleteId(list.id); }}
                       >
                         ×
                       </button>
+                      </>
                     )}
                   </li>
                 );
