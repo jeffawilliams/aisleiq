@@ -6,3 +6,13 @@ export interface CategoryResult {
 export interface OrganizeResponse {
   categories: CategoryResult[];
 }
+
+export interface AisleResult {
+  name: string;
+  categories: CategoryResult[];
+}
+
+export interface StoreAisle {
+  name: string;
+  categories: string[];
+}
