@@ -48,7 +48,6 @@ export function SignInModal({ onSignIn, onClose }: Props) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoFocus
               />
               {error && <p className="modal-error">{error}</p>}
               <button type="submit" className="btn-primary" style={{ marginTop: "0.75rem" }} disabled={loading}>
