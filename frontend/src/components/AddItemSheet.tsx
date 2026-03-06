@@ -69,6 +69,8 @@ export function AddItemSheet({ isOpen, onClose, onAddItems }: AddItemSheetProps)
       if (lines.length > 0) {
         onAddItems(lines);
         onClose();
+      } else {
+        setScanError('Clipboard is empty — copy your list first, then tap Paste a list.');
       }
     } catch {
       setScanError('Clipboard access denied. Use "Type item" and paste there.');
@@ -135,7 +137,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems }: AddItemSheetProps)
             </button>
             <button className="bottom-sheet-option" onClick={handlePaste}>
               <span className="bottom-sheet-option__icon">📋</span>
-              <span>Paste a list</span>
+              <span>Paste a list<br/><small style={{opacity: 0.6, fontWeight: 'normal'}}>Copy your list first, then tap here</small></span>
             </button>
             <button className="bottom-sheet-option" onClick={() => { setScanError(null); productTriggerRef.current?.(); }}>
               <span className="bottom-sheet-option__icon">📷</span>
