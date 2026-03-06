@@ -3,18 +3,30 @@ import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
 import { SignInModal } from "./components/SignInModal.js";
+import { HamburgerMenu } from "./components/HamburgerMenu.js";
+import { NameListModal } from "./components/NameListModal.js";
 import { useOrganize } from "./hooks/useCategorize.js";
 import { useAuth } from "./hooks/useAuth.js";
-import { useList } from "./hooks/useList.js";
+import { useLists } from "./hooks/useLists.js";
 
 export function App() {
   const { organize, result, isLoading, error } = useOrganize();
   const { user, authLoading, signIn, signOut } = useAuth();
-  const [listItems, setListItems] = useState<string[]>([]);
   const [isStale, setIsStale] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
 
-  useList(user, listItems, setListItems);
+  const {
+    lists,
+    activeListId,
+    activeListName,
+    listItems,
+    setListItems,
+    needsNaming,
+    createList,
+    deleteList,
+    renameList,
+    switchList,
+  } = useLists(user);
 
   const addItems = (newItems: string[]) => {
     setListItems(prev => [...prev, ...newItems.filter(i => i.trim())]);
@@ -41,10 +53,7 @@ export function App() {
         {!authLoading && (
           <div className="auth-bar">
             {user ? (
-              <>
-                <span className="auth-email">{user.email}</span>
-                <button className="btn-auth-link" onClick={signOut}>Sign out</button>
-              </>
+              <span className="auth-email">{user.email}</span>
             ) : (
               <button className="btn-auth-link" onClick={() => setShowSignIn(true)}>
                 Sign in to save your list
@@ -52,6 +61,16 @@ export function App() {
             )}
           </div>
         )}
+        <HamburgerMenu
+          user={user}
+          lists={lists}
+          activeListId={activeListId}
+          onSignOut={signOut}
+          onSelectList={switchList}
+          onCreateList={(name) => createList(name, [])}
+          onDeleteList={deleteList}
+          onRenameList={renameList}
+        />
       </header>
 
       <main className="app-main">
@@ -62,6 +81,7 @@ export function App() {
           onSubmit={handleOrganize}
           isLoading={isLoading}
           isStale={isStale}
+          listName={activeListName}
         />
         {error && <p className="error">{error}</p>}
         {isLoading && <LoadingSpinner />}
@@ -72,6 +92,13 @@ export function App() {
         <SignInModal
           onSignIn={signIn}
           onClose={() => setShowSignIn(false)}
+        />
+      )}
+
+      {needsNaming && (
+        <NameListModal
+          currentItems={listItems}
+          onCreate={(name) => createList(name, listItems)}
         />
       )}
     </div>

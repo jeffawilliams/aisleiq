@@ -9,9 +9,10 @@ interface Props {
   onSubmit: () => void;
   isLoading: boolean;
   isStale: boolean;
+  listName: string;
 }
 
-export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading, isStale }: Props) {
+export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading, isStale, listName }: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [inlineValue, setInlineValue] = useState("");
 
@@ -38,7 +39,7 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, i
 
   return (
     <section className="shopping-input">
-      <h2>My List</h2>
+      <h2>{listName}</h2>
 
       {items.length > 0 && (
         <ul className="flat-list">
