@@ -10,6 +10,7 @@ export interface ListRecord {
 }
 
 const ACTIVE_LIST_KEY = "sla_active_list_id";
+const PENDING_ITEMS_KEY = "sla_pending_items";
 
 export function useLists(user: User | null): {
   lists: ListRecord[];
@@ -57,7 +58,16 @@ export function useLists(user: User | null): {
         .order("updated_at", { ascending: false });
 
       if (!data || data.length === 0) {
-        // New user — ask them to name their list
+        // New user — restore any items they added before signing in
+        const pendingRaw = localStorage.getItem(PENDING_ITEMS_KEY);
+        if (pendingRaw) {
+          try {
+            const pending = JSON.parse(pendingRaw);
+            if (Array.isArray(pending) && pending.length > 0) {
+              setListItems(pending);
+            }
+          } catch {}
+        }
         setNeedsNaming(true);
         setIsLoaded(true);
         initialLoadDone.current = true;
@@ -127,6 +137,7 @@ export function useLists(user: User | null): {
     setActiveListId(newList.id);
     setListItems(newList.items as string[]);
     localStorage.setItem(ACTIVE_LIST_KEY, newList.id);
+    localStorage.removeItem(PENDING_ITEMS_KEY);
     setNeedsNaming(false);
     initialLoadDone.current = true;
   }

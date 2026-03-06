@@ -55,7 +55,15 @@ export function App() {
             {user ? (
               <span className="auth-email">{user.email}</span>
             ) : (
-              <button className="btn-auth-link" onClick={() => setShowSignIn(true)}>
+              <button
+                className="btn-auth-link"
+                onClick={() => {
+                  if (listItems.length > 0) {
+                    localStorage.setItem("sla_pending_items", JSON.stringify(listItems));
+                  }
+                  setShowSignIn(true);
+                }}
+              >
                 Sign in to save your list
               </button>
             )}
