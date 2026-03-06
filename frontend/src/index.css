@@ -976,7 +976,7 @@ button:disabled {
 .hamburger-btn {
   position: absolute;
   top: 1.25rem;
-  right: 1.5rem;
+  right: 0.75rem;
   background: none;
   border: none;
   padding: 0.5rem;
@@ -1025,6 +1025,12 @@ button:disabled {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: nav-panel-slide-in 0.3s ease-out;
+}
+
+@keyframes nav-panel-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
 }
 
 .nav-panel__header {
@@ -1069,7 +1075,7 @@ button:disabled {
 .nav-panel__list {
   list-style: none;
   overflow-y: auto;
-  flex: 1;
+  max-height: 50vh;
 }
 
 /* ── Nav list items ───────────────────────────────────────── */
@@ -1263,7 +1269,7 @@ button:disabled {
 }
 
 .nav-panel__spacer {
-  flex: 1;
+  height: 1rem;
 }
 
 /* Sign out button at panel bottom */
