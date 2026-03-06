@@ -43,13 +43,12 @@ export function useList(
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
     saveTimer.current = setTimeout(async () => {
-      const { error } = await supabase
+      await supabase
         .from("lists")
         .upsert(
           { owner_id: user.id, items: listItems, updated_at: new Date().toISOString() },
           { onConflict: "owner_id" }
         );
-      if (error) console.error("List save failed:", error);
     }, 800);
 
     return () => {
