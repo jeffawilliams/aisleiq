@@ -917,6 +917,17 @@ button:disabled {
   color: #333;
 }
 
+.flat-list-item__duplicate-badge {
+  margin-left: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  vertical-align: middle;
+}
+
 .flat-list-item__remove {
   background: none;
   border: none;

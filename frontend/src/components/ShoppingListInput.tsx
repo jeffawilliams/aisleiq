@@ -25,6 +25,17 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, i
     }
   }
 
+  const seen = new Set<string>();
+  const duplicateIndices = new Set<number>();
+  items.forEach((item, i) => {
+    const key = item.trim().toLowerCase();
+    if (seen.has(key)) {
+      duplicateIndices.add(i);
+    } else {
+      seen.add(key);
+    }
+  });
+
   return (
     <section className="shopping-input">
       <h2>My List</h2>
@@ -33,7 +44,12 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, i
         <ul className="flat-list">
           {items.map((item, i) => (
             <li key={i} className="flat-list-item">
-              <span>{item}</span>
+              <span>
+                {item}
+                {duplicateIndices.has(i) && (
+                  <span className="flat-list-item__duplicate-badge">duplicate</span>
+                )}
+              </span>
               <button
                 className="flat-list-item__remove"
                 onClick={() => onRemoveItem(i)}
