@@ -37,6 +37,8 @@ export function useLists(user: User | null): {
   const initialLoadDone = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedAt = useRef<string>("");
+  const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const activeShareTokenRef = useRef<string | null>(null);
 
   // Derive active list name from state
   const activeList = lists.find(l => l.id === activeListId);
@@ -109,6 +111,16 @@ export function useLists(user: User | null): {
 
       lastSavedAt.current = now;
 
+      // Broadcast to any open shared-link sessions (postgres_changes doesn't
+      // reliably deliver events to anonymous Supabase subscribers)
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.send({
+          type: "broadcast",
+          event: "items_updated",
+          payload: { items: listItems, updated_at: now },
+        });
+      }
+
       // Keep local lists state in sync with updated_at
       setLists(prev =>
         prev.map(l =>
@@ -123,6 +135,32 @@ export function useLists(user: User | null): {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, [listItems, user?.id, activeListId]);
+
+  // Broadcast channel — owner sends updates to anonymous shared-link sessions
+  useEffect(() => {
+    const shareToken = lists.find(l => l.id === activeListId)?.share_token ?? null;
+
+    // No change to the token — nothing to do
+    if (shareToken === activeShareTokenRef.current) return;
+
+    // Clean up the old channel if the token changed or was revoked
+    if (broadcastChannelRef.current) {
+      supabase.removeChannel(broadcastChannelRef.current);
+      broadcastChannelRef.current = null;
+    }
+
+    activeShareTokenRef.current = shareToken;
+    if (!shareToken) return;
+
+    const channel = supabase.channel(`list-${shareToken}`).subscribe();
+    broadcastChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+      activeShareTokenRef.current = null;
+    };
+  }, [activeListId, lists]);
 
   // Realtime subscription — inbound changes from collaborators on the active list
   useEffect(() => {

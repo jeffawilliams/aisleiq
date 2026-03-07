@@ -66,22 +66,18 @@ export function SharedListView({ token }: Props) {
     };
   }, [listItems, listId]);
 
-  // Realtime subscription — inbound changes from the owner or other collaborators
+  // Broadcast subscription — receives live updates from the owner.
+  // We use Broadcast instead of postgres_changes because Supabase does not
+  // reliably deliver postgres_changes events to anonymous (unauthenticated)
+  // subscribers even when an anon SELECT RLS policy is in place.
   useEffect(() => {
-    if (!listId) return;
-
     const channel = supabase
-      .channel(`shared-list-${listId}`)
+      .channel(`list-${token}`)
       .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "lists",
-          filter: `id=eq.${listId}`,
-        },
-        (payload) => {
-          const incoming = payload.new as { items: string[]; updated_at: string };
+        "broadcast",
+        { event: "items_updated" },
+        ({ payload }) => {
+          const incoming = payload as { items: string[]; updated_at: string };
           if (incoming.updated_at > lastSavedAt.current) {
             if (saveTimer.current) clearTimeout(saveTimer.current);
             setListItems(incoming.items);
@@ -94,7 +90,7 @@ export function SharedListView({ token }: Props) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [listId]);
+  }, [token]);
 
   const addItems = (newItems: string[]) => {
     setListItems(prev => [...prev, ...newItems.filter(i => i.trim())]);
