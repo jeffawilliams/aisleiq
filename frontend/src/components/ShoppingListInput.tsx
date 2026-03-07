@@ -10,9 +10,10 @@ interface Props {
   isLoading: boolean;
   isStale: boolean;
   listName: string;
+  listBadge?: string;
 }
 
-export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading, isStale, listName }: Props) {
+export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading, isStale, listName, listBadge }: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [inlineValue, setInlineValue] = useState("");
 
@@ -40,6 +41,7 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, i
   return (
     <section className="shopping-input">
       <h2>{listName}</h2>
+      {listBadge && <span className="list-badge">{listBadge}</span>}
 
       {items.length > 0 && (
         <ul className="flat-list">

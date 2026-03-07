@@ -1293,6 +1293,158 @@ button:disabled {
   color: #555;
 }
 
+/* ── Shared list badge ────────────────────────────────────── */
+.list-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #2d6a4f;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Shared list unavailable ──────────────────────────────── */
+.shared-list-unavailable {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.shared-list-unavailable__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.5rem;
+}
+
+.shared-list-unavailable__body {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+/* ── Share button on list row ─────────────────────────────── */
+.nav-list-item__share {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.25rem 0.4rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.nav-list-item__share:hover {
+  background: #e8f5e9;
+  color: #2d6a4f;
+}
+
+/* ── Share panel (expanded list row) ─────────────────────── */
+.nav-list-item--sharing {
+  display: block;
+  padding: 0;
+}
+
+.nav-share-panel {
+  padding: 0.875rem 1.25rem;
+}
+
+.nav-share-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.nav-share-panel__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.nav-share-panel__close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #aaa;
+  line-height: 1;
+  padding: 0.1rem 0.4rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.nav-share-panel__close:hover {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.nav-share-panel__link-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+
+.nav-share-panel__link-input {
+  flex: 1;
+  padding: 0.4rem 0.625rem;
+  font-size: 0.78rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #555;
+  background: #f9fafb;
+  min-width: 0;
+  /* Override global width: 100% */
+  width: auto;
+}
+
+.nav-share-panel__link-input:focus {
+  border-color: #2d6a4f;
+  outline: none;
+}
+
+.nav-share-panel__copy-btn {
+  font-size: 0.82rem;
+  padding: 0.35rem 0.75rem;
+  background: #2d6a4f;
+  color: #fff;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-share-panel__copy-btn:hover:not(:disabled) {
+  background: #1b4332;
+}
+
+.nav-share-panel__stop-btn {
+  width: 100%;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.75rem;
+  background: none;
+  color: #888;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.nav-share-panel__stop-btn:hover:not(:disabled) {
+  background: #fdecea;
+  color: #c0392b;
+  border-color: #f5c6c6;
+}
+
+.nav-share-panel__generating {
+  font-size: 0.85rem;
+  color: #aaa;
+  font-style: italic;
+  margin: 0;
+}
+
 /* ── Stale results banner ─────────────────────────────────── */
 .stale-banner {
   font-size: 0.875rem;

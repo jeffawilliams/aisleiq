@@ -11,6 +11,8 @@ interface Props {
   onCreateList: (name: string) => void;
   onDeleteList: (id: string) => void;
   onRenameList: (id: string, name: string) => void;
+  onGenerateShareLink: (id: string) => Promise<void>;
+  onRevokeShareLink: (id: string) => Promise<void>;
 }
 
 export function HamburgerMenu({
@@ -22,11 +24,15 @@ export function HamburgerMenu({
   onCreateList,
   onDeleteList,
   onRenameList,
+  onGenerateShareLink,
+  onRevokeShareLink,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [sharingListId, setSharingListId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [newListName, setNewListName] = useState("");
   const renameInputRef = useRef<HTMLInputElement>(null);
@@ -35,6 +41,8 @@ export function HamburgerMenu({
     setIsOpen(true);
     setConfirmingDeleteId(null);
     setRenamingId(null);
+    setSharingListId(null);
+    setCopiedId(null);
     setShowNewListInput(false);
     setNewListName("");
   }
@@ -43,6 +51,8 @@ export function HamburgerMenu({
     setIsOpen(false);
     setConfirmingDeleteId(null);
     setRenamingId(null);
+    setSharingListId(null);
+    setCopiedId(null);
     setShowNewListInput(false);
     setNewListName("");
   }
@@ -51,6 +61,7 @@ export function HamburgerMenu({
     setRenamingId(list.id);
     setRenameValue(list.name);
     setConfirmingDeleteId(null);
+    setSharingListId(null);
     setTimeout(() => renameInputRef.current?.focus(), 0);
   }
 
@@ -80,6 +91,35 @@ export function HamburgerMenu({
       setShowNewListInput(false);
       setNewListName("");
     }
+  }
+
+  async function handleShareClick(list: ListRecord) {
+    if (!list.share_token) {
+      await onGenerateShareLink(list.id);
+    }
+    setSharingListId(list.id);
+    setConfirmingDeleteId(null);
+    setRenamingId(null);
+  }
+
+  function getShareUrl(token: string) {
+    return `${window.location.origin}/shared/${token}`;
+  }
+
+  async function handleCopyLink(list: ListRecord) {
+    if (!list.share_token) return;
+    try {
+      await navigator.clipboard.writeText(getShareUrl(list.share_token));
+      setCopiedId(list.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // Clipboard not available — no-op
+    }
+  }
+
+  async function handleStopSharing(list: ListRecord) {
+    await onRevokeShareLink(list.id);
+    setSharingListId(null);
   }
 
   return (
@@ -114,6 +154,7 @@ export function HamburgerMenu({
                 const isActive = list.id === activeListId;
                 const isConfirming = confirmingDeleteId === list.id;
                 const isRenaming = renamingId === list.id;
+                const isSharing = sharingListId === list.id;
 
                 if (isConfirming) {
                   return (
@@ -138,6 +179,54 @@ export function HamburgerMenu({
                         >
                           Delete
                         </button>
+                      </div>
+                    </li>
+                  );
+                }
+
+                if (isSharing) {
+                  // After generateShareLink resolves, list.share_token is populated via props
+                  const url = list.share_token ? getShareUrl(list.share_token) : null;
+                  return (
+                    <li key={list.id} className="nav-list-item nav-list-item--sharing">
+                      <div className="nav-share-panel">
+                        <div className="nav-share-panel__header">
+                          <span className="nav-share-panel__label">Share &ldquo;{list.name}&rdquo;</span>
+                          <button
+                            className="nav-share-panel__close"
+                            onClick={() => setSharingListId(null)}
+                            aria-label="Close share panel"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        {url ? (
+                          <>
+                            <div className="nav-share-panel__link-row">
+                              <input
+                                type="text"
+                                className="nav-share-panel__link-input"
+                                value={url}
+                                readOnly
+                                onFocus={e => e.target.select()}
+                              />
+                              <button
+                                className="nav-share-panel__copy-btn"
+                                onClick={() => handleCopyLink(list)}
+                              >
+                                {copiedId === list.id ? "Copied!" : "Copy"}
+                              </button>
+                            </div>
+                            <button
+                              className="nav-share-panel__stop-btn"
+                              onClick={() => handleStopSharing(list)}
+                            >
+                              Stop Sharing
+                            </button>
+                          </>
+                        ) : (
+                          <p className="nav-share-panel__generating">Generating link…</p>
+                        )}
                       </div>
                     </li>
                   );
@@ -174,12 +263,20 @@ export function HamburgerMenu({
                           </span>
                         </button>
                         <button
+                          className="nav-list-item__share"
+                          aria-label={`Share ${list.name}`}
+                          onClick={e => { e.stopPropagation(); handleShareClick(list); }}
+                          title={list.share_token ? "Shared" : "Share"}
+                        >
+                          {list.share_token ? "🔗" : "↗"}
+                        </button>
+                        <button
                           className="nav-list-item__delete"
-                        aria-label={`Delete ${list.name}`}
-                        onClick={e => { e.stopPropagation(); setConfirmingDeleteId(list.id); }}
-                      >
-                        ×
-                      </button>
+                          aria-label={`Delete ${list.name}`}
+                          onClick={e => { e.stopPropagation(); setConfirmingDeleteId(list.id); }}
+                        >
+                          ×
+                        </button>
                       </>
                     )}
                   </li>

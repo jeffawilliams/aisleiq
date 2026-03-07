@@ -7,6 +7,7 @@ export interface ListRecord {
   name: string;
   items: string[];
   updated_at: string;
+  share_token: string | null;
 }
 
 const ACTIVE_LIST_KEY = "sla_active_list_id";
@@ -24,6 +25,8 @@ export function useLists(user: User | null): {
   deleteList: (id: string) => Promise<void>;
   renameList: (id: string, name: string) => Promise<void>;
   switchList: (id: string) => void;
+  generateShareLink: (listId: string) => Promise<void>;
+  revokeShareLink: (listId: string) => Promise<void>;
 } {
   const [lists, setLists] = useState<ListRecord[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(null);
@@ -33,6 +36,7 @@ export function useLists(user: User | null): {
 
   const initialLoadDone = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedAt = useRef<string>("");
 
   // Derive active list name from state
   const activeList = lists.find(l => l.id === activeListId);
@@ -53,7 +57,7 @@ export function useLists(user: User | null): {
     async function loadLists() {
       const { data } = await supabase
         .from("lists")
-        .select("id, name, items, updated_at")
+        .select("id, name, items, updated_at, share_token")
         .eq("owner_id", user!.id)
         .order("updated_at", { ascending: false });
 
@@ -82,6 +86,7 @@ export function useLists(user: User | null): {
       const target = loadedLists.find(l => l.id === savedId) ?? loadedLists[0];
       setActiveListId(target.id);
       setListItems(target.items as string[]);
+      lastSavedAt.current = target.updated_at;
       setIsLoaded(true);
       initialLoadDone.current = true;
     }
@@ -96,16 +101,19 @@ export function useLists(user: User | null): {
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
     saveTimer.current = setTimeout(async () => {
+      const now = new Date().toISOString();
       await supabase
         .from("lists")
-        .update({ items: listItems, updated_at: new Date().toISOString() })
+        .update({ items: listItems, updated_at: now })
         .eq("id", activeListId);
+
+      lastSavedAt.current = now;
 
       // Keep local lists state in sync with updated_at
       setLists(prev =>
         prev.map(l =>
           l.id === activeListId
-            ? { ...l, items: listItems, updated_at: new Date().toISOString() }
+            ? { ...l, items: listItems, updated_at: now }
             : l
         )
       );
@@ -115,6 +123,37 @@ export function useLists(user: User | null): {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, [listItems, user?.id, activeListId]);
+
+  // Realtime subscription — inbound changes from collaborators on the active list
+  useEffect(() => {
+    if (!activeListId) return;
+
+    const channel = supabase
+      .channel(`owner-list-${activeListId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "lists",
+          filter: `id=eq.${activeListId}`,
+        },
+        (payload) => {
+          const incoming = payload.new as { items: string[]; updated_at: string };
+          // Only apply if the change came from someone else (newer than our last save)
+          if (incoming.updated_at > lastSavedAt.current) {
+            if (saveTimer.current) clearTimeout(saveTimer.current);
+            setListItems(incoming.items);
+            lastSavedAt.current = incoming.updated_at;
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeListId]);
 
   async function createList(name: string, items: string[]) {
     if (!user) return;
@@ -127,7 +166,7 @@ export function useLists(user: User | null): {
         items,
         updated_at: new Date().toISOString(),
       })
-      .select("id, name, items, updated_at")
+      .select("id, name, items, updated_at, share_token")
       .single();
 
     if (error || !data) return;
@@ -136,6 +175,7 @@ export function useLists(user: User | null): {
     setLists(prev => [newList, ...prev]);
     setActiveListId(newList.id);
     setListItems(newList.items as string[]);
+    lastSavedAt.current = newList.updated_at;
     localStorage.setItem(ACTIVE_LIST_KEY, newList.id);
     localStorage.removeItem(PENDING_ITEMS_KEY);
     setNeedsNaming(false);
@@ -155,9 +195,9 @@ export function useLists(user: User | null): {
         const next = remaining[0];
         setActiveListId(next.id);
         setListItems(next.items as string[]);
+        lastSavedAt.current = next.updated_at;
         localStorage.setItem(ACTIVE_LIST_KEY, next.id);
       } else {
-        // No lists left — auto-create a new one
         await createList("My List", []);
       }
     }
@@ -180,7 +220,37 @@ export function useLists(user: User | null): {
 
     setActiveListId(id);
     setListItems(target.items as string[]);
+    lastSavedAt.current = target.updated_at;
     localStorage.setItem(ACTIVE_LIST_KEY, id);
+  }
+
+  async function generateShareLink(listId: string) {
+    if (!user) return;
+
+    const token = crypto.randomUUID();
+    const { error } = await supabase
+      .from("lists")
+      .update({ share_token: token })
+      .eq("id", listId);
+
+    if (error) return;
+
+    setLists(prev =>
+      prev.map(l => (l.id === listId ? { ...l, share_token: token } : l))
+    );
+  }
+
+  async function revokeShareLink(listId: string) {
+    if (!user) return;
+
+    await supabase
+      .from("lists")
+      .update({ share_token: null })
+      .eq("id", listId);
+
+    setLists(prev =>
+      prev.map(l => (l.id === listId ? { ...l, share_token: null } : l))
+    );
   }
 
   return {
@@ -195,5 +265,7 @@ export function useLists(user: User | null): {
     deleteList,
     renameList,
     switchList,
+    generateShareLink,
+    revokeShareLink,
   };
 }

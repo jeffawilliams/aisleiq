@@ -26,6 +26,8 @@ export function App() {
     deleteList,
     renameList,
     switchList,
+    generateShareLink,
+    revokeShareLink,
   } = useLists(user);
 
   const addItems = (newItems: string[]) => {
@@ -78,6 +80,8 @@ export function App() {
           onCreateList={(name) => createList(name, [])}
           onDeleteList={deleteList}
           onRenameList={renameList}
+          onGenerateShareLink={generateShareLink}
+          onRevokeShareLink={revokeShareLink}
         />
       </header>
 
