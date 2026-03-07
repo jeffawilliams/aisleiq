@@ -37,6 +37,7 @@ export function useLists(user: User | null): {
   const initialLoadDone = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedAt = useRef<string>("");
+  const isRemoteUpdate = useRef(false);
   const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const activeShareTokenRef = useRef<string | null>(null);
 
@@ -99,6 +100,12 @@ export function useLists(user: User | null): {
   // Auto-save active list items (debounced 800ms)
   useEffect(() => {
     if (!user || !initialLoadDone.current || !activeListId) return;
+
+    // Skip save if this update came from an inbound sync — only save local changes
+    if (isRemoteUpdate.current) {
+      isRemoteUpdate.current = false;
+      return;
+    }
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
@@ -181,6 +188,7 @@ export function useLists(user: User | null): {
           // Only apply if the change came from someone else (newer than our last save)
           if (incoming.updated_at > lastSavedAt.current) {
             if (saveTimer.current) clearTimeout(saveTimer.current);
+            isRemoteUpdate.current = true;
             setListItems(incoming.items);
             lastSavedAt.current = incoming.updated_at;
           }

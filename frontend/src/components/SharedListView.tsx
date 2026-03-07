@@ -22,6 +22,7 @@ export function SharedListView({ token }: Props) {
   const initialLoadDone = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedAt = useRef<string>("");
+  const isRemoteUpdate = useRef(false);
 
   // Load the list by token on mount
   useEffect(() => {
@@ -49,6 +50,12 @@ export function SharedListView({ token }: Props) {
   // Debounced save via token-based RPC
   useEffect(() => {
     if (!initialLoadDone.current || !listId) return;
+
+    // Skip save if this update came from an inbound sync — only save local changes
+    if (isRemoteUpdate.current) {
+      isRemoteUpdate.current = false;
+      return;
+    }
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
@@ -80,6 +87,7 @@ export function SharedListView({ token }: Props) {
           const incoming = payload as { items: string[]; updated_at: string };
           if (incoming.updated_at > lastSavedAt.current) {
             if (saveTimer.current) clearTimeout(saveTimer.current);
+            isRemoteUpdate.current = true;
             setListItems(incoming.items);
             lastSavedAt.current = incoming.updated_at;
           }
