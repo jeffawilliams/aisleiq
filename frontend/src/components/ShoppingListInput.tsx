@@ -104,7 +104,7 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
                   onClick={() => setLightboxPhoto(itemPhotos![i])}
                   aria-label={`View photo for ${item}`}
                 >
-                  📷
+                  🖼️
                 </button>
               )}
               <button
