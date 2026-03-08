@@ -20,29 +20,31 @@ export function useAuth() {
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Resolve initial session — clears authLoading once known
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        const r = await fetchRole(session.user.id);
-        setRole(r);
-      }
       setAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // Synchronous callback — async here prevents React from reliably
+    // processing state updates on sign-out (Supabase doesn't await the Promise)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        const r = await fetchRole(session.user.id);
-        setRole(r);
-      } else {
-        setRole(null);
-      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch role in a separate effect so onAuthStateChange stays synchronous
+  useEffect(() => {
+    if (!user) {
+      setRole(null);
+      return;
+    }
+    fetchRole(user.id).then(setRole);
+  }, [user?.id]);
 
   const signIn = async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({
