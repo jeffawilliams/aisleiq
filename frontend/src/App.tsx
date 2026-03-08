@@ -37,6 +37,16 @@ export function App() {
     setItemPhotos([]);
   }, [activeListId]);
 
+  // Pad itemPhotos with nulls to match listItems length after Supabase loads items.
+  // Without this, the first addItemWithPhoto call pushes the photo to index 0
+  // instead of the correct end-of-list index.
+  useEffect(() => {
+    setItemPhotos(prev => {
+      if (prev.length >= listItems.length) return prev;
+      return [...prev, ...Array(listItems.length - prev.length).fill(null)];
+    });
+  }, [listItems.length]);
+
   const addItems = (newItems: string[]) => {
     const filtered = newItems.filter(i => i.trim());
     setListItems(prev => [...prev, ...filtered]);
