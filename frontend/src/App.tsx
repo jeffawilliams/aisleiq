@@ -3,6 +3,7 @@ import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
 import { SignInModal } from "./components/SignInModal.js";
+import { FeedbackModal } from "./components/FeedbackModal.js";
 import { HamburgerMenu } from "./components/HamburgerMenu.js";
 import { NameListModal } from "./components/NameListModal.js";
 import { useOrganize } from "./hooks/useCategorize.js";
@@ -15,6 +16,7 @@ export function App() {
   const { user, role, authLoading, signIn, signInWithGoogle, signOut } = useAuth();
   const [isStale, setIsStale] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
 
   const {
@@ -71,6 +73,16 @@ export function App() {
     if (result) setIsStale(true);
   };
 
+  const handleFeedback = async (category: string, message: string, email: string) => {
+    const { error } = await supabase.from("feedback").insert({
+      user_id: user?.id ?? null,
+      email: email || null,
+      category,
+      message,
+    });
+    return { error };
+  };
+
   const handleOrganize = async () => {
     if (listItems.length > 0) {
       setIsStale(false);
@@ -122,6 +134,7 @@ export function App() {
           onGenerateShareLink={generateShareLink}
           onRevokeShareLink={revokeShareLink}
           onOpenDashboard={() => { window.location.href = "/admin"; }}
+          onSendFeedback={() => setShowFeedback(true)}
         />
       </header>
 
@@ -148,6 +161,14 @@ export function App() {
           onSignIn={signIn}
           onSignInWithGoogle={signInWithGoogle}
           onClose={() => setShowSignIn(false)}
+        />
+      )}
+
+      {showFeedback && (
+        <FeedbackModal
+          onSubmit={handleFeedback}
+          onClose={() => setShowFeedback(false)}
+          userEmail={user?.email ?? null}
         />
       )}
 

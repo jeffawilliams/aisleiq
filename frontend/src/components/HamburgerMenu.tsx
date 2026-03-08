@@ -16,6 +16,7 @@ interface Props {
   onGenerateShareLink: (id: string) => Promise<void>;
   onRevokeShareLink: (id: string) => Promise<void>;
   onOpenDashboard: () => void;
+  onSendFeedback: () => void;
 }
 
 export function HamburgerMenu({
@@ -31,6 +32,7 @@ export function HamburgerMenu({
   onGenerateShareLink,
   onRevokeShareLink,
   onOpenDashboard,
+  onSendFeedback,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
@@ -316,6 +318,13 @@ export function HamburgerMenu({
                 + New List
               </button>
             )}
+
+            <button
+              className="nav-feedback-btn"
+              onClick={() => { close(); onSendFeedback(); }}
+            >
+              Send Feedback
+            </button>
 
             <div className="nav-panel__spacer" />
 
