@@ -18,8 +18,17 @@ export function AdminDashboard() {
   useEffect(() => {
     if (authLoading) return;
 
-    // Redirect non-admins back to the main app
-    if (!user || role !== "admin") {
+    // Not signed in — redirect immediately
+    if (!user) {
+      window.location.replace("/");
+      return;
+    }
+
+    // Role still being fetched — wait for it before deciding
+    if (role === null) return;
+
+    // Signed in but not admin — redirect
+    if (role !== "admin") {
       window.location.replace("/");
       return;
     }
