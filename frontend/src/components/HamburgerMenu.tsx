@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { ListRecord } from "../hooks/useLists.js";
+import { UserRole } from "../hooks/useAuth.js";
 
 interface Props {
   user: User | null;
+  role: UserRole;
   lists: ListRecord[];
   activeListId: string | null;
   onSignOut: () => void;
@@ -13,10 +15,12 @@ interface Props {
   onRenameList: (id: string, name: string) => void;
   onGenerateShareLink: (id: string) => Promise<void>;
   onRevokeShareLink: (id: string) => Promise<void>;
+  onOpenDashboard: () => void;
 }
 
 export function HamburgerMenu({
   user,
+  role,
   lists,
   activeListId,
   onSignOut,
@@ -26,6 +30,7 @@ export function HamburgerMenu({
   onRenameList,
   onGenerateShareLink,
   onRevokeShareLink,
+  onOpenDashboard,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
@@ -313,6 +318,15 @@ export function HamburgerMenu({
             )}
 
             <div className="nav-panel__spacer" />
+
+            {role === "admin" && (
+              <button
+                className="nav-dashboard-btn"
+                onClick={() => { close(); onOpenDashboard(); }}
+              >
+                Dashboard
+              </button>
+            )}
 
             {user && (
               <button

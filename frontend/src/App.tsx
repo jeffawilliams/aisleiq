@@ -8,10 +8,11 @@ import { NameListModal } from "./components/NameListModal.js";
 import { useOrganize } from "./hooks/useCategorize.js";
 import { useAuth } from "./hooks/useAuth.js";
 import { useLists } from "./hooks/useLists.js";
+import { supabase } from "./lib/supabaseClient.js";
 
 export function App() {
   const { organize, result, isLoading, error } = useOrganize();
-  const { user, authLoading, signIn, signOut } = useAuth();
+  const { user, role, authLoading, signIn, signOut } = useAuth();
   const [isStale, setIsStale] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
 
@@ -40,10 +41,17 @@ export function App() {
     if (result) setIsStale(true);
   };
 
-  const handleOrganize = () => {
+  const handleOrganize = async () => {
     if (listItems.length > 0) {
       setIsStale(false);
-      organize(listItems.join('\n'));
+      const success = await organize(listItems.join("\n"));
+      if (success && user && activeListId) {
+        await supabase.from("organize_events").insert({
+          user_id: user.id,
+          list_id: activeListId,
+          item_count: listItems.length,
+        });
+      }
     }
   };
 
@@ -73,6 +81,7 @@ export function App() {
         )}
         <HamburgerMenu
           user={user}
+          role={role}
           lists={lists}
           activeListId={activeListId}
           onSignOut={signOut}
@@ -82,6 +91,7 @@ export function App() {
           onRenameList={renameList}
           onGenerateShareLink={generateShareLink}
           onRevokeShareLink={revokeShareLink}
+          onOpenDashboard={() => { window.location.href = "/admin"; }}
         />
       </header>
 
