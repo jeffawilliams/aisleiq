@@ -12,7 +12,7 @@ import { supabase } from "./lib/supabaseClient.js";
 
 export function App() {
   const { organize, result, isLoading, error } = useOrganize();
-  const { user, role, authLoading, signIn, signOut } = useAuth();
+  const { user, role, authLoading, signIn, signInWithGoogle, signOut } = useAuth();
   const [isStale, setIsStale] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
@@ -146,6 +146,7 @@ export function App() {
       {showSignIn && (
         <SignInModal
           onSignIn={signIn}
+          onSignInWithGoogle={signInWithGoogle}
           onClose={() => setShowSignIn(false)}
         />
       )}
