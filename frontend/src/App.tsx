@@ -50,7 +50,7 @@ export function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>ShoppingListAssist</h1>
+        <h1>Shopping List <em>Assist</em></h1>
         <p>Add your groceries. We'll organize them.</p>
         {!authLoading && (
           <div className="auth-bar">

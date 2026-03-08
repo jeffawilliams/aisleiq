@@ -121,7 +121,7 @@ export function SharedListView({ token }: Props) {
     return (
       <div className="app">
         <header className="app-header">
-          <h1>ShoppingListAssist</h1>
+          <h1>Shopping List <em>Assist</em></h1>
         </header>
         <main className="app-main">
           <LoadingSpinner />
@@ -134,7 +134,7 @@ export function SharedListView({ token }: Props) {
     return (
       <div className="app">
         <header className="app-header">
-          <h1>ShoppingListAssist</h1>
+          <h1>Shopping List <em>Assist</em></h1>
           <p>Add your groceries. We'll organize them.</p>
         </header>
         <main className="app-main">
