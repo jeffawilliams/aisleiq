@@ -41,6 +41,11 @@ export function App() {
     if (result) setIsStale(true);
   };
 
+  const editItem = (index: number, newValue: string) => {
+    setListItems(prev => prev.map((item, i) => i === index ? newValue : item));
+    if (result) setIsStale(true);
+  };
+
   const handleOrganize = async () => {
     if (listItems.length > 0) {
       setIsStale(false);
@@ -100,6 +105,7 @@ export function App() {
           items={listItems}
           onRemoveItem={removeItem}
           onAddItems={addItems}
+          onEditItem={editItem}
           onSubmit={handleOrganize}
           isLoading={isLoading}
           isStale={isStale}

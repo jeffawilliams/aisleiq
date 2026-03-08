@@ -110,6 +110,11 @@ export function SharedListView({ token }: Props) {
     if (result) setIsStale(true);
   };
 
+  const editItem = (index: number, newValue: string) => {
+    setListItems(prev => prev.map((item, i) => i === index ? newValue : item));
+    if (result) setIsStale(true);
+  };
+
   const handleOrganize = () => {
     if (listItems.length > 0) {
       setIsStale(false);
@@ -161,6 +166,7 @@ export function SharedListView({ token }: Props) {
           items={listItems}
           onRemoveItem={removeItem}
           onAddItems={addItems}
+          onEditItem={editItem}
           onSubmit={handleOrganize}
           isLoading={organizeLoading}
           isStale={isStale}

@@ -6,6 +6,7 @@ interface Props {
   items: string[];
   onRemoveItem: (index: number) => void;
   onAddItems: (items: string[]) => void;
+  onEditItem: (index: number, newValue: string) => void;
   onSubmit: () => void;
   isLoading: boolean;
   isStale: boolean;
@@ -13,9 +14,34 @@ interface Props {
   listBadge?: string;
 }
 
-export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, isLoading, isStale, listName, listBadge }: Props) {
+export function ShoppingListInput({ items, onRemoveItem, onAddItems, onEditItem, onSubmit, isLoading, isStale, listName, listBadge }: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [inlineValue, setInlineValue] = useState("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState("");
+
+  function startEdit(index: number, currentValue: string) {
+    setEditingIndex(index);
+    setEditValue(currentValue);
+  }
+
+  function commitEdit() {
+    if (editingIndex === null) return;
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== items[editingIndex]) {
+      onEditItem(editingIndex, trimmed);
+    }
+    setEditingIndex(null);
+  }
+
+  function cancelEdit() {
+    setEditingIndex(null);
+  }
+
+  function handleEditKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") { e.preventDefault(); commitEdit(); }
+    if (e.key === "Escape") { cancelEdit(); }
+  }
 
   function handleInlineKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
@@ -47,12 +73,28 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onSubmit, i
         <ul className="flat-list">
           {items.map((item, i) => (
             <li key={i} className="flat-list-item">
-              <span>
-                {item}
-                {duplicateIndices.has(i) && (
-                  <span className="flat-list-item__duplicate-badge">duplicate</span>
-                )}
-              </span>
+              {editingIndex === i ? (
+                <input
+                  className="flat-list-item__edit-input"
+                  value={editValue}
+                  autoFocus
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleEditKeyDown}
+                  onBlur={commitEdit}
+                  onFocus={(e) => e.target.select()}
+                  aria-label={`Edit ${item}`}
+                />
+              ) : (
+                <span
+                  className="flat-list-item__text"
+                  onClick={() => startEdit(i, item)}
+                >
+                  {item}
+                  {duplicateIndices.has(i) && (
+                    <span className="flat-list-item__duplicate-badge">duplicate</span>
+                  )}
+                </span>
+              )}
               <button
                 className="flat-list-item__remove"
                 onClick={() => onRemoveItem(i)}
