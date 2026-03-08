@@ -4,9 +4,11 @@ import { AddItemSheet } from "./AddItemSheet.js";
 
 interface Props {
   items: string[];
+  itemPhotos?: (string | null)[];
   onRemoveItem: (index: number) => void;
   onAddItems: (items: string[]) => void;
   onEditItem: (index: number, newValue: string) => void;
+  onAddItemWithPhoto?: (item: string, photo: string) => void;
   onSubmit: () => void;
   isLoading: boolean;
   isStale: boolean;
@@ -14,9 +16,10 @@ interface Props {
   listBadge?: string;
 }
 
-export function ShoppingListInput({ items, onRemoveItem, onAddItems, onEditItem, onSubmit, isLoading, isStale, listName, listBadge }: Props) {
+export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems, onEditItem, onAddItemWithPhoto, onSubmit, isLoading, isStale, listName, listBadge }: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [inlineValue, setInlineValue] = useState("");
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
 
@@ -95,6 +98,15 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onEditItem,
                   )}
                 </span>
               )}
+              {itemPhotos?.[i] && editingIndex !== i && (
+                <button
+                  className="flat-list-item__photo-btn"
+                  onClick={() => setLightboxPhoto(itemPhotos![i])}
+                  aria-label={`View photo for ${item}`}
+                >
+                  📷
+                </button>
+              )}
               <button
                 className="flat-list-item__remove"
                 onClick={() => onRemoveItem(i)}
@@ -123,7 +135,20 @@ export function ShoppingListInput({ items, onRemoveItem, onAddItems, onEditItem,
         isOpen={isSheetOpen}
         onClose={() => setIsSheetOpen(false)}
         onAddItems={onAddItems}
+        onAddItemWithPhoto={onAddItemWithPhoto}
       />
+
+      {lightboxPhoto && (
+        <div className="photo-lightbox" onClick={() => setLightboxPhoto(null)}>
+          <button className="photo-lightbox__close" onClick={() => setLightboxPhoto(null)}>×</button>
+          <img
+            className="photo-lightbox__img"
+            src={`data:image/jpeg;base64,${lightboxPhoto}`}
+            alt="Product photo"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       <button
         className={`btn-primary btn-organize${isStale ? " btn-organize--stale" : ""}`}

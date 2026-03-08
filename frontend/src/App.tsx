@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
@@ -15,6 +15,7 @@ export function App() {
   const { user, role, authLoading, signIn, signOut } = useAuth();
   const [isStale, setIsStale] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
 
   const {
     lists,
@@ -31,13 +32,27 @@ export function App() {
     revokeShareLink,
   } = useLists(user);
 
+  // Reset photos when the active list changes — photos are device-local/session-only
+  useEffect(() => {
+    setItemPhotos([]);
+  }, [activeListId]);
+
   const addItems = (newItems: string[]) => {
-    setListItems(prev => [...prev, ...newItems.filter(i => i.trim())]);
+    const filtered = newItems.filter(i => i.trim());
+    setListItems(prev => [...prev, ...filtered]);
+    setItemPhotos(prev => [...prev, ...filtered.map(() => null)]);
+    if (result) setIsStale(true);
+  };
+
+  const addItemWithPhoto = (item: string, photo: string) => {
+    setListItems(prev => [...prev, item]);
+    setItemPhotos(prev => [...prev, photo]);
     if (result) setIsStale(true);
   };
 
   const removeItem = (index: number) => {
     setListItems(prev => prev.filter((_, i) => i !== index));
+    setItemPhotos(prev => prev.filter((_, i) => i !== index));
     if (result) setIsStale(true);
   };
 
@@ -103,9 +118,11 @@ export function App() {
       <main className="app-main">
         <ShoppingListInput
           items={listItems}
+          itemPhotos={itemPhotos}
           onRemoveItem={removeItem}
           onAddItems={addItems}
           onEditItem={editItem}
+          onAddItemWithPhoto={addItemWithPhoto}
           onSubmit={handleOrganize}
           isLoading={isLoading}
           isStale={isStale}

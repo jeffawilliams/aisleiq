@@ -9,15 +9,17 @@ interface AddItemSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onAddItems: (items: string[]) => void;
+  onAddItemWithPhoto?: (item: string, photo: string) => void;
 }
 
-export function AddItemSheet({ isOpen, onClose, onAddItems }: AddItemSheetProps) {
+export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto }: AddItemSheetProps) {
   const [view, setView] = useState<View>('menu');
   const [typeInput, setTypeInput] = useState('');
   const [isScanLoading, setIsScanLoading] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [scannedItems, setScannedItems] = useState<string[]>([]);
   const [productDraft, setProductDraft] = useState('');
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
 
   const productTriggerRef = useRef<(() => void) | null>(null);
   const listTriggerRef = useRef<(() => void) | null>(null);
@@ -27,10 +29,12 @@ export function AddItemSheet({ isOpen, onClose, onAddItems }: AddItemSheetProps)
       setView('menu');
       setScanError(null);
       setTypeInput('');
+      setCapturedPhoto(null);
     }
   }, [isOpen]);
 
   const handleCapture = async (base64: string, mode: 'product' | 'list') => {
+    if (mode === 'product') setCapturedPhoto(base64);
     setIsScanLoading(true);
     setScanError(null);
     try {
@@ -85,7 +89,11 @@ export function AddItemSheet({ isOpen, onClose, onAddItems }: AddItemSheetProps)
   };
 
   const handleProductConfirm = (item: string) => {
-    onAddItems([item]);
+    if (capturedPhoto && onAddItemWithPhoto) {
+      onAddItemWithPhoto(item, capturedPhoto);
+    } else {
+      onAddItems([item]);
+    }
     onClose();
   };
 
@@ -101,6 +109,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems }: AddItemSheetProps)
     return (
       <ProductConfirm
         item={productDraft}
+        photo={capturedPhoto ?? undefined}
         onConfirm={handleProductConfirm}
         onCancel={() => setView('menu')}
       />
