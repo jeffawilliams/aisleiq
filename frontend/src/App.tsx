@@ -123,6 +123,8 @@ export function App() {
           onCreate={(name) => createList(name, listItems)}
         />
       )}
+
+      <span className="version-badge">v{__APP_VERSION__}</span>
     </div>
   );
 }
