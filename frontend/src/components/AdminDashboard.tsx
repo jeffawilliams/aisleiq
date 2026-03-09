@@ -18,12 +18,20 @@ interface FeedbackRow {
   created_at: string;
 }
 
+interface UserRow {
+  id: string;
+  email: string | null;
+  role: string;
+}
+
 export function AdminDashboard() {
   const { user, role, authLoading } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [feedbackLoading, setFeedbackLoading] = useState(true);
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
 
   useEffect(() => {
     if (authLoading) return;
@@ -46,15 +54,18 @@ export function AdminDashboard() {
     Promise.all([
       supabase.rpc("get_admin_stats"),
       supabase.from("feedback").select("id, email, category, message, created_at").order("created_at", { ascending: false }).limit(20),
-    ]).then(([statsResult, feedbackResult]) => {
+      supabase.from("profiles").select("id, email, role").order("email", { ascending: true }),
+    ]).then(([statsResult, feedbackResult, usersResult]) => {
       setStats(statsResult.data as AdminStats);
       setFeedback((feedbackResult.data ?? []) as FeedbackRow[]);
+      setUsers((usersResult.data ?? []) as UserRow[]);
       setStatsLoading(false);
       setFeedbackLoading(false);
+      setUsersLoading(false);
     });
   }, [authLoading, user, role]);
 
-  if (authLoading || statsLoading || feedbackLoading) {
+  if (authLoading || statsLoading || feedbackLoading || usersLoading) {
     return (
       <div className="admin-dashboard">
         <LoadingSpinner />
@@ -93,6 +104,22 @@ export function AdminDashboard() {
           <div className="admin-stat-card__value">{stats.organize_count.toLocaleString()}</div>
           <div className="admin-stat-card__label">Organizes Run</div>
         </div>
+      </div>
+
+      <div className="admin-user-list">
+        <h2 className="admin-user-list__title">Users</h2>
+        {users.length === 0 ? (
+          <p className="admin-user-list__empty">No users found.</p>
+        ) : (
+          users.map((u) => (
+            <div key={u.id} className="admin-user-item">
+              <span className="admin-user-item__email">{u.email ?? "—"}</span>
+              {u.role === "admin" && (
+                <span className="admin-user-badge admin-user-badge--admin">admin</span>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       <div className="admin-feedback-list">
