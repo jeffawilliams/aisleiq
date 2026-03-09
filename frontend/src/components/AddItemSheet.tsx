@@ -133,7 +133,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto }
         {view === 'menu' && (
           <>
             <h3 className="bottom-sheet-title">Add items</h3>
-            {isScanLoading && <p className="scan-loading">Scanning image...</p>}
+            {isScanLoading && <p className="scan-loading">Analyzing your photo — please wait…</p>}
             {scanError && <p className="scan-error">{scanError}</p>}
             <CameraCapture
               onCapture={handleCapture}

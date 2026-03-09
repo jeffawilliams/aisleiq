@@ -34,10 +34,21 @@ export function App() {
     revokeShareLink,
   } = useLists(user);
 
-  // Reset photos when the active list changes — photos are device-local/session-only
+  // Load photos from localStorage when active list changes — photos are device-local only
   useEffect(() => {
-    setItemPhotos([]);
+    if (!activeListId) {
+      setItemPhotos([]);
+      return;
+    }
+    const saved = localStorage.getItem(`sla_photos_${activeListId}`);
+    setItemPhotos(saved ? JSON.parse(saved) : []);
   }, [activeListId]);
+
+  // Persist photos to localStorage whenever they change
+  useEffect(() => {
+    if (!activeListId) return;
+    localStorage.setItem(`sla_photos_${activeListId}`, JSON.stringify(itemPhotos));
+  }, [itemPhotos, activeListId]);
 
   // Pad itemPhotos with nulls to match listItems length after Supabase loads items.
   // Without this, the first addItemWithPhoto call pushes the photo to index 0
@@ -81,6 +92,11 @@ export function App() {
       message,
     });
     return { error };
+  };
+
+  const handleDeleteList = async (id: string) => {
+    localStorage.removeItem(`sla_photos_${id}`);
+    await deleteList(id);
   };
 
   const handleOrganize = async () => {
@@ -129,7 +145,7 @@ export function App() {
           onSignOut={signOut}
           onSelectList={switchList}
           onCreateList={(name) => createList(name, [])}
-          onDeleteList={deleteList}
+          onDeleteList={handleDeleteList}
           onRenameList={renameList}
           onGenerateShareLink={generateShareLink}
           onRevokeShareLink={revokeShareLink}

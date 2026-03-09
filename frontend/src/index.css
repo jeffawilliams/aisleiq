@@ -817,11 +817,17 @@ button:disabled {
 }
 
 /* ── Scan feedback ────────────────────────────────────────── */
+@keyframes scan-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .scan-loading {
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
   color: #2d6a4f;
   margin-bottom: 0.75rem;
-  font-style: italic;
+  animation: scan-pulse 1.4s ease-in-out infinite;
 }
 
 .scan-error {
