@@ -54,7 +54,7 @@ export function AdminDashboard() {
     Promise.all([
       supabase.rpc("get_admin_stats"),
       supabase.from("feedback").select("id, email, category, message, created_at").order("created_at", { ascending: false }).limit(20),
-      supabase.from("profiles").select("id, email, role").order("email", { ascending: true }),
+      supabase.rpc("get_admin_users"),
     ]).then(([statsResult, feedbackResult, usersResult]) => {
       setStats(statsResult.data as AdminStats);
       setFeedback((feedbackResult.data ?? []) as FeedbackRow[]);
