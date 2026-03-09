@@ -56,7 +56,7 @@ export function AdminDashboard() {
       supabase.from("feedback").select("id, email, category, message, created_at").order("created_at", { ascending: false }).limit(20),
       supabase.rpc("get_admin_users"),
     ]).then(([statsResult, feedbackResult, usersResult]) => {
-      setStats(statsResult.data as AdminStats);
+setStats(statsResult.data as AdminStats);
       setFeedback((feedbackResult.data ?? []) as FeedbackRow[]);
       setUsers((usersResult.data ?? []) as UserRow[]);
       setStatsLoading(false);
