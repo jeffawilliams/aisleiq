@@ -5,6 +5,33 @@ import { ResultsGrid } from "./ResultsGrid.js";
 import { LoadingSpinner } from "./LoadingSpinner.js";
 import { useOrganize } from "../hooks/useCategorize.js";
 
+interface ListItem {
+  text: string;
+  photo?: string;
+}
+
+function splitItems(raw: (string | ListItem)[]): { texts: string[]; photos: (string | null)[] } {
+  const texts: string[] = [];
+  const photos: (string | null)[] = [];
+  for (const item of raw) {
+    if (typeof item === "string") {
+      texts.push(item);
+      photos.push(null);
+    } else {
+      texts.push(item.text);
+      photos.push(item.photo ?? null);
+    }
+  }
+  return { texts, photos };
+}
+
+function mergeItems(texts: string[], photos: (string | null)[]): ListItem[] {
+  return texts.map((text, i) => {
+    const photo = photos[i] ?? null;
+    return photo ? { text, photo } : { text };
+  });
+}
+
 interface Props {
   token: string;
 }
@@ -15,6 +42,7 @@ export function SharedListView({ token }: Props) {
   const [listId, setListId] = useState<string | null>(null);
   const [listName, setListName] = useState("");
   const [listItems, setListItems] = useState<string[]>([]);
+  const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
   const [isStale, setIsStale] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,9 +64,11 @@ export function SharedListView({ token }: Props) {
       }
 
       const list = data[0];
+      const { texts, photos } = splitItems(list.items as (string | ListItem)[]);
       setListId(list.id);
       setListName(list.name);
-      setListItems(list.items as string[]);
+      setListItems(texts);
+      setItemPhotos(photos);
       lastSavedAt.current = list.updated_at;
       setIsLoading(false);
       initialLoadDone.current = true;
@@ -59,11 +89,13 @@ export function SharedListView({ token }: Props) {
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
+    const merged = mergeItems(listItems, itemPhotos);
+
     saveTimer.current = setTimeout(async () => {
       const now = new Date().toISOString();
       await supabase.rpc("update_list_by_share_token", {
         token,
-        new_items: listItems,
+        new_items: merged,
       });
       lastSavedAt.current = now;
     }, 800);
@@ -71,7 +103,7 @@ export function SharedListView({ token }: Props) {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [listItems, listId]);
+  }, [listItems, itemPhotos, listId]);
 
   // Broadcast subscription — receives live updates from the owner.
   // We use Broadcast instead of postgres_changes because Supabase does not
@@ -84,11 +116,13 @@ export function SharedListView({ token }: Props) {
         "broadcast",
         { event: "items_updated" },
         ({ payload }) => {
-          const incoming = payload as { items: string[]; updated_at: string };
+          const incoming = payload as { items: (string | ListItem)[]; updated_at: string };
           if (incoming.updated_at > lastSavedAt.current) {
             if (saveTimer.current) clearTimeout(saveTimer.current);
             isRemoteUpdate.current = true;
-            setListItems(incoming.items);
+            const { texts, photos } = splitItems(incoming.items);
+            setListItems(texts);
+            setItemPhotos(photos);
             lastSavedAt.current = incoming.updated_at;
           }
         }
@@ -101,12 +135,15 @@ export function SharedListView({ token }: Props) {
   }, [token]);
 
   const addItems = (newItems: string[]) => {
-    setListItems(prev => [...prev, ...newItems.filter(i => i.trim())]);
+    const filtered = newItems.filter(i => i.trim());
+    setListItems(prev => [...prev, ...filtered]);
+    setItemPhotos(prev => [...prev, ...filtered.map(() => null)]);
     if (result) setIsStale(true);
   };
 
   const removeItem = (index: number) => {
     setListItems(prev => prev.filter((_, i) => i !== index));
+    setItemPhotos(prev => prev.filter((_, i) => i !== index));
     if (result) setIsStale(true);
   };
 
@@ -164,6 +201,7 @@ export function SharedListView({ token }: Props) {
       <main className="app-main">
         <ShoppingListInput
           items={listItems}
+          itemPhotos={itemPhotos}
           onRemoveItem={removeItem}
           onAddItems={addItems}
           onEditItem={editItem}

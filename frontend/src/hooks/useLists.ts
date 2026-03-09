@@ -2,12 +2,40 @@ import { useState, useEffect, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient.js";
 
+export interface ListItem {
+  text: string;
+  photo?: string;
+}
+
 export interface ListRecord {
   id: string;
   name: string;
-  items: string[];
+  items: (string | ListItem)[];
   updated_at: string;
   share_token: string | null;
+}
+
+// Support both legacy string[] and new {text, photo?}[] formats
+function splitItems(raw: (string | ListItem)[]): { texts: string[]; photos: (string | null)[] } {
+  const texts: string[] = [];
+  const photos: (string | null)[] = [];
+  for (const item of raw) {
+    if (typeof item === "string") {
+      texts.push(item);
+      photos.push(null);
+    } else {
+      texts.push(item.text);
+      photos.push(item.photo ?? null);
+    }
+  }
+  return { texts, photos };
+}
+
+function mergeItems(texts: string[], photos: (string | null)[]): ListItem[] {
+  return texts.map((text, i) => {
+    const photo = photos[i] ?? null;
+    return photo ? { text, photo } : { text };
+  });
 }
 
 const ACTIVE_LIST_KEY = "sla_active_list_id";
@@ -19,6 +47,8 @@ export function useLists(user: User | null): {
   activeListName: string;
   listItems: string[];
   setListItems: React.Dispatch<React.SetStateAction<string[]>>;
+  itemPhotos: (string | null)[];
+  setItemPhotos: React.Dispatch<React.SetStateAction<(string | null)[]>>;
   isLoaded: boolean;
   needsNaming: boolean;
   createList: (name: string, items: string[]) => Promise<void>;
@@ -31,6 +61,7 @@ export function useLists(user: User | null): {
   const [lists, setLists] = useState<ListRecord[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [listItems, setListItems] = useState<string[]>([]);
+  const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [needsNaming, setNeedsNaming] = useState(false);
 
@@ -52,6 +83,7 @@ export function useLists(user: User | null): {
       setLists([]);
       setActiveListId(null);
       setListItems([]);
+      setItemPhotos([]);
       setIsLoaded(false);
       setNeedsNaming(false);
       return;
@@ -87,8 +119,10 @@ export function useLists(user: User | null): {
       // Restore last active list from localStorage, or fall back to most recently updated
       const savedId = localStorage.getItem(ACTIVE_LIST_KEY);
       const target = loadedLists.find(l => l.id === savedId) ?? loadedLists[0];
+      const { texts, photos } = splitItems(target.items);
       setActiveListId(target.id);
-      setListItems(target.items as string[]);
+      setListItems(texts);
+      setItemPhotos(photos);
       lastSavedAt.current = target.updated_at;
       setIsLoaded(true);
       initialLoadDone.current = true;
@@ -109,11 +143,13 @@ export function useLists(user: User | null): {
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
+    const merged = mergeItems(listItems, itemPhotos);
+
     saveTimer.current = setTimeout(async () => {
       const now = new Date().toISOString();
       await supabase
         .from("lists")
-        .update({ items: listItems, updated_at: now })
+        .update({ items: merged, updated_at: now })
         .eq("id", activeListId);
 
       lastSavedAt.current = now;
@@ -124,7 +160,7 @@ export function useLists(user: User | null): {
         broadcastChannelRef.current.send({
           type: "broadcast",
           event: "items_updated",
-          payload: { items: listItems, updated_at: now },
+          payload: { items: merged, updated_at: now },
         });
       }
 
@@ -132,7 +168,7 @@ export function useLists(user: User | null): {
       setLists(prev =>
         prev.map(l =>
           l.id === activeListId
-            ? { ...l, items: listItems, updated_at: now }
+            ? { ...l, items: merged, updated_at: now }
             : l
         )
       );
@@ -141,7 +177,15 @@ export function useLists(user: User | null): {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [listItems, user?.id, activeListId]);
+  }, [listItems, itemPhotos, user?.id, activeListId]);
+
+  // Pad itemPhotos with nulls when listItems grows (e.g. after Supabase load or addItems)
+  useEffect(() => {
+    setItemPhotos(prev => {
+      if (prev.length >= listItems.length) return prev;
+      return [...prev, ...Array(listItems.length - prev.length).fill(null)];
+    });
+  }, [listItems.length]);
 
   // Broadcast channel — owner sends updates to anonymous shared-link sessions
   useEffect(() => {
@@ -184,12 +228,14 @@ export function useLists(user: User | null): {
           filter: `id=eq.${activeListId}`,
         },
         (payload) => {
-          const incoming = payload.new as { items: string[]; updated_at: string };
+          const incoming = payload.new as { items: (string | ListItem)[]; updated_at: string };
           // Only apply if the change came from someone else (newer than our last save)
           if (incoming.updated_at > lastSavedAt.current) {
             if (saveTimer.current) clearTimeout(saveTimer.current);
             isRemoteUpdate.current = true;
-            setListItems(incoming.items);
+            const { texts, photos } = splitItems(incoming.items);
+            setListItems(texts);
+            setItemPhotos(photos);
             lastSavedAt.current = incoming.updated_at;
           }
         }
@@ -239,8 +285,10 @@ export function useLists(user: User | null): {
     if (activeListId === id) {
       if (remaining.length > 0) {
         const next = remaining[0];
+        const { texts, photos } = splitItems(next.items);
         setActiveListId(next.id);
-        setListItems(next.items as string[]);
+        setListItems(texts);
+        setItemPhotos(photos);
         lastSavedAt.current = next.updated_at;
         localStorage.setItem(ACTIVE_LIST_KEY, next.id);
       } else {
@@ -264,8 +312,10 @@ export function useLists(user: User | null): {
     const target = lists.find(l => l.id === id);
     if (!target) return;
 
+    const { texts, photos } = splitItems(target.items);
     setActiveListId(id);
-    setListItems(target.items as string[]);
+    setListItems(texts);
+    setItemPhotos(photos);
     lastSavedAt.current = target.updated_at;
     localStorage.setItem(ACTIVE_LIST_KEY, id);
   }
@@ -305,6 +355,8 @@ export function useLists(user: User | null): {
     activeListName,
     listItems,
     setListItems,
+    itemPhotos,
+    setItemPhotos,
     isLoaded,
     needsNaming,
     createList,

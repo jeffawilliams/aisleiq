@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
@@ -17,7 +17,6 @@ export function App() {
   const [isStale, setIsStale] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
 
   const {
     lists,
@@ -25,6 +24,8 @@ export function App() {
     activeListName,
     listItems,
     setListItems,
+    itemPhotos,
+    setItemPhotos,
     needsNaming,
     createList,
     deleteList,
@@ -33,32 +34,6 @@ export function App() {
     generateShareLink,
     revokeShareLink,
   } = useLists(user);
-
-  // Load photos from localStorage when active list changes — photos are device-local only
-  useEffect(() => {
-    if (!activeListId) {
-      setItemPhotos([]);
-      return;
-    }
-    const saved = localStorage.getItem(`sla_photos_${activeListId}`);
-    setItemPhotos(saved ? JSON.parse(saved) : []);
-  }, [activeListId]);
-
-  // Persist photos to localStorage whenever they change
-  useEffect(() => {
-    if (!activeListId) return;
-    localStorage.setItem(`sla_photos_${activeListId}`, JSON.stringify(itemPhotos));
-  }, [itemPhotos, activeListId]);
-
-  // Pad itemPhotos with nulls to match listItems length after Supabase loads items.
-  // Without this, the first addItemWithPhoto call pushes the photo to index 0
-  // instead of the correct end-of-list index.
-  useEffect(() => {
-    setItemPhotos(prev => {
-      if (prev.length >= listItems.length) return prev;
-      return [...prev, ...Array(listItems.length - prev.length).fill(null)];
-    });
-  }, [listItems.length]);
 
   const addItems = (newItems: string[]) => {
     const filtered = newItems.filter(i => i.trim());
@@ -92,11 +67,6 @@ export function App() {
       message,
     });
     return { error };
-  };
-
-  const handleDeleteList = async (id: string) => {
-    localStorage.removeItem(`sla_photos_${id}`);
-    await deleteList(id);
   };
 
   const handleOrganize = async () => {
@@ -145,7 +115,7 @@ export function App() {
           onSignOut={signOut}
           onSelectList={switchList}
           onCreateList={(name) => createList(name, [])}
-          onDeleteList={handleDeleteList}
+          onDeleteList={deleteList}
           onRenameList={renameList}
           onGenerateShareLink={generateShareLink}
           onRevokeShareLink={revokeShareLink}
