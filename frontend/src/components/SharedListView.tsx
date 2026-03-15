@@ -141,6 +141,12 @@ export function SharedListView({ token }: Props) {
     if (result) setIsStale(true);
   };
 
+  const addItemWithPhoto = (item: string, photo: string) => {
+    setListItems(prev => [...prev, item]);
+    setItemPhotos(prev => [...prev, photo]);
+    if (result) setIsStale(true);
+  };
+
   const removeItem = (index: number) => {
     setListItems(prev => prev.filter((_, i) => i !== index));
     setItemPhotos(prev => prev.filter((_, i) => i !== index));
@@ -204,6 +210,7 @@ export function SharedListView({ token }: Props) {
           itemPhotos={itemPhotos}
           onRemoveItem={removeItem}
           onAddItems={addItems}
+          onAddItemWithPhoto={addItemWithPhoto}
           onEditItem={editItem}
           onSubmit={handleOrganize}
           isLoading={organizeLoading}
