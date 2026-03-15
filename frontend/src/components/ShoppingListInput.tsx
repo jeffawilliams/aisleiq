@@ -22,6 +22,14 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [showCoachMark, setShowCoachMark] = useState(() => {
+    try { return !localStorage.getItem("groupListCoachMarkDismissed"); } catch { return false; }
+  });
+
+  function dismissCoachMark() {
+    try { localStorage.setItem("groupListCoachMarkDismissed", "1"); } catch { /* ignore */ }
+    setShowCoachMark(false);
+  }
 
   function startEdit(index: number, currentValue: string) {
     setEditingIndex(index);
@@ -150,13 +158,21 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
         </div>
       )}
 
-      <button
-        className={`btn-primary btn-organize${isStale ? " btn-organize--stale" : ""}`}
-        onClick={onSubmit}
-        disabled={items.length === 0 || isLoading}
-      >
-        {isLoading ? "Organizing..." : isStale ? "Re-organize" : "Organize My List"}
-      </button>
+      <div className="organize-sticky">
+        {showCoachMark && items.length > 0 && (
+          <div className="organize-coach-hint">
+            <span className="organize-coach-hint__text">✨ Group items by category for easier shopping</span>
+            <button className="organize-coach-hint__dismiss" onClick={dismissCoachMark} aria-label="Dismiss tip">✕</button>
+          </div>
+        )}
+        <button
+          className={`btn-primary btn-organize${isStale ? " btn-organize--stale" : ""}`}
+          onClick={onSubmit}
+          disabled={items.length === 0 || isLoading}
+        >
+          {isLoading ? "Grouping..." : isStale ? "Re-group" : "Group My List"}
+        </button>
+      </div>
     </section>
   );
 }
