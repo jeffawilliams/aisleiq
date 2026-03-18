@@ -1467,8 +1467,10 @@ button:disabled {
   background: #1b4332;
 }
 
-.nav-panel__spacer {
-  height: 1rem;
+.nav-panel__divider {
+  height: 1px;
+  background: #e8e8e8;
+  margin: 0.75rem 1.25rem 0;
 }
 
 /* Sign out button at panel bottom */

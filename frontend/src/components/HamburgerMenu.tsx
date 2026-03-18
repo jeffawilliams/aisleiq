@@ -349,14 +349,15 @@ export function HamburgerMenu({
               </>
             )}
 
+            <div className="nav-panel__divider" />
+            <div className="nav-panel__section-label">Account</div>
+
             <button
               className="nav-feedback-btn"
               onClick={() => { close(); onSendFeedback(); }}
             >
               Send Feedback
             </button>
-
-            <div className="nav-panel__spacer" />
 
             {role === "admin" && (
               <button
