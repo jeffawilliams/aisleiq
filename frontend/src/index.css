@@ -1933,8 +1933,10 @@ button:disabled {
   align-items: center;
 }
 
-.organize-sticky__actions .btn-organize {
+.organize-sticky__actions .btn-organize,
+.organize-sticky__actions .btn-aisle {
   flex: 1;
+  width: auto;
 }
 
 /* ── Sort by Aisle button ────────────────────────────────── */
