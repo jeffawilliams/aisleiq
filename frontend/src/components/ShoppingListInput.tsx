@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FAB } from "./FAB.js";
 import { AddItemSheet } from "./AddItemSheet.js";
+import { Store } from "../types/index.js";
 
 interface Props {
   items: string[];
@@ -10,13 +11,15 @@ interface Props {
   onEditItem: (index: number, newValue: string) => void;
   onAddItemWithPhoto?: (item: string, photo: string) => void;
   onSubmit: () => void;
+  onOrganizeByAisle?: () => void;
   isLoading: boolean;
   isStale: boolean;
   listName: string;
   listBadge?: string;
+  activeStore?: Store | null;
 }
 
-export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems, onEditItem, onAddItemWithPhoto, onSubmit, isLoading, isStale, listName, listBadge }: Props) {
+export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems, onEditItem, onAddItemWithPhoto, onSubmit, onOrganizeByAisle, isLoading, isStale, listName, listBadge, activeStore }: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [inlineValue, setInlineValue] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
@@ -165,13 +168,24 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
             <button className="organize-coach-hint__dismiss" onClick={dismissCoachMark} aria-label="Dismiss tip">✕</button>
           </div>
         )}
-        <button
-          className={`btn-primary btn-organize${isStale ? " btn-organize--stale" : ""}`}
-          onClick={onSubmit}
-          disabled={items.length === 0 || isLoading}
-        >
-          {isLoading ? "Grouping..." : isStale ? "Re-group" : "Group My List"}
-        </button>
+        <div className="organize-sticky__actions">
+          {activeStore && (
+            <button
+              className="btn-secondary btn-aisle"
+              onClick={onOrganizeByAisle}
+              disabled={items.length === 0 || isLoading}
+            >
+              Sort by Aisle
+            </button>
+          )}
+          <button
+            className={`btn-primary btn-organize${isStale ? " btn-organize--stale" : ""}`}
+            onClick={onSubmit}
+            disabled={items.length === 0 || isLoading}
+          >
+            {isLoading ? "Grouping..." : isStale ? "Re-group" : "Group My List"}
+          </button>
+        </div>
       </div>
     </section>
   );

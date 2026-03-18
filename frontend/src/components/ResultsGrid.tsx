@@ -1,9 +1,10 @@
-import { OrganizeResponse } from "../types/index.js";
+import { OrganizeResponse, Deal } from "../types/index.js";
 import { CategoryCard } from "./CategoryCard.js";
 
 interface ResultsGridProps {
   result: OrganizeResponse;
   isStale: boolean;
+  deals?: Deal[];
 }
 
 // Standard category order — common categories first, Other always last
@@ -47,8 +48,9 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals }: ResultsGridProps) {
   const sorted = sortCategories(result.categories);
+  const dealMap = new Map(deals?.map(d => [d.listItem.toLowerCase(), d]));
 
   return (
     <section className="results">
@@ -65,7 +67,7 @@ export function ResultsGrid({ result, isStale }: ResultsGridProps) {
       )}
       <div className="results-grid">
         {sorted.map((category) => (
-          <CategoryCard key={category.name} category={category} />
+          <CategoryCard key={category.name} category={category} dealMap={dealMap} />
         ))}
       </div>
     </section>

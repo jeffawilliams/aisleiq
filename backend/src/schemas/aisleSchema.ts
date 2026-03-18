@@ -32,3 +32,17 @@ export const ScanOutputSchema = z.object({
 
 export type ScanRequest = z.infer<typeof ScanRequestSchema>;
 export type ScanOutput = z.infer<typeof ScanOutputSchema>;
+
+export const DealsRequestSchema = z.object({
+  items: z.array(z.string()).min(1, "Items list cannot be empty"),
+  krogerLocationId: z.string().min(1, "Kroger location ID is required"),
+});
+
+export type DealsRequest = z.infer<typeof DealsRequestSchema>;
+
+export const OrganizeByAisleRequestSchema = z.object({
+  items: z.string().min(1, "Shopping list cannot be empty"),
+  storeId: z.number().int().positive("Store ID must be a positive integer"),
+});
+
+export type OrganizeByAisleRequest = z.infer<typeof OrganizeByAisleRequestSchema>;

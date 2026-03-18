@@ -16,3 +16,21 @@ export interface StoreAisle {
   name: string;
   categories: string[];
 }
+
+export interface Deal {
+  listItem: string;
+  productName: string;
+  brand: string;
+  size: string;
+  regularPrice: number;
+  promoPrice: number;
+  savings: number;
+  savingsPct: number;
+  expiresAt: string | null;
+}
+
+export interface Store {
+  id: number;
+  name: string;
+  kroger_location_id: string | null;
+}

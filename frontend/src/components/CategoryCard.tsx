@@ -1,11 +1,20 @@
 import { useState } from "react";
-import { CategoryResult } from "../types/index.js";
+import { CategoryResult, Deal } from "../types/index.js";
 
 interface CategoryCardProps {
   category: CategoryResult;
+  dealMap?: Map<string, Deal>;
 }
 
-export function CategoryCard({ category }: CategoryCardProps) {
+function formatDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
+export function CategoryCard({ category, dealMap }: CategoryCardProps) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
   const sortedItems = [...category.items].sort((a, b) => a.localeCompare(b));
@@ -25,6 +34,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <ul className="aisle-card-items">
         {sortedItems.map((item) => {
           const isChecked = checked.has(item);
+          const deal = dealMap?.get(item.toLowerCase());
           return (
             <li
               key={item}
@@ -33,6 +43,15 @@ export function CategoryCard({ category }: CategoryCardProps) {
             >
               <span className="checklist-box">{isChecked ? "✓" : ""}</span>
               <span className="checklist-label">{item}</span>
+              {deal && (
+                <span className="deal-badge">
+                  Sale ${deal.promoPrice.toFixed(2)}
+                  <span className="deal-badge__savings"> · Save ${deal.savings.toFixed(2)}</span>
+                  {deal.expiresAt && (
+                    <span className="deal-badge__expiry"> · ends {formatDate(deal.expiresAt)}</span>
+                  )}
+                </span>
+              )}
             </li>
           );
         })}

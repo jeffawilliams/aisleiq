@@ -2,12 +2,16 @@ import { useState, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { ListRecord } from "../hooks/useLists.js";
 import { UserRole } from "../hooks/useAuth.js";
+import { Store } from "../types/index.js";
 
 interface Props {
   user: User | null;
   role: UserRole;
   lists: ListRecord[];
   activeListId: string | null;
+  stores: Store[];
+  activeStoreId: number | null;
+  onSetListStore: (storeId: number | null) => void;
   onSignOut: () => void;
   onSelectList: (id: string) => void;
   onCreateList: (name: string) => void;
@@ -24,6 +28,9 @@ export function HamburgerMenu({
   role,
   lists,
   activeListId,
+  stores,
+  activeStoreId,
+  onSetListStore,
   onSignOut,
   onSelectList,
   onCreateList,
@@ -317,6 +324,29 @@ export function HamburgerMenu({
               >
                 + New List
               </button>
+            )}
+
+            {stores.length > 0 && (
+              <>
+                <div className="nav-panel__section-label">Store</div>
+                <div className="nav-panel__store-picker">
+                  <select
+                    className="nav-panel__store-select"
+                    value={activeStoreId ?? ""}
+                    onChange={e => {
+                      const val = e.target.value;
+                      onSetListStore(val === "" ? null : Number(val));
+                    }}
+                  >
+                    <option value="">None</option>
+                    {stores.map(store => (
+                      <option key={store.id} value={store.id}>
+                        {store.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
             )}
 
             <button

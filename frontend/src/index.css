@@ -1925,3 +1925,83 @@ button:disabled {
   padding: 0.6rem 0.875rem;
   margin-bottom: 1rem;
 }
+
+/* ── Organize sticky actions row ─────────────────────────── */
+.organize-sticky__actions {
+  display: flex;
+  gap: 0.625rem;
+  align-items: center;
+}
+
+.organize-sticky__actions .btn-organize {
+  flex: 1;
+}
+
+/* ── Sort by Aisle button ────────────────────────────────── */
+.btn-aisle {
+  flex-shrink: 0;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: #fff;
+  color: #2d6a4f;
+  border: 2px solid #2d6a4f;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-aisle:hover:not(:disabled) {
+  background: #e8f5e9;
+}
+
+.btn-aisle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Deal badge ──────────────────────────────────────────── */
+.deal-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  background: #e8f5e9;
+  color: #1b4332;
+  border: 1px solid #a8d5ba;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  margin-left: 0.5rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.deal-badge__savings {
+  color: #2d6a4f;
+  font-weight: 500;
+}
+
+.deal-badge__expiry {
+  color: #666;
+  font-weight: 400;
+  font-size: 0.68rem;
+}
+
+/* ── Store picker in nav panel ───────────────────────────── */
+.nav-panel__store-picker {
+  padding: 0.25rem 1.25rem 0.875rem;
+}
+
+.nav-panel__store-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a1a2e;
+  appearance: auto;
+}

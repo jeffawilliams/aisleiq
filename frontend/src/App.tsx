@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
@@ -7,13 +7,19 @@ import { FeedbackModal } from "./components/FeedbackModal.js";
 import { HamburgerMenu } from "./components/HamburgerMenu.js";
 import { NameListModal } from "./components/NameListModal.js";
 import { useOrganize } from "./hooks/useCategorize.js";
+import { useOrganizeByAisle } from "./hooks/useOrganizeByAisle.js";
 import { useAuth } from "./hooks/useAuth.js";
 import { useLists } from "./hooks/useLists.js";
+import { useStores } from "./hooks/useStores.js";
+import { useDeals } from "./hooks/useDeals.js";
 import { supabase } from "./lib/supabaseClient.js";
 
 export function App() {
   const { organize, result, isLoading, error } = useOrganize();
+  const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError } = useOrganizeByAisle();
   const { user, role, authLoading, signIn, signInWithGoogle, signOut } = useAuth();
+  const { stores } = useStores();
+  const { deals, fetchDeals } = useDeals();
   const [isStale, setIsStale] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -22,6 +28,7 @@ export function App() {
     lists,
     activeListId,
     activeListName,
+    activeStoreId,
     listItems,
     setListItems,
     itemPhotos,
@@ -33,7 +40,18 @@ export function App() {
     switchList,
     generateShareLink,
     revokeShareLink,
+    setListStore,
   } = useLists(user);
+
+  const isAdmin = role === "admin";
+  const activeStore = isAdmin ? (stores.find(s => s.id === activeStoreId) ?? null) : null;
+
+  // After "Group My List" resolves, fetch deals in the background if a store is selected
+  useEffect(() => {
+    if (result && activeStore?.kroger_location_id) {
+      fetchDeals(listItems, activeStore.kroger_location_id);
+    }
+  }, [result]);
 
   const addItems = (newItems: string[]) => {
     const filtered = newItems.filter(i => i.trim());
@@ -83,6 +101,13 @@ export function App() {
     }
   };
 
+  const handleOrganizeByAisle = () => {
+    if (listItems.length > 0 && activeStoreId) {
+      setIsStale(false);
+      organizeByAisle(listItems.join("\n"), activeStoreId);
+    }
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -112,6 +137,9 @@ export function App() {
           role={role}
           lists={lists}
           activeListId={activeListId}
+          stores={isAdmin ? stores : []}
+          activeStoreId={activeStoreId}
+          onSetListStore={(storeId) => activeListId && setListStore(activeListId, storeId)}
           onSignOut={signOut}
           onSelectList={switchList}
           onCreateList={(name) => createList(name, [])}
@@ -133,13 +161,17 @@ export function App() {
           onEditItem={editItem}
           onAddItemWithPhoto={addItemWithPhoto}
           onSubmit={handleOrganize}
-          isLoading={isLoading}
+          onOrganizeByAisle={handleOrganizeByAisle}
+          isLoading={isLoading || aisleLoading}
           isStale={isStale}
           listName={activeListName}
+          activeStore={activeStore}
         />
-        {error && <p className="error">{error}</p>}
-        {isLoading && <LoadingSpinner />}
-        {result && !isLoading && <ResultsGrid result={result} isStale={isStale} />}
+        {(error || aisleError) && <p className="error">{error ?? aisleError}</p>}
+        {(isLoading || aisleLoading) && <LoadingSpinner />}
+        {(result || aisleResult) && !(isLoading || aisleLoading) && (
+          <ResultsGrid result={(aisleResult ?? result)!} isStale={isStale} deals={deals} />
+        )}
       </main>
 
       {showSignIn && (

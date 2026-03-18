@@ -13,6 +13,7 @@ export interface ListRecord {
   items: (string | ListItem)[];
   updated_at: string;
   share_token: string | null;
+  store_id: number | null;
 }
 
 // Support both legacy string[] and new {text, photo?}[] formats
@@ -45,6 +46,7 @@ export function useLists(user: User | null): {
   lists: ListRecord[];
   activeListId: string | null;
   activeListName: string;
+  activeStoreId: number | null;
   listItems: string[];
   setListItems: React.Dispatch<React.SetStateAction<string[]>>;
   itemPhotos: (string | null)[];
@@ -57,6 +59,7 @@ export function useLists(user: User | null): {
   switchList: (id: string) => void;
   generateShareLink: (listId: string) => Promise<void>;
   revokeShareLink: (listId: string) => Promise<void>;
+  setListStore: (listId: string, storeId: number | null) => Promise<void>;
 } {
   const [lists, setLists] = useState<ListRecord[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(null);
@@ -72,9 +75,10 @@ export function useLists(user: User | null): {
   const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const activeShareTokenRef = useRef<string | null>(null);
 
-  // Derive active list name from state
+  // Derive active list name and store from state
   const activeList = lists.find(l => l.id === activeListId);
   const activeListName = activeList?.name ?? "My List";
+  const activeStoreId = activeList?.store_id ?? null;
 
   // Load all lists on sign-in; clear on sign-out
   useEffect(() => {
@@ -92,7 +96,7 @@ export function useLists(user: User | null): {
     async function loadLists() {
       const { data } = await supabase
         .from("lists")
-        .select("id, name, items, updated_at, share_token")
+        .select("id, name, items, updated_at, share_token, store_id")
         .eq("owner_id", user!.id)
         .order("updated_at", { ascending: false });
 
@@ -336,6 +340,17 @@ export function useLists(user: User | null): {
     );
   }
 
+  async function setListStore(listId: string, storeId: number | null) {
+    if (!user) return;
+
+    await supabase
+      .from("lists")
+      .update({ store_id: storeId })
+      .eq("id", listId);
+
+    setLists(prev => prev.map(l => (l.id === listId ? { ...l, store_id: storeId } : l)));
+  }
+
   async function revokeShareLink(listId: string) {
     if (!user) return;
 
@@ -353,6 +368,7 @@ export function useLists(user: User | null): {
     lists,
     activeListId,
     activeListName,
+    activeStoreId,
     listItems,
     setListItems,
     itemPhotos,
@@ -365,5 +381,6 @@ export function useLists(user: User | null): {
     switchList,
     generateShareLink,
     revokeShareLink,
+    setListStore,
   };
 }

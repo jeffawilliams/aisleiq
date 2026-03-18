@@ -4,6 +4,9 @@ import { ShoppingListInput } from "./ShoppingListInput.js";
 import { ResultsGrid } from "./ResultsGrid.js";
 import { LoadingSpinner } from "./LoadingSpinner.js";
 import { useOrganize } from "../hooks/useCategorize.js";
+import { useOrganizeByAisle } from "../hooks/useOrganizeByAisle.js";
+import { useStores } from "../hooks/useStores.js";
+import { useDeals } from "../hooks/useDeals.js";
 
 interface ListItem {
   text: string;
@@ -38,9 +41,13 @@ interface Props {
 
 export function SharedListView({ token }: Props) {
   const { organize, result, isLoading: organizeLoading, error: organizeError } = useOrganize();
+  const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError } = useOrganizeByAisle();
+  const { stores } = useStores();
+  const { deals, fetchDeals } = useDeals();
 
   const [listId, setListId] = useState<string | null>(null);
   const [listName, setListName] = useState("");
+  const [storeId, setStoreId] = useState<number | null>(null);
   const [listItems, setListItems] = useState<string[]>([]);
   const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
   const [isStale, setIsStale] = useState(false);
@@ -69,6 +76,7 @@ export function SharedListView({ token }: Props) {
       setListName(list.name);
       setListItems(texts);
       setItemPhotos(photos);
+      if (list.store_id) setStoreId(list.store_id);
       lastSavedAt.current = list.updated_at;
       setIsLoading(false);
       initialLoadDone.current = true;
@@ -158,10 +166,26 @@ export function SharedListView({ token }: Props) {
     if (result) setIsStale(true);
   };
 
+  const activeStore = stores.find(s => s.id === storeId) ?? null;
+
+  // After organizing, fetch deals in the background if a store with Kroger ID is set
+  useEffect(() => {
+    if (result && activeStore?.kroger_location_id) {
+      fetchDeals(listItems, activeStore.kroger_location_id);
+    }
+  }, [result]);
+
   const handleOrganize = () => {
     if (listItems.length > 0) {
       setIsStale(false);
       organize(listItems.join("\n"));
+    }
+  };
+
+  const handleOrganizeByAisle = () => {
+    if (listItems.length > 0 && storeId) {
+      setIsStale(false);
+      organizeByAisle(listItems.join("\n"), storeId);
     }
   };
 
@@ -213,14 +237,18 @@ export function SharedListView({ token }: Props) {
           onAddItemWithPhoto={addItemWithPhoto}
           onEditItem={editItem}
           onSubmit={handleOrganize}
-          isLoading={organizeLoading}
+          onOrganizeByAisle={handleOrganizeByAisle}
+          isLoading={organizeLoading || aisleLoading}
           isStale={isStale}
           listName={listName}
           listBadge="Shared list"
+          activeStore={activeStore}
         />
-        {organizeError && <p className="error">{organizeError}</p>}
-        {organizeLoading && <LoadingSpinner />}
-        {result && !organizeLoading && <ResultsGrid result={result} isStale={isStale} />}
+        {(organizeError || aisleError) && <p className="error">{organizeError ?? aisleError}</p>}
+        {(organizeLoading || aisleLoading) && <LoadingSpinner />}
+        {(result || aisleResult) && !(organizeLoading || aisleLoading) && (
+          <ResultsGrid result={(aisleResult ?? result)!} isStale={isStale} deals={deals} />
+        )}
       </main>
     </div>
   );

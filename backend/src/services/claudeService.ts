@@ -83,3 +83,25 @@ export async function organizeShoppingList(items: string): Promise<OrganizeOutpu
 
   return OrganizeOutputSchema.parse(JSON.parse(textBlock.text));
 }
+
+export async function organizeByAisle(items: string, layout: unknown): Promise<OrganizeOutput> {
+  const layoutText = JSON.stringify(layout, null, 2);
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 4096,
+    messages: [{
+      role: "user",
+      content: `Given this store section layout (ordered as you'd walk the store), assign each item to its most likely section. Return items in section order. If an item doesn't clearly match any section, put it in the section where it most logically belongs.\n\nStore layout:\n${layoutText}\n\nShopping list:\n${items}`,
+    }],
+    output_config: {
+      format: zodOutputFormat(OrganizeOutputSchema),
+    },
+  });
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new Error("No text response from Claude.");
+  }
+
+  return OrganizeOutputSchema.parse(JSON.parse(textBlock.text));
+}

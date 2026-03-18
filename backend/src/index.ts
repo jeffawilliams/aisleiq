@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import { categorizeRouter } from "./routes/categorize.js";
 import { scanRouter } from "./routes/scan.js";
+import { dealsRouter } from "./routes/deals.js";
+import { organizeByAisleRouter } from "./routes/organizeByAisle.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -12,6 +14,8 @@ app.use(express.json({ limit: '10mb' }));
 
 app.use("/api", categorizeRouter);
 app.use("/api", scanRouter);
+app.use("/api", dealsRouter);
+app.use("/api", organizeByAisleRouter);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
