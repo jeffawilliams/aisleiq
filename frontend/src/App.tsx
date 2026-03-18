@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
@@ -45,6 +45,7 @@ export function App() {
 
   const isAdmin = role === "admin";
   const activeStore = isAdmin ? (stores.find(s => s.id === activeStoreId) ?? null) : null;
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Clear results on sign-out
   useEffect(() => {
@@ -66,6 +67,13 @@ export function App() {
       fetchDeals(listItems, activeStore.kroger_location_id);
     }
   }, [aisleResult]);
+
+  // Scroll to results after either organize action completes
+  useEffect(() => {
+    if ((result || aisleResult) && !(isLoading || aisleLoading)) {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [result, aisleResult, isLoading, aisleLoading]);
 
   const addItems = (newItems: string[]) => {
     const filtered = newItems.filter(i => i.trim());
@@ -188,7 +196,9 @@ export function App() {
         {(error || aisleError) && <p className="error">{error ?? aisleError}</p>}
         {(isLoading || aisleLoading) && <LoadingSpinner />}
         {(result || aisleResult) && !(isLoading || aisleLoading) && (
-          <ResultsGrid result={(aisleResult ?? result)!} isStale={isStale} deals={deals} ordered={!!aisleResult} />
+          <div ref={resultsRef}>
+            <ResultsGrid result={(aisleResult ?? result)!} isStale={isStale} deals={deals} ordered={!!aisleResult} />
+          </div>
         )}
       </main>
 
