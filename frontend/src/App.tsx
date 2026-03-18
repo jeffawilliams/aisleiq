@@ -15,8 +15,8 @@ import { useDeals } from "./hooks/useDeals.js";
 import { supabase } from "./lib/supabaseClient.js";
 
 export function App() {
-  const { organize, result, isLoading, error } = useOrganize();
-  const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError } = useOrganizeByAisle();
+  const { organize, result, isLoading, error, reset } = useOrganize();
+  const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError, reset: resetAisle } = useOrganizeByAisle();
   const { user, role, authLoading, signIn, signInWithGoogle, signOut } = useAuth();
   const { stores } = useStores();
   const { deals, fetchDeals } = useDeals();
@@ -45,6 +45,14 @@ export function App() {
 
   const isAdmin = role === "admin";
   const activeStore = isAdmin ? (stores.find(s => s.id === activeStoreId) ?? null) : null;
+
+  // Clear results on sign-out
+  useEffect(() => {
+    if (!user) {
+      reset();
+      resetAisle();
+    }
+  }, [user]);
 
   // After "Group My List" resolves, fetch deals in the background if a store is selected
   useEffect(() => {

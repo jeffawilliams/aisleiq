@@ -35,5 +35,7 @@ export function useOrganize() {
     }
   };
 
-  return { organize, result, isLoading, error };
+  const reset = () => { setResult(null); setError(null); };
+
+  return { organize, result, isLoading, error, reset };
 }
