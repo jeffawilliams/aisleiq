@@ -138,10 +138,10 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
         value={inlineValue}
         onChange={(e) => setInlineValue(e.target.value)}
         onKeyDown={handleInlineKeyDown}
-        disabled={isLoading}
+        disabled={isGroupLoading || isAisleLoading}
       />
 
-      <FAB onClick={() => setIsSheetOpen(true)} disabled={isLoading} />
+      <FAB onClick={() => setIsSheetOpen(true)} disabled={isGroupLoading || isAisleLoading} />
 
       <AddItemSheet
         isOpen={isSheetOpen}
