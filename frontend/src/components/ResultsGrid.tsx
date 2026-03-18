@@ -63,7 +63,9 @@ export function ResultsGrid({ result, isStale, deals, ordered }: ResultsGridProp
       </div>
       {isStale && (
         <p className="stale-banner">
-          Your list has changed — tap Re-organize to update.
+          {ordered
+            ? "Your list has changed — tap Re-sort to update."
+            : "Your list has changed — tap Re-group to update."}
         </p>
       )}
       <div className="results-grid">

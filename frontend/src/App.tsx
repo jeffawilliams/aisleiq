@@ -181,6 +181,7 @@ export function App() {
           isGroupLoading={isLoading}
           isAisleLoading={aisleLoading}
           isStale={isStale}
+          isAisleActive={!!aisleResult}
           listName={activeListName}
           activeStore={activeStore}
         />

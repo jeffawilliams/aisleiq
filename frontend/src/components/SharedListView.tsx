@@ -249,6 +249,7 @@ export function SharedListView({ token }: Props) {
           isGroupLoading={organizeLoading}
           isAisleLoading={aisleLoading}
           isStale={isStale}
+          isAisleActive={!!aisleResult}
           listName={listName}
           listBadge="Shared list"
           activeStore={activeStore}
