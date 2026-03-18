@@ -146,24 +146,24 @@ export function SharedListView({ token }: Props) {
     const filtered = newItems.filter(i => i.trim());
     setListItems(prev => [...prev, ...filtered]);
     setItemPhotos(prev => [...prev, ...filtered.map(() => null)]);
-    if (result) setIsStale(true);
+    if (result || aisleResult) setIsStale(true);
   };
 
   const addItemWithPhoto = (item: string, photo: string) => {
     setListItems(prev => [...prev, item]);
     setItemPhotos(prev => [...prev, photo]);
-    if (result) setIsStale(true);
+    if (result || aisleResult) setIsStale(true);
   };
 
   const removeItem = (index: number) => {
     setListItems(prev => prev.filter((_, i) => i !== index));
     setItemPhotos(prev => prev.filter((_, i) => i !== index));
-    if (result) setIsStale(true);
+    if (result || aisleResult) setIsStale(true);
   };
 
   const editItem = (index: number, newValue: string) => {
     setListItems(prev => prev.map((item, i) => i === index ? newValue : item));
-    if (result) setIsStale(true);
+    if (result || aisleResult) setIsStale(true);
   };
 
   const activeStore = stores.find(s => s.id === storeId) ?? null;
