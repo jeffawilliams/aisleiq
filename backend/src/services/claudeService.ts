@@ -91,7 +91,7 @@ export async function organizeByAisle(items: string, layout: unknown): Promise<O
     max_tokens: 4096,
     messages: [{
       role: "user",
-      content: `Given this store section layout (ordered as you'd walk the store), assign each item to its most likely section. Return items in section order. If an item doesn't clearly match any section, put it in the section where it most logically belongs.\n\nStore layout:\n${layoutText}\n\nShopping list:\n${items}`,
+      content: `You are organizing a shopping list by the physical layout of a specific store. The store layout below lists sections in the exact order a shopper encounters them walking through the store from entrance to checkout.\n\nRules:\n1. Assign every item to the section where it most likely lives in this store.\n2. Return the sections in EXACTLY the same order they appear in the layout — do not reorder them.\n3. Only include sections that have at least one item assigned to them.\n4. Preserve the original spelling of each item.\n\nStore layout (in walk-through order):\n${layoutText}\n\nShopping list:\n${items}`,
     }],
     output_config: {
       format: zodOutputFormat(OrganizeOutputSchema),

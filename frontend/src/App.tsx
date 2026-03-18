@@ -178,7 +178,7 @@ export function App() {
         {(error || aisleError) && <p className="error">{error ?? aisleError}</p>}
         {(isLoading || aisleLoading) && <LoadingSpinner />}
         {(result || aisleResult) && !(isLoading || aisleLoading) && (
-          <ResultsGrid result={(aisleResult ?? result)!} isStale={isStale} deals={deals} />
+          <ResultsGrid result={(aisleResult ?? result)!} isStale={isStale} deals={deals} ordered={!!aisleResult} />
         )}
       </main>
 

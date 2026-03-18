@@ -5,6 +5,7 @@ interface ResultsGridProps {
   result: OrganizeResponse;
   isStale: boolean;
   deals?: Deal[];
+  ordered?: boolean;
 }
 
 // Standard category order — common categories first, Other always last
@@ -48,8 +49,8 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals }: ResultsGridProps) {
-  const sorted = sortCategories(result.categories);
+export function ResultsGrid({ result, isStale, deals, ordered }: ResultsGridProps) {
+  const sorted = ordered ? result.categories : sortCategories(result.categories);
   const dealMap = new Map(deals?.map(d => [d.listItem.toLowerCase(), d]));
 
   return (

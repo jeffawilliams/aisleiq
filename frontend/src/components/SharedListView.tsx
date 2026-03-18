@@ -247,7 +247,7 @@ export function SharedListView({ token }: Props) {
         {(organizeError || aisleError) && <p className="error">{organizeError ?? aisleError}</p>}
         {(organizeLoading || aisleLoading) && <LoadingSpinner />}
         {(result || aisleResult) && !(organizeLoading || aisleLoading) && (
-          <ResultsGrid result={(aisleResult ?? result)!} isStale={isStale} deals={deals} />
+          <ResultsGrid result={(aisleResult ?? result)!} isStale={isStale} deals={deals} ordered={!!aisleResult} />
         )}
       </main>
     </div>
