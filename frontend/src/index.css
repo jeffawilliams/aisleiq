@@ -513,11 +513,15 @@ button:disabled {
 
 /* Loading */
 .loading-overlay {
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 150; /* above FAB (100) and sticky bar (90), below modals (200+) */
   gap: 1rem;
-  padding: 2rem;
   color: #555;
 }
 
