@@ -54,12 +54,18 @@ export function App() {
     }
   }, [user]);
 
-  // After "Group My List" resolves, fetch deals in the background if a store is selected
+  // After either organize action resolves, fetch deals in the background if a store is selected
   useEffect(() => {
     if (result && activeStore?.kroger_location_id) {
       fetchDeals(listItems, activeStore.kroger_location_id);
     }
   }, [result]);
+
+  useEffect(() => {
+    if (aisleResult && activeStore?.kroger_location_id) {
+      fetchDeals(listItems, activeStore.kroger_location_id);
+    }
+  }, [aisleResult]);
 
   const addItems = (newItems: string[]) => {
     const filtered = newItems.filter(i => i.trim());

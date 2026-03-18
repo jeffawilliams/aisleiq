@@ -168,12 +168,18 @@ export function SharedListView({ token }: Props) {
 
   const activeStore = stores.find(s => s.id === storeId) ?? null;
 
-  // After organizing, fetch deals in the background if a store with Kroger ID is set
+  // After either organize action resolves, fetch deals in the background if a store is selected
   useEffect(() => {
     if (result && activeStore?.kroger_location_id) {
       fetchDeals(listItems, activeStore.kroger_location_id);
     }
   }, [result]);
+
+  useEffect(() => {
+    if (aisleResult && activeStore?.kroger_location_id) {
+      fetchDeals(listItems, activeStore.kroger_location_id);
+    }
+  }, [aisleResult]);
 
   const handleOrganize = () => {
     if (listItems.length > 0) {
