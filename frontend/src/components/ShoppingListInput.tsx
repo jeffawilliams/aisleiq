@@ -12,14 +12,15 @@ interface Props {
   onAddItemWithPhoto?: (item: string, photo: string) => void;
   onSubmit: () => void;
   onOrganizeByAisle?: () => void;
-  isLoading: boolean;
+  isGroupLoading: boolean;
+  isAisleLoading: boolean;
   isStale: boolean;
   listName: string;
   listBadge?: string;
   activeStore?: Store | null;
 }
 
-export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems, onEditItem, onAddItemWithPhoto, onSubmit, onOrganizeByAisle, isLoading, isStale, listName, listBadge, activeStore }: Props) {
+export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems, onEditItem, onAddItemWithPhoto, onSubmit, onOrganizeByAisle, isGroupLoading, isAisleLoading, isStale, listName, listBadge, activeStore }: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [inlineValue, setInlineValue] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
@@ -173,17 +174,17 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
             <button
               className="btn-secondary btn-aisle"
               onClick={onOrganizeByAisle}
-              disabled={items.length === 0 || isLoading}
+              disabled={items.length === 0 || isAisleLoading || isGroupLoading}
             >
-              Sort by Aisle
+              {isAisleLoading ? "Sorting..." : "Sort by Aisle"}
             </button>
           )}
           <button
             className={`btn-primary btn-organize${isStale ? " btn-organize--stale" : ""}`}
             onClick={onSubmit}
-            disabled={items.length === 0 || isLoading}
+            disabled={items.length === 0 || isGroupLoading || isAisleLoading}
           >
-            {isLoading ? "Grouping..." : isStale ? "Re-group" : "Group My List"}
+            {isGroupLoading ? "Grouping..." : isStale ? "Re-group" : "Group My List"}
           </button>
         </div>
       </div>

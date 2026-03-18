@@ -104,6 +104,7 @@ export function App() {
   const handleOrganize = async () => {
     if (listItems.length > 0) {
       setIsStale(false);
+      resetAisle();
       const success = await organize(listItems.join("\n"));
       if (success && user && activeListId) {
         await supabase.from("organize_events").insert({
@@ -118,6 +119,7 @@ export function App() {
   const handleOrganizeByAisle = () => {
     if (listItems.length > 0 && activeStoreId) {
       setIsStale(false);
+      reset();
       organizeByAisle(listItems.join("\n"), activeStoreId);
     }
   };
@@ -176,7 +178,8 @@ export function App() {
           onAddItemWithPhoto={addItemWithPhoto}
           onSubmit={handleOrganize}
           onOrganizeByAisle={handleOrganizeByAisle}
-          isLoading={isLoading || aisleLoading}
+          isGroupLoading={isLoading}
+          isAisleLoading={aisleLoading}
           isStale={isStale}
           listName={activeListName}
           activeStore={activeStore}

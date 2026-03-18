@@ -40,8 +40,8 @@ interface Props {
 }
 
 export function SharedListView({ token }: Props) {
-  const { organize, result, isLoading: organizeLoading, error: organizeError } = useOrganize();
-  const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError } = useOrganizeByAisle();
+  const { organize, result, isLoading: organizeLoading, error: organizeError, reset } = useOrganize();
+  const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError, reset: resetAisle } = useOrganizeByAisle();
   const { stores } = useStores();
   const { deals, fetchDeals } = useDeals();
 
@@ -184,6 +184,7 @@ export function SharedListView({ token }: Props) {
   const handleOrganize = () => {
     if (listItems.length > 0) {
       setIsStale(false);
+      resetAisle();
       organize(listItems.join("\n"));
     }
   };
@@ -191,6 +192,7 @@ export function SharedListView({ token }: Props) {
   const handleOrganizeByAisle = () => {
     if (listItems.length > 0 && storeId) {
       setIsStale(false);
+      reset();
       organizeByAisle(listItems.join("\n"), storeId);
     }
   };
@@ -244,7 +246,8 @@ export function SharedListView({ token }: Props) {
           onEditItem={editItem}
           onSubmit={handleOrganize}
           onOrganizeByAisle={handleOrganizeByAisle}
-          isLoading={organizeLoading || aisleLoading}
+          isGroupLoading={organizeLoading}
+          isAisleLoading={aisleLoading}
           isStale={isStale}
           listName={listName}
           listBadge="Shared list"
