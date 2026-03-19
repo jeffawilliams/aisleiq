@@ -2014,13 +2014,37 @@ button:disabled {
   background: #e8f5e9;
   color: #1b4332;
   border: 1px solid #a8d5ba;
-  border-radius: 999px;
+  border-radius: 4px;
   font-size: 0.72rem;
   font-weight: 600;
   padding: 0.15rem 0.5rem;
   margin-left: 0.5rem;
-  line-height: 1.4;
+  line-height: 1.6;
+}
+
+.deal-badge__product {
+  display: block;
+  width: 100%;
+  font-weight: 400;
+  color: #2d6a4f;
+  font-size: 0.68rem;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.deal-badge__match {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+  margin-right: 0.35rem;
+}
+
+.deal-badge__price {
+  color: #1b4332;
 }
 
 .deal-badge__savings {

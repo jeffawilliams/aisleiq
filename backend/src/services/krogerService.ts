@@ -14,13 +14,21 @@ export interface Deal {
 const STOP_WORDS = new Set(["a", "an", "the", "of", "and", "or", "with", "in", "for"]);
 
 function classifyMatch(listItem: string, productName: string): "exact" | "general" {
-  const words = listItem
-    .toLowerCase()
-    .split(/[\s,]+/)
-    .filter(w => w.length >= 3 && !STOP_WORDS.has(w));
-  if (words.length === 0) return "general";
-  const nameLower = productName.toLowerCase();
-  return words.some(w => nameLower.includes(w)) ? "exact" : "general";
+  const itemWords = new Set(
+    listItem.toLowerCase().split(/[\s,]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w))
+  );
+  const productWords = new Set(
+    productName.toLowerCase().split(/[\s,&]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w))
+  );
+  if (itemWords.size === 0) return "general";
+
+  // Jaccard similarity: shared words / total unique words
+  const intersection = [...itemWords].filter(w => productWords.has(w)).length;
+  const union = new Set([...itemWords, ...productWords]).size;
+  const similarity = union > 0 ? intersection / union : 0;
+
+  // "exact" requires meaningful word overlap relative to the item's length
+  return similarity >= 0.25 ? "exact" : "general";
 }
 
 let cachedToken: string | null = null;

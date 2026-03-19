@@ -45,7 +45,9 @@ export function CategoryCard({ category, dealMap }: CategoryCardProps) {
               <span className="checklist-label">{item}</span>
               {deal && (
                 <span className="deal-badge">
-                  Sale ${deal.promoPrice.toFixed(2)}
+                  <span className="deal-badge__product">{deal.productName}</span>
+                  <span className="deal-badge__match">{deal.matchType}</span>
+                  <span className="deal-badge__price"> Sale ${deal.promoPrice.toFixed(2)}</span>
                   <span className="deal-badge__savings"> · Save ${deal.savings.toFixed(2)}</span>
                   {deal.expiresAt && (
                     <span className="deal-badge__expiry"> · ends {formatDate(deal.expiresAt)}</span>
