@@ -65,6 +65,21 @@ export async function scanImage(image: string, mode: 'product' | 'list'): Promis
   return ScanOutputSchema.parse(JSON.parse(textBlock.text));
 }
 
+// Safety net: any item Claude dropped gets placed in "Other" so nothing is ever lost.
+function ensureAllItemsPlaced(result: OrganizeOutput, inputItems: string[]): OrganizeOutput {
+  const placed = new Set(result.categories.flatMap(c => c.items.map(i => i.toLowerCase().trim())));
+  const missing = inputItems.filter(i => !placed.has(i.toLowerCase().trim()));
+  if (missing.length === 0) return result;
+
+  const other = result.categories.find(c => c.name.toLowerCase() === "other");
+  if (other) {
+    other.items.push(...missing);
+  } else {
+    result.categories.push({ name: "Other", items: missing });
+  }
+  return result;
+}
+
 export async function organizeShoppingList(items: string): Promise<OrganizeOutput> {
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
@@ -81,7 +96,9 @@ export async function organizeShoppingList(items: string): Promise<OrganizeOutpu
     throw new Error("No text response from Claude.");
   }
 
-  return OrganizeOutputSchema.parse(JSON.parse(textBlock.text));
+  const result = OrganizeOutputSchema.parse(JSON.parse(textBlock.text));
+  const inputItems = items.split("\n").map(i => i.trim()).filter(Boolean);
+  return ensureAllItemsPlaced(result, inputItems);
 }
 
 export async function organizeByAisle(items: string, layout: unknown): Promise<OrganizeOutput> {
@@ -91,7 +108,7 @@ export async function organizeByAisle(items: string, layout: unknown): Promise<O
     max_tokens: 4096,
     messages: [{
       role: "user",
-      content: `You are organizing a shopping list by the physical layout of a specific store. The store layout below lists sections in the exact order a shopper encounters them walking through the store from entrance to checkout.\n\nRules:\n1. Assign every item to the section where it most likely lives in this store.\n2. Return the sections in EXACTLY the same order they appear in the layout — do not reorder them.\n3. Only include sections that have at least one item assigned to them.\n4. Preserve the original spelling of each item.\n\nStore layout (in walk-through order):\n${layoutText}\n\nShopping list:\n${items}`,
+      content: `You are organizing a shopping list by the physical layout of a specific store. The store layout below lists sections in the exact order a shopper encounters them walking through the store from entrance to checkout.\n\nRules:\n1. Assign every item to the section where it most likely lives in this store.\n2. Return the sections in EXACTLY the same order they appear in the layout — do not reorder them.\n3. Only include sections that have at least one item assigned to them.\n4. Preserve the original spelling of each item.\n5. If an item cannot be placed in any store section, assign it to a section named "Other" appended at the end.\n\nStore layout (in walk-through order):\n${layoutText}\n\nShopping list:\n${items}`,
     }],
     output_config: {
       format: zodOutputFormat(OrganizeOutputSchema),
@@ -103,5 +120,7 @@ export async function organizeByAisle(items: string, layout: unknown): Promise<O
     throw new Error("No text response from Claude.");
   }
 
-  return OrganizeOutputSchema.parse(JSON.parse(textBlock.text));
+  const result = OrganizeOutputSchema.parse(JSON.parse(textBlock.text));
+  const inputItems = items.split("\n").map(i => i.trim()).filter(Boolean);
+  return ensureAllItemsPlaced(result, inputItems);
 }

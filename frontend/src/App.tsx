@@ -47,20 +47,13 @@ export function App() {
   const activeStore = isAdmin ? (stores.find(s => s.id === activeStoreId) ?? null) : null;
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  const [showExactDeals, setShowExactDeals] = useState(() => {
-    try { return localStorage.getItem("sla_deals_show_exact") !== "false"; } catch { return true; }
-  });
-  const [showRelatedDeals, setShowRelatedDeals] = useState(() => {
-    try { return localStorage.getItem("sla_deals_show_related") !== "false"; } catch { return true; }
+  const [showDeals, setShowDeals] = useState(() => {
+    try { return localStorage.getItem("sla_deals_show") !== "false"; } catch { return true; }
   });
 
-  function toggleExactDeals(val: boolean) {
-    setShowExactDeals(val);
-    try { localStorage.setItem("sla_deals_show_exact", String(val)); } catch { /* ignore */ }
-  }
-  function toggleRelatedDeals(val: boolean) {
-    setShowRelatedDeals(val);
-    try { localStorage.setItem("sla_deals_show_related", String(val)); } catch { /* ignore */ }
+  function toggleDeals(val: boolean) {
+    setShowDeals(val);
+    try { localStorage.setItem("sla_deals_show", String(val)); } catch { /* ignore */ }
   }
 
   // Clear results on sign-out
@@ -218,10 +211,8 @@ export function App() {
               isStale={isStale}
               deals={deals}
               ordered={!!aisleResult}
-              showExactDeals={showExactDeals}
-              showRelatedDeals={showRelatedDeals}
-              onToggleExact={toggleExactDeals}
-              onToggleRelated={toggleRelatedDeals}
+              showDeals={showDeals}
+              onToggleDeals={toggleDeals}
             />
           </div>
         )}

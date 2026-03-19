@@ -6,10 +6,8 @@ interface ResultsGridProps {
   isStale: boolean;
   deals?: Deal[];
   ordered?: boolean;
-  showExactDeals?: boolean;
-  showRelatedDeals?: boolean;
-  onToggleExact?: (val: boolean) => void;
-  onToggleRelated?: (val: boolean) => void;
+  showDeals?: boolean;
+  onToggleDeals?: (val: boolean) => void;
 }
 
 // Standard category order — common categories first, Other always last
@@ -53,14 +51,13 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, ordered, showExactDeals = true, showRelatedDeals = true, onToggleExact, onToggleRelated }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true, onToggleDeals }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
-  const hasAnyDeals = (deals?.length ?? 0) > 0;
-  const filteredDeals = deals?.filter(d =>
-    (d.matchType === "exact" && showExactDeals) ||
-    (d.matchType === "general" && showRelatedDeals)
+  const exactDeals = deals?.filter(d => d.matchType === "exact") ?? [];
+  const hasAnyDeals = exactDeals.length > 0;
+  const dealMap = new Map(
+    (showDeals ? exactDeals : []).map(d => [d.listItem.toLowerCase(), d])
   );
-  const dealMap = new Map(filteredDeals?.map(d => [d.listItem.toLowerCase(), d]));
 
   return (
     <section className="results">
@@ -70,22 +67,16 @@ export function ResultsGrid({ result, isStale, deals, ordered, showExactDeals = 
           Print
         </button>
       </div>
-      {hasAnyDeals && onToggleExact && onToggleRelated && (
-        <div className="deals-filter">
-          <span className="deals-filter__label">Deals</span>
-          <button
-            className={`deals-filter__pill${showExactDeals ? " deals-filter__pill--active" : ""}`}
-            onClick={() => onToggleExact(!showExactDeals)}
-          >
-            Exact matches
-          </button>
-          <button
-            className={`deals-filter__pill${showRelatedDeals ? " deals-filter__pill--active" : ""}`}
-            onClick={() => onToggleRelated(!showRelatedDeals)}
-          >
-            Related deals
-          </button>
-        </div>
+      {hasAnyDeals && onToggleDeals && (
+        <label className="deals-toggle">
+          <input
+            type="checkbox"
+            className="deals-toggle__input"
+            checked={showDeals}
+            onChange={e => onToggleDeals(e.target.checked)}
+          />
+          <span className="deals-toggle__label">Show product deals</span>
+        </label>
       )}
       {isStale && (
         <p className="stale-banner">
