@@ -2040,7 +2040,12 @@ button:disabled {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #888;
-  margin-right: 0.35rem;
+}
+
+.deal-badge__category {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: #888;
 }
 
 .deal-badge__price {

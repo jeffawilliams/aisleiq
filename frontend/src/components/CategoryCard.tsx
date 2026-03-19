@@ -47,7 +47,8 @@ export function CategoryCard({ category, dealMap }: CategoryCardProps) {
                 <span className="deal-badge">
                   <span className="deal-badge__product">{deal.productName}</span>
                   <span className="deal-badge__match">{deal.matchType}</span>
-                  <span className="deal-badge__price"> Sale ${deal.promoPrice.toFixed(2)}</span>
+                  {deal.category && <span className="deal-badge__category"> · {deal.category}</span>}
+                  <span className="deal-badge__price"> · Sale ${deal.promoPrice.toFixed(2)}</span>
                   <span className="deal-badge__savings"> · Save ${deal.savings.toFixed(2)}</span>
                   {deal.expiresAt && (
                     <span className="deal-badge__expiry"> · ends {formatDate(deal.expiresAt)}</span>

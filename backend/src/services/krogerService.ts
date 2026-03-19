@@ -9,26 +9,21 @@ export interface Deal {
   savingsPct: number;
   expiresAt: string | null;
   matchType: "exact" | "general";
+  category: string;
 }
 
 const STOP_WORDS = new Set(["a", "an", "the", "of", "and", "or", "with", "in", "for"]);
 
 function classifyMatch(listItem: string, productName: string): "exact" | "general" {
-  const itemWords = new Set(
-    listItem.toLowerCase().split(/[\s,]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w))
-  );
-  const productWords = new Set(
-    productName.toLowerCase().split(/[\s,&]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w))
-  );
-  if (itemWords.size === 0) return "general";
-
-  // Jaccard similarity: shared words / total unique words
-  const intersection = [...itemWords].filter(w => productWords.has(w)).length;
-  const union = new Set([...itemWords, ...productWords]).size;
-  const similarity = union > 0 ? intersection / union : 0;
-
-  // "exact" requires meaningful word overlap relative to the item's length
-  return similarity >= 0.25 ? "exact" : "general";
+  const itemWords = listItem
+    .toLowerCase()
+    .split(/[\s,]+/)
+    .filter(w => w.length >= 3 && !STOP_WORDS.has(w));
+  if (itemWords.length === 0) return "general";
+  const nameLower = productName.toLowerCase();
+  // Exact if every significant item word appears anywhere in the product name.
+  // Uses substring (not whole-word) so "breast" matches "breasts", "chicken" matches "chicken".
+  return itemWords.every(w => nameLower.includes(w)) ? "exact" : "general";
 }
 
 let cachedToken: string | null = null;
@@ -75,7 +70,7 @@ async function fetchDealForItem(
   const params = new URLSearchParams({
     "filter.term": item,
     "filter.locationId": krogerLocationId,
-    "filter.limit": "3",
+    "filter.limit": "5",
     "filter.fulfillment": "ais",
   });
 
@@ -87,10 +82,19 @@ async function fetchDealForItem(
 
   const data = (await res.json()) as { data?: KrogerProduct[] };
   const products = data.data ?? [];
+  if (products.length === 0) return null;
+
+  // Use Kroger's top-ranked result as the category anchor regardless of promo status.
+  // Any promo candidate in a different category is considered an off-category match and skipped.
+  const anchorCategory = products[0].categories?.[0] ?? null;
 
   for (const product of products) {
     const priceInfo = product.items?.[0]?.price;
     if (!priceInfo?.promo) continue;
+
+    // Skip promo candidates that diverge from the anchor category
+    const productCategory = product.categories?.[0] ?? null;
+    if (anchorCategory && productCategory && productCategory !== anchorCategory) continue;
 
     const regularPrice = priceInfo.regular ?? priceInfo.promo;
     const promoPrice = priceInfo.promo;
@@ -111,6 +115,7 @@ async function fetchDealForItem(
       savingsPct,
       expiresAt: priceInfo.promoExpiration ?? null,
       matchType: classifyMatch(item, productName),
+      category: anchorCategory ?? productCategory ?? "",
     };
   }
 
@@ -120,6 +125,7 @@ async function fetchDealForItem(
 interface KrogerProduct {
   description?: string;
   brand?: string;
+  categories?: string[];
   items?: Array<{
     price?: {
       regular?: number;
