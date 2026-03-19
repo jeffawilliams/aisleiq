@@ -180,7 +180,7 @@ export function App() {
           onRenameList={renameList}
           onGenerateShareLink={generateShareLink}
           onRevokeShareLink={revokeShareLink}
-          onOpenDashboard={() => { window.location.href = "/admin"; }}
+          onOpenDashboard={() => { window.open("/admin", "_blank"); }}
           onSendFeedback={() => setShowFeedback(true)}
         />
       </header>
