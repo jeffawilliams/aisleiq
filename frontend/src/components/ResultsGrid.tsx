@@ -6,6 +6,10 @@ interface ResultsGridProps {
   isStale: boolean;
   deals?: Deal[];
   ordered?: boolean;
+  showExactDeals?: boolean;
+  showRelatedDeals?: boolean;
+  onToggleExact?: (val: boolean) => void;
+  onToggleRelated?: (val: boolean) => void;
 }
 
 // Standard category order — common categories first, Other always last
@@ -49,9 +53,14 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, ordered }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, ordered, showExactDeals = true, showRelatedDeals = true, onToggleExact, onToggleRelated }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
-  const dealMap = new Map(deals?.map(d => [d.listItem.toLowerCase(), d]));
+  const hasAnyDeals = (deals?.length ?? 0) > 0;
+  const filteredDeals = deals?.filter(d =>
+    (d.matchType === "exact" && showExactDeals) ||
+    (d.matchType === "general" && showRelatedDeals)
+  );
+  const dealMap = new Map(filteredDeals?.map(d => [d.listItem.toLowerCase(), d]));
 
   return (
     <section className="results">
@@ -61,6 +70,23 @@ export function ResultsGrid({ result, isStale, deals, ordered }: ResultsGridProp
           Print
         </button>
       </div>
+      {hasAnyDeals && onToggleExact && onToggleRelated && (
+        <div className="deals-filter">
+          <span className="deals-filter__label">Deals</span>
+          <button
+            className={`deals-filter__pill${showExactDeals ? " deals-filter__pill--active" : ""}`}
+            onClick={() => onToggleExact(!showExactDeals)}
+          >
+            Exact matches
+          </button>
+          <button
+            className={`deals-filter__pill${showRelatedDeals ? " deals-filter__pill--active" : ""}`}
+            onClick={() => onToggleRelated(!showRelatedDeals)}
+          >
+            Related deals
+          </button>
+        </div>
+      )}
       {isStale && (
         <p className="stale-banner">
           {ordered

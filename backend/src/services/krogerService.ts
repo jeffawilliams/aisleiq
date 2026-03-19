@@ -8,6 +8,19 @@ export interface Deal {
   savings: number;
   savingsPct: number;
   expiresAt: string | null;
+  matchType: "exact" | "general";
+}
+
+const STOP_WORDS = new Set(["a", "an", "the", "of", "and", "or", "with", "in", "for"]);
+
+function classifyMatch(listItem: string, productName: string): "exact" | "general" {
+  const words = listItem
+    .toLowerCase()
+    .split(/[\s,]+/)
+    .filter(w => w.length >= 3 && !STOP_WORDS.has(w));
+  if (words.length === 0) return "general";
+  const nameLower = productName.toLowerCase();
+  return words.some(w => nameLower.includes(w)) ? "exact" : "general";
 }
 
 let cachedToken: string | null = null;
@@ -78,9 +91,10 @@ async function fetchDealForItem(
       ? Math.round((savings / regularPrice) * 100)
       : 0;
 
+    const productName = product.description ?? item;
     return {
       listItem: item,
-      productName: product.description ?? item,
+      productName,
       brand: product.brand ?? "",
       size: product.items?.[0]?.size ?? "",
       regularPrice,
@@ -88,6 +102,7 @@ async function fetchDealForItem(
       savings,
       savingsPct,
       expiresAt: priceInfo.promoExpiration ?? null,
+      matchType: classifyMatch(item, productName),
     };
   }
 

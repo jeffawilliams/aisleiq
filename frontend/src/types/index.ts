@@ -27,6 +27,7 @@ export interface Deal {
   savings: number;
   savingsPct: number;
   expiresAt: string | null;
+  matchType: "exact" | "general";
 }
 
 export interface Store {
