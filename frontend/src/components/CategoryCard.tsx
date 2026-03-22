@@ -1,9 +1,10 @@
-import { useState } from "react";
 import { CategoryResult, Deal } from "../types/index.js";
 
 interface CategoryCardProps {
   category: CategoryResult;
   dealMap?: Map<string, Deal>;
+  checked: Set<string>;
+  onToggle: (item: string) => void;
 }
 
 function formatDate(dateStr: string): string {
@@ -14,19 +15,8 @@ function formatDate(dateStr: string): string {
   }
 }
 
-export function CategoryCard({ category, dealMap }: CategoryCardProps) {
-  const [checked, setChecked] = useState<Set<string>>(new Set());
-
+export function CategoryCard({ category, dealMap, checked, onToggle }: CategoryCardProps) {
   const sortedItems = [...category.items].sort((a, b) => a.localeCompare(b));
-
-  const toggle = (item: string) => {
-    setChecked((prev) => {
-      const next = new Set(prev);
-      if (next.has(item)) next.delete(item);
-      else next.add(item);
-      return next;
-    });
-  };
 
   return (
     <div className="aisle-card">
@@ -39,7 +29,7 @@ export function CategoryCard({ category, dealMap }: CategoryCardProps) {
             <li
               key={item}
               className={`checklist-item ${isChecked ? "checklist-item--checked" : ""}`}
-              onClick={() => toggle(item)}
+              onClick={() => onToggle(item)}
             >
               <span className="checklist-box">{isChecked ? "✓" : ""}</span>
               <span className="checklist-label">{item}</span>

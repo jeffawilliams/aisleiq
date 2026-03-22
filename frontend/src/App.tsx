@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
@@ -46,6 +46,21 @@ export function App() {
   const isAdmin = role === "admin";
   const activeStore = stores.find(s => s.id === activeStoreId) ?? null;
   const resultsRef = useRef<HTMLDivElement>(null);
+  const checkoutDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCheckChange = useCallback((dealCount: number, totalSavings: number) => {
+    if (!user || !activeListId) return;
+    if (checkoutDebounceRef.current) clearTimeout(checkoutDebounceRef.current);
+    checkoutDebounceRef.current = setTimeout(() => {
+      supabase.from("checkout_events").upsert({
+        user_id: user.id,
+        list_id: activeListId,
+        deal_count: dealCount,
+        total_savings: totalSavings,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,list_id" });
+    }, 1500);
+  }, [user, activeListId]);
 
   const [showDeals, setShowDeals] = useState(() => {
     try { return localStorage.getItem("sla_deals_show") !== "false"; } catch { return true; }
@@ -214,6 +229,7 @@ export function App() {
               showDeals={showDeals}
               onToggleDeals={toggleDeals}
               isAdmin={isAdmin}
+              onCheckChange={handleCheckChange}
             />
           </div>
         )}

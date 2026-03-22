@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OrganizeResponse, Deal } from "../types/index.js";
 import { CategoryCard } from "./CategoryCard.js";
 
@@ -10,6 +10,7 @@ interface ResultsGridProps {
   showDeals?: boolean;
   onToggleDeals?: (val: boolean) => void;
   isAdmin?: boolean;
+  onCheckChange?: (dealCount: number, totalSavings: number) => void;
 }
 
 // Standard category order — common categories first, Other always last
@@ -53,7 +54,7 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true, onToggleDeals, isAdmin = false }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
   const exactDeals = deals?.filter(d => d.matchType === "exact") ?? [];
   const hasAnyDeals = exactDeals.length > 0;
@@ -63,6 +64,30 @@ export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true,
   const [dealsBannerDismissed, setDealsBannerDismissed] = useState(() => {
     try { return localStorage.getItem("sla_deals_test_dismissed") === "true"; } catch { return false; }
   });
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+
+  // Reset checked state when results change (user re-organizes)
+  useEffect(() => {
+    setChecked(new Set());
+  }, [result]);
+
+  // Fire callback whenever checked state changes
+  useEffect(() => {
+    if (!onCheckChange) return;
+    const checkedDeals = exactDeals.filter(d => checked.has(d.listItem.toLowerCase()));
+    const dealCount = checkedDeals.length;
+    const totalSavings = checkedDeals.reduce((sum, d) => sum + d.savings, 0);
+    onCheckChange(dealCount, totalSavings);
+  }, [checked]);
+
+  function toggleItem(item: string) {
+    setChecked(prev => {
+      const next = new Set(prev);
+      if (next.has(item)) next.delete(item);
+      else next.add(item);
+      return next;
+    });
+  }
 
   function dismissDealsBanner() {
     setDealsBannerDismissed(true);
@@ -105,7 +130,7 @@ export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true,
       )}
       <div className="results-grid">
         {sorted.map((category) => (
-          <CategoryCard key={category.name} category={category} dealMap={dealMap} />
+          <CategoryCard key={category.name} category={category} dealMap={dealMap} checked={checked} onToggle={toggleItem} />
         ))}
       </div>
     </section>
