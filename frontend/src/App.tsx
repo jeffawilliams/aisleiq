@@ -255,7 +255,7 @@ export function App() {
             <ResultsGrid
               result={(aisleResult ?? result)!}
               isStale={isStale}
-              deals={deals}
+              deals={activeStore ? deals : undefined}
               ordered={!!aisleResult}
               showDeals={showDeals}
               onToggleDeals={toggleDeals}
