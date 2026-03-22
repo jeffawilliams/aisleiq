@@ -216,7 +216,7 @@ export function App() {
           onSetListStore={(storeId) => activeListId && setListStore(activeListId, storeId)}
           onSignOut={signOut}
           onSelectList={(id) => { switchList(id); reset(); resetAisle(); setIsStale(false); }}
-          onCreateList={(name) => { createList(name, [], activeStoreId); reset(); resetAisle(); setIsStale(false); }}
+          onCreateList={(name) => { createList(name, []); reset(); resetAisle(); setIsStale(false); }}
           onDeleteList={deleteList}
           onRenameList={renameList}
           onGenerateShareLink={generateShareLink}
@@ -285,7 +285,7 @@ export function App() {
       {needsNaming && (
         <NameListModal
           currentItems={listItems}
-          onCreate={(name) => createList(name, listItems, activeStoreId)}
+          onCreate={(name) => createList(name, listItems)}
         />
       )}
 

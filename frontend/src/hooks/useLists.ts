@@ -93,7 +93,7 @@ export function useLists(user: User | null): {
   setItemRecipeNames: React.Dispatch<React.SetStateAction<(string | null)[]>>;
   isLoaded: boolean;
   needsNaming: boolean;
-  createList: (name: string, items: string[], storeId?: number | null) => Promise<void>;
+  createList: (name: string, items: string[]) => Promise<void>;
   deleteList: (id: string) => Promise<void>;
   renameList: (id: string, name: string) => Promise<void>;
   switchList: (id: string) => void;
@@ -320,7 +320,7 @@ export function useLists(user: User | null): {
     };
   }, [activeListId]);
 
-  async function createList(name: string, items: string[], storeId: number | null = null) {
+  async function createList(name: string, items: string[]) {
     if (!user) return;
 
     const { data, error } = await supabase
@@ -329,7 +329,6 @@ export function useLists(user: User | null): {
         owner_id: user.id,
         name,
         items,
-        store_id: storeId,
         updated_at: new Date().toISOString(),
       })
       .select("id, name, items, updated_at, share_token, store_id")
