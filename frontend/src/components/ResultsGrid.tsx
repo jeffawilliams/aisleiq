@@ -71,14 +71,14 @@ export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true,
     setChecked(new Set());
   }, [result]);
 
-  // Fire callback whenever checked state changes
+  // Fire callback whenever checked state or deals change
   useEffect(() => {
     if (!onCheckChange) return;
     const checkedDeals = exactDeals.filter(d => checked.has(d.listItem.toLowerCase()));
     const dealCount = checkedDeals.length;
     const totalSavings = checkedDeals.reduce((sum, d) => sum + d.savings, 0);
     onCheckChange(dealCount, totalSavings);
-  }, [checked]);
+  }, [checked, exactDeals.length]);
 
   function toggleItem(item: string) {
     setChecked(prev => {

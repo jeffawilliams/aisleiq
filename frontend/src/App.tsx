@@ -51,14 +51,17 @@ export function App() {
   const handleCheckChange = useCallback((dealCount: number, totalSavings: number) => {
     if (!user || !activeListId) return;
     if (checkoutDebounceRef.current) clearTimeout(checkoutDebounceRef.current);
-    checkoutDebounceRef.current = setTimeout(() => {
-      supabase.from("checkout_events").upsert({
+    checkoutDebounceRef.current = setTimeout(async () => {
+      console.log("[checkout] upserting", { user_id: user.id, list_id: activeListId, deal_count: dealCount, total_savings: totalSavings });
+      const { error } = await supabase.from("checkout_events").upsert({
         user_id: user.id,
         list_id: activeListId,
         deal_count: dealCount,
         total_savings: totalSavings,
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,list_id" });
+      if (error) console.error("[checkout] upsert error", error);
+      else console.log("[checkout] upsert success");
     }, 1500);
   }, [user, activeListId]);
 
