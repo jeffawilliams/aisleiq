@@ -49,6 +49,9 @@ export function HamburgerMenu({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [storeBannerDismissed, setStoreBannerDismissed] = useState(() => {
+    try { return localStorage.getItem("sla_store_test_dismissed") === "true"; } catch { return false; }
+  });
   const renameInputRef = useRef<HTMLInputElement>(null);
 
   function open() {
@@ -129,6 +132,11 @@ export function HamburgerMenu({
     } catch {
       // Clipboard not available — no-op
     }
+  }
+
+  function dismissStoreBanner() {
+    setStoreBannerDismissed(true);
+    try { localStorage.setItem("sla_store_test_dismissed", "true"); } catch { /* ignore */ }
   }
 
   async function handleStopSharing(list: ListRecord) {
@@ -346,6 +354,14 @@ export function HamburgerMenu({
                     ))}
                   </select>
                 </div>
+                {activeStoreId !== null && !storeBannerDismissed && (
+                  <div className="test-banner">
+                    <span className="test-banner__text">
+                      <strong>Test feature.</strong> Store layouts use sample data and may not match your actual store.
+                    </span>
+                    <button className="test-banner__dismiss" onClick={dismissStoreBanner} aria-label="Dismiss">×</button>
+                  </div>
+                )}
               </>
             )}
 

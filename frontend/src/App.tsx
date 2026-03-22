@@ -44,7 +44,7 @@ export function App() {
   } = useLists(user);
 
   const isAdmin = role === "admin";
-  const activeStore = isAdmin ? (stores.find(s => s.id === activeStoreId) ?? null) : null;
+  const activeStore = stores.find(s => s.id === activeStoreId) ?? null;
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const [showDeals, setShowDeals] = useState(() => {
@@ -170,7 +170,7 @@ export function App() {
           role={role}
           lists={lists}
           activeListId={activeListId}
-          stores={isAdmin ? stores : []}
+          stores={stores}
           activeStoreId={activeStoreId}
           onSetListStore={(storeId) => activeListId && setListStore(activeListId, storeId)}
           onSignOut={signOut}
@@ -213,6 +213,7 @@ export function App() {
               ordered={!!aisleResult}
               showDeals={showDeals}
               onToggleDeals={toggleDeals}
+              isAdmin={isAdmin}
             />
           </div>
         )}

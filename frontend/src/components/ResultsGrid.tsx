@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { OrganizeResponse, Deal } from "../types/index.js";
 import { CategoryCard } from "./CategoryCard.js";
 
@@ -8,6 +9,7 @@ interface ResultsGridProps {
   ordered?: boolean;
   showDeals?: boolean;
   onToggleDeals?: (val: boolean) => void;
+  isAdmin?: boolean;
 }
 
 // Standard category order — common categories first, Other always last
@@ -51,13 +53,21 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true, onToggleDeals }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true, onToggleDeals, isAdmin = false }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
   const exactDeals = deals?.filter(d => d.matchType === "exact") ?? [];
   const hasAnyDeals = exactDeals.length > 0;
   const dealMap = new Map(
     (showDeals ? exactDeals : []).map(d => [d.listItem.toLowerCase(), d])
   );
+  const [dealsBannerDismissed, setDealsBannerDismissed] = useState(() => {
+    try { return localStorage.getItem("sla_deals_test_dismissed") === "true"; } catch { return false; }
+  });
+
+  function dismissDealsBanner() {
+    setDealsBannerDismissed(true);
+    try { localStorage.setItem("sla_deals_test_dismissed", "true"); } catch { /* ignore */ }
+  }
 
   return (
     <section className="results">
@@ -77,6 +87,14 @@ export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true,
           />
           <span className="deals-toggle__label">Show product deals</span>
         </label>
+      )}
+      {hasAnyDeals && !dealsBannerDismissed && (
+        <div className="test-banner">
+          <span className="test-banner__text">
+            <strong>Test feature.</strong> Deal prices are from a sandbox environment and are not real offers.
+          </span>
+          <button className="test-banner__dismiss" onClick={dismissDealsBanner} aria-label="Dismiss">×</button>
+        </div>
       )}
       {isStale && (
         <p className="stale-banner">

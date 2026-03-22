@@ -1943,6 +1943,41 @@ button:disabled {
   color: #6a1b9a;
 }
 
+/* ── Test feature banner ──────────────────────────────────── */
+.test-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #5a4a00;
+  background: #fffbeb;
+  border: 1px solid #f0d060;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.test-banner__text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.test-banner__dismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: #9a8000;
+  cursor: pointer;
+  padding: 0 0.2rem;
+}
+
+.test-banner__dismiss:hover {
+  color: #5a4a00;
+}
+
 /* ── Stale results banner ─────────────────────────────────── */
 .stale-banner {
   font-size: 0.875rem;
