@@ -334,7 +334,7 @@ export function HamburgerMenu({
               </button>
             )}
 
-            {stores.length > 0 && (
+            {stores.length > 0 && !showNewListInput && (
               <>
                 <div className="nav-panel__section-label">Store</div>
                 <div className="nav-panel__store-picker">
