@@ -259,6 +259,7 @@ export function App() {
               result={(aisleResult ?? result)!}
               isStale={isStale}
               deals={deals}
+              hasStore={!!activeStore}
               ordered={!!aisleResult}
               showDeals={showDeals}
               onToggleDeals={toggleDeals}

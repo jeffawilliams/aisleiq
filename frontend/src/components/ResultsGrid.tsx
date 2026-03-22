@@ -6,6 +6,7 @@ interface ResultsGridProps {
   result: OrganizeResponse;
   isStale: boolean;
   deals?: Deal[];
+  hasStore?: boolean;
   ordered?: boolean;
   showDeals?: boolean;
   onToggleDeals?: (val: boolean) => void;
@@ -54,7 +55,7 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
   const exactDeals = deals?.filter(d => d.matchType === "exact") ?? [];
   const hasAnyDeals = exactDeals.length > 0;
@@ -102,7 +103,7 @@ export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true,
           Print
         </button>
       </div>
-      {hasAnyDeals && onToggleDeals && (
+      {hasStore && onToggleDeals && (
         <label className="deals-toggle">
           <input
             type="checkbox"
@@ -113,7 +114,7 @@ export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true,
           <span className="deals-toggle__label">Show product deals</span>
         </label>
       )}
-      {hasAnyDeals && !dealsBannerDismissed && (
+      {hasStore && !dealsBannerDismissed && (
         <div className="test-banner">
           <span className="test-banner__text">
             Product Deals use Test data and do not reflect current offers in-store.
