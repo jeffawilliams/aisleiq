@@ -6,10 +6,15 @@ import { Store } from "../types/index.js";
 interface Props {
   items: string[];
   itemPhotos?: (string | null)[];
+  itemQuantities?: (string | null)[];
+  itemSources?: ('recipe' | null)[];
+  itemRecipeNames?: (string | null)[];
   onRemoveItem: (index: number) => void;
   onAddItems: (items: string[]) => void;
   onEditItem: (index: number, newValue: string) => void;
+  onEditItemWithQuantity?: (index: number, text: string, quantity: string | null) => void;
   onAddItemWithPhoto?: (item: string, photo: string) => void;
+  onAddRecipeItems?: (items: { name: string; quantity: string | null; recipeName: string | null }[]) => void;
   onSubmit: () => void;
   onOrganizeByAisle?: () => void;
   isGroupLoading: boolean;
@@ -21,7 +26,28 @@ interface Props {
   activeStore?: Store | null;
 }
 
-export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems, onEditItem, onAddItemWithPhoto, onSubmit, onOrganizeByAisle, isGroupLoading, isAisleLoading, isStale, isAisleActive, listName, listBadge, activeStore }: Props) {
+export function ShoppingListInput({
+  items,
+  itemPhotos,
+  itemQuantities,
+  itemSources,
+  itemRecipeNames,
+  onRemoveItem,
+  onAddItems,
+  onEditItem,
+  onEditItemWithQuantity,
+  onAddItemWithPhoto,
+  onAddRecipeItems,
+  onSubmit,
+  onOrganizeByAisle,
+  isGroupLoading,
+  isAisleLoading,
+  isStale,
+  isAisleActive,
+  listName,
+  listBadge,
+  activeStore,
+}: Props) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [inlineValue, setInlineValue] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
@@ -38,14 +64,32 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
 
   function startEdit(index: number, currentValue: string) {
     setEditingIndex(index);
-    setEditValue(currentValue);
+    const quantity = itemQuantities?.[index];
+    // Pre-populate with "item, quantity" if this item has a recipe quantity
+    setEditValue(quantity ? `${currentValue}, ${quantity}` : currentValue);
   }
 
   function commitEdit() {
     if (editingIndex === null) return;
     const trimmed = editValue.trim();
-    if (trimmed && trimmed !== items[editingIndex]) {
-      onEditItem(editingIndex, trimmed);
+    if (!trimmed) {
+      setEditingIndex(null);
+      return;
+    }
+
+    const quantity = itemQuantities?.[editingIndex] ?? null;
+    const currentComposite = quantity ? `${items[editingIndex]}, ${quantity}` : items[editingIndex];
+
+    if (trimmed !== currentComposite) {
+      // Split on first ", " to separate text from quantity
+      const commaIdx = trimmed.indexOf(', ');
+      if (commaIdx !== -1 && onEditItemWithQuantity) {
+        const newText = trimmed.slice(0, commaIdx).trim();
+        const newQuantity = trimmed.slice(commaIdx + 2).trim() || null;
+        onEditItemWithQuantity(editingIndex, newText, newQuantity);
+      } else {
+        onEditItem(editingIndex, trimmed);
+      }
     }
     setEditingIndex(null);
   }
@@ -105,9 +149,19 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
                   className="flat-list-item__text"
                   onClick={() => startEdit(i, item)}
                 >
-                  {item}
-                  {duplicateIndices.has(i) && (
-                    <span className="flat-list-item__duplicate-badge">duplicate</span>
+                  <span>
+                    {item}
+                    {itemSources?.[i] === 'recipe' && (
+                      itemRecipeNames?.[i]
+                        ? <span title={itemRecipeNames[i]!} style={{ marginLeft: '0.3em', cursor: 'help' }}>📖</span>
+                        : <span style={{ marginLeft: '0.3em' }}>📖</span>
+                    )}
+                    {duplicateIndices.has(i) && (
+                      <span className="flat-list-item__duplicate-badge">duplicate</span>
+                    )}
+                  </span>
+                  {itemQuantities?.[i] && (
+                    <span className="flat-list-item__quantity">{itemQuantities[i]}</span>
                   )}
                 </span>
               )}
@@ -149,6 +203,7 @@ export function ShoppingListInput({ items, itemPhotos, onRemoveItem, onAddItems,
         onClose={() => setIsSheetOpen(false)}
         onAddItems={onAddItems}
         onAddItemWithPhoto={onAddItemWithPhoto}
+        onAddRecipeItems={onAddRecipeItems}
       />
 
       {lightboxPhoto && (

@@ -36,3 +36,8 @@ export interface Store {
   name: string;
   kroger_location_id: string | null;
 }
+
+export interface RecipeIngredient {
+  name: string;
+  quantity: string | null;
+}

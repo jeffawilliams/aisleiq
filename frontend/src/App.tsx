@@ -33,6 +33,12 @@ export function App() {
     setListItems,
     itemPhotos,
     setItemPhotos,
+    itemQuantities,
+    setItemQuantities,
+    itemSources,
+    setItemSources,
+    itemRecipeNames,
+    setItemRecipeNames,
     needsNaming,
     createList,
     deleteList,
@@ -112,14 +118,34 @@ export function App() {
     if (result || aisleResult) setIsStale(true);
   };
 
+  function handleAddRecipeItems(items: { name: string; quantity: string | null; recipeName: string | null }[]) {
+    const names = items.map(i => i.name);
+    const quantities = items.map(i => i.quantity);
+    const recipeNames = items.map(i => i.recipeName);
+    setListItems(prev => [...prev, ...names]);
+    setItemQuantities(prev => [...prev, ...quantities]);
+    setItemSources(prev => [...prev, ...items.map(() => 'recipe' as const)]);
+    setItemRecipeNames(prev => [...prev, ...recipeNames]);
+    if (result || aisleResult) setIsStale(true);
+  }
+
   const removeItem = (index: number) => {
     setListItems(prev => prev.filter((_, i) => i !== index));
     setItemPhotos(prev => prev.filter((_, i) => i !== index));
+    setItemQuantities(prev => prev.filter((_, i) => i !== index));
+    setItemSources(prev => prev.filter((_, i) => i !== index));
+    setItemRecipeNames(prev => prev.filter((_, i) => i !== index));
     if (result || aisleResult) setIsStale(true);
   };
 
   const editItem = (index: number, newValue: string) => {
     setListItems(prev => prev.map((item, i) => i === index ? newValue : item));
+    if (result || aisleResult) setIsStale(true);
+  };
+
+  const editItemWithQuantity = (index: number, text: string, quantity: string | null) => {
+    setListItems(prev => prev.map((item, i) => i === index ? text : item));
+    setItemQuantities(prev => prev.map((q, i) => i === index ? quantity : q));
     if (result || aisleResult) setIsStale(true);
   };
 
@@ -189,8 +215,8 @@ export function App() {
           activeStoreId={activeStoreId}
           onSetListStore={(storeId) => activeListId && setListStore(activeListId, storeId)}
           onSignOut={signOut}
-          onSelectList={switchList}
-          onCreateList={(name) => createList(name, [])}
+          onSelectList={(id) => { switchList(id); reset(); resetAisle(); setIsStale(false); }}
+          onCreateList={(name) => { createList(name, []); reset(); resetAisle(); setIsStale(false); }}
           onDeleteList={deleteList}
           onRenameList={renameList}
           onGenerateShareLink={generateShareLink}
@@ -204,10 +230,15 @@ export function App() {
         <ShoppingListInput
           items={listItems}
           itemPhotos={itemPhotos}
+          itemQuantities={itemQuantities}
+          itemSources={itemSources}
+          itemRecipeNames={itemRecipeNames}
           onRemoveItem={removeItem}
           onAddItems={addItems}
           onEditItem={editItem}
+          onEditItemWithQuantity={editItemWithQuantity}
           onAddItemWithPhoto={addItemWithPhoto}
+          onAddRecipeItems={handleAddRecipeItems}
           onSubmit={handleOrganize}
           onOrganizeByAisle={handleOrganizeByAisle}
           isGroupLoading={isLoading}

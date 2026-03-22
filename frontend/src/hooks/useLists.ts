@@ -5,6 +5,9 @@ import { supabase } from "../lib/supabaseClient.js";
 export interface ListItem {
   text: string;
   photo?: string;
+  quantity?: string;       // recipe quantity sub-label (e.g. "2 cups")
+  source?: 'recipe';       // present only on recipe-imported items
+  recipeName?: string;     // name of source recipe, for badge tooltip
 }
 
 export interface ListRecord {
@@ -16,26 +19,57 @@ export interface ListRecord {
   store_id: number | null;
 }
 
-// Support both legacy string[] and new {text, photo?}[] formats
-function splitItems(raw: (string | ListItem)[]): { texts: string[]; photos: (string | null)[] } {
+// Support both legacy string[] and new {text, photo?, quantity?, source?, recipeName?}[] formats
+function splitItems(raw: (string | ListItem)[]): {
+  texts: string[];
+  photos: (string | null)[];
+  quantities: (string | null)[];
+  sources: ('recipe' | null)[];
+  recipeNames: (string | null)[];
+} {
   const texts: string[] = [];
   const photos: (string | null)[] = [];
+  const quantities: (string | null)[] = [];
+  const sources: ('recipe' | null)[] = [];
+  const recipeNames: (string | null)[] = [];
+
   for (const item of raw) {
     if (typeof item === "string") {
       texts.push(item);
       photos.push(null);
+      quantities.push(null);
+      sources.push(null);
+      recipeNames.push(null);
     } else {
       texts.push(item.text);
       photos.push(item.photo ?? null);
+      quantities.push(item.quantity ?? null);
+      sources.push(item.source ?? null);
+      recipeNames.push(item.recipeName ?? null);
     }
   }
-  return { texts, photos };
+  return { texts, photos, quantities, sources, recipeNames };
 }
 
-function mergeItems(texts: string[], photos: (string | null)[]): ListItem[] {
+function mergeItems(
+  texts: string[],
+  photos: (string | null)[],
+  quantities: (string | null)[],
+  sources: ('recipe' | null)[],
+  recipeNames: (string | null)[]
+): ListItem[] {
   return texts.map((text, i) => {
     const photo = photos[i] ?? null;
-    return photo ? { text, photo } : { text };
+    const quantity = quantities[i] ?? null;
+    const source = sources[i] ?? null;
+    const recipeName = recipeNames[i] ?? null;
+
+    const item: ListItem = { text };
+    if (photo) item.photo = photo;
+    if (quantity) item.quantity = quantity;
+    if (source) item.source = source;
+    if (recipeName) item.recipeName = recipeName;
+    return item;
   });
 }
 
@@ -51,6 +85,12 @@ export function useLists(user: User | null): {
   setListItems: React.Dispatch<React.SetStateAction<string[]>>;
   itemPhotos: (string | null)[];
   setItemPhotos: React.Dispatch<React.SetStateAction<(string | null)[]>>;
+  itemQuantities: (string | null)[];
+  setItemQuantities: React.Dispatch<React.SetStateAction<(string | null)[]>>;
+  itemSources: ('recipe' | null)[];
+  setItemSources: React.Dispatch<React.SetStateAction<('recipe' | null)[]>>;
+  itemRecipeNames: (string | null)[];
+  setItemRecipeNames: React.Dispatch<React.SetStateAction<(string | null)[]>>;
   isLoaded: boolean;
   needsNaming: boolean;
   createList: (name: string, items: string[]) => Promise<void>;
@@ -65,6 +105,9 @@ export function useLists(user: User | null): {
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [listItems, setListItems] = useState<string[]>([]);
   const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
+  const [itemQuantities, setItemQuantities] = useState<(string | null)[]>([]);
+  const [itemSources, setItemSources] = useState<('recipe' | null)[]>([]);
+  const [itemRecipeNames, setItemRecipeNames] = useState<(string | null)[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [needsNaming, setNeedsNaming] = useState(false);
 
@@ -88,6 +131,9 @@ export function useLists(user: User | null): {
       setActiveListId(null);
       setListItems([]);
       setItemPhotos([]);
+      setItemQuantities([]);
+      setItemSources([]);
+      setItemRecipeNames([]);
       setIsLoaded(false);
       setNeedsNaming(false);
       return;
@@ -123,10 +169,13 @@ export function useLists(user: User | null): {
       // Restore last active list from localStorage, or fall back to most recently updated
       const savedId = localStorage.getItem(ACTIVE_LIST_KEY);
       const target = loadedLists.find(l => l.id === savedId) ?? loadedLists[0];
-      const { texts, photos } = splitItems(target.items);
+      const { texts, photos, quantities, sources, recipeNames } = splitItems(target.items);
       setActiveListId(target.id);
       setListItems(texts);
       setItemPhotos(photos);
+      setItemQuantities(quantities);
+      setItemSources(sources);
+      setItemRecipeNames(recipeNames);
       lastSavedAt.current = target.updated_at;
       setIsLoaded(true);
       initialLoadDone.current = true;
@@ -147,7 +196,7 @@ export function useLists(user: User | null): {
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
-    const merged = mergeItems(listItems, itemPhotos);
+    const merged = mergeItems(listItems, itemPhotos, itemQuantities, itemSources, itemRecipeNames);
 
     saveTimer.current = setTimeout(async () => {
       const now = new Date().toISOString();
@@ -181,13 +230,30 @@ export function useLists(user: User | null): {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [listItems, itemPhotos, user?.id, activeListId]);
+  }, [listItems, itemPhotos, itemQuantities, itemSources, itemRecipeNames, user?.id, activeListId]);
 
-  // Pad itemPhotos with nulls when listItems grows (e.g. after Supabase load or addItems)
+  // Pad parallel arrays with nulls when listItems grows (e.g. after Supabase load or addItems)
   useEffect(() => {
+    const len = listItems.length;
+
     setItemPhotos(prev => {
-      if (prev.length >= listItems.length) return prev;
-      return [...prev, ...Array(listItems.length - prev.length).fill(null)];
+      if (prev.length >= len) return prev;
+      return [...prev, ...Array(len - prev.length).fill(null)];
+    });
+
+    setItemQuantities(prev => {
+      if (prev.length >= len) return prev;
+      return [...prev, ...Array(len - prev.length).fill(null)];
+    });
+
+    setItemSources(prev => {
+      if (prev.length >= len) return prev;
+      return [...prev, ...Array(len - prev.length).fill(null)];
+    });
+
+    setItemRecipeNames(prev => {
+      if (prev.length >= len) return prev;
+      return [...prev, ...Array(len - prev.length).fill(null)];
     });
   }, [listItems.length]);
 
@@ -237,9 +303,12 @@ export function useLists(user: User | null): {
           if (incoming.updated_at > lastSavedAt.current) {
             if (saveTimer.current) clearTimeout(saveTimer.current);
             isRemoteUpdate.current = true;
-            const { texts, photos } = splitItems(incoming.items);
+            const { texts, photos, quantities, sources, recipeNames } = splitItems(incoming.items);
             setListItems(texts);
             setItemPhotos(photos);
+            setItemQuantities(quantities);
+            setItemSources(sources);
+            setItemRecipeNames(recipeNames);
             lastSavedAt.current = incoming.updated_at;
           }
         }
@@ -271,6 +340,10 @@ export function useLists(user: User | null): {
     setLists(prev => [newList, ...prev]);
     setActiveListId(newList.id);
     setListItems(newList.items as string[]);
+    setItemPhotos([]);
+    setItemQuantities([]);
+    setItemSources([]);
+    setItemRecipeNames([]);
     lastSavedAt.current = newList.updated_at;
     localStorage.setItem(ACTIVE_LIST_KEY, newList.id);
     localStorage.removeItem(PENDING_ITEMS_KEY);
@@ -289,10 +362,13 @@ export function useLists(user: User | null): {
     if (activeListId === id) {
       if (remaining.length > 0) {
         const next = remaining[0];
-        const { texts, photos } = splitItems(next.items);
+        const { texts, photos, quantities, sources, recipeNames } = splitItems(next.items);
         setActiveListId(next.id);
         setListItems(texts);
         setItemPhotos(photos);
+        setItemQuantities(quantities);
+        setItemSources(sources);
+        setItemRecipeNames(recipeNames);
         lastSavedAt.current = next.updated_at;
         localStorage.setItem(ACTIVE_LIST_KEY, next.id);
       } else {
@@ -316,10 +392,13 @@ export function useLists(user: User | null): {
     const target = lists.find(l => l.id === id);
     if (!target) return;
 
-    const { texts, photos } = splitItems(target.items);
+    const { texts, photos, quantities, sources, recipeNames } = splitItems(target.items);
     setActiveListId(id);
     setListItems(texts);
     setItemPhotos(photos);
+    setItemQuantities(quantities);
+    setItemSources(sources);
+    setItemRecipeNames(recipeNames);
     lastSavedAt.current = target.updated_at;
     localStorage.setItem(ACTIVE_LIST_KEY, id);
   }
@@ -373,6 +452,12 @@ export function useLists(user: User | null): {
     setListItems,
     itemPhotos,
     setItemPhotos,
+    itemQuantities,
+    setItemQuantities,
+    itemSources,
+    setItemSources,
+    itemRecipeNames,
+    setItemRecipeNames,
     isLoaded,
     needsNaming,
     createList,

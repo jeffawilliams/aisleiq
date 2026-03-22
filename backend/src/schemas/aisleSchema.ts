@@ -46,3 +46,24 @@ export const OrganizeByAisleRequestSchema = z.object({
 });
 
 export type OrganizeByAisleRequest = z.infer<typeof OrganizeByAisleRequestSchema>;
+
+export const RecipeIngredientSchema = z.object({
+  name: z.string(),
+  quantity: z.string().nullable(),
+});
+
+export const RecipeScanOutputSchema = z.object({
+  recipeName: z.string().nullable(),
+  ingredients: z.array(RecipeIngredientSchema),
+});
+
+export const RecipeRequestSchema = z.object({
+  mode: z.enum(['photo', 'url', 'text']),
+  image: z.string().optional(),   // base64, photo mode only
+  url: z.string().optional(),     // url mode only
+  text: z.string().optional(),    // text mode only
+});
+
+export type RecipeIngredient = z.infer<typeof RecipeIngredientSchema>;
+export type RecipeScanOutput = z.infer<typeof RecipeScanOutputSchema>;
+export type RecipeRequest = z.infer<typeof RecipeRequestSchema>;

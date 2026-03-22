@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { OrganizeOutputSchema, OrganizeOutput, ScanOutputSchema, ScanOutput } from "../schemas/aisleSchema.js";
+import { OrganizeOutputSchema, OrganizeOutput, ScanOutputSchema, ScanOutput, RecipeScanOutputSchema, RecipeScanOutput } from "../schemas/aisleSchema.js";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -99,6 +99,53 @@ export async function organizeShoppingList(items: string): Promise<OrganizeOutpu
   const result = OrganizeOutputSchema.parse(JSON.parse(textBlock.text));
   const inputItems = items.split("\n").map(i => i.trim()).filter(Boolean);
   return ensureAllItemsPlaced(result, inputItems);
+}
+
+const RECIPE_PROMPT = `Extract the recipe name and all ingredients from the content provided.
+
+Rules:
+1. Extract the recipe name if present. If no recipe name is found, return null.
+2. Extract every ingredient and return it as an object with two fields:
+   - name: the grocery-list-friendly ingredient name in Title Case (e.g. "All-Purpose Flour", "Unsalted Butter", "Large Eggs")
+   - quantity: the measurement exactly as written in the recipe (e.g. "2 cups", "1 tbsp", "3 large", "½ tsp"), or null if no quantity is given
+3. Normalize ingredient names to Title Case.
+4. Exclude non-ingredient lines such as instructions, section headers, serving notes, cook times, and nutritional information.
+5. If no ingredients are found, return an empty array for ingredients.`;
+
+export async function scanRecipe(mode: 'photo' | 'url' | 'text', content: string): Promise<RecipeScanOutput> {
+  let messages: Anthropic.MessageParam[];
+
+  if (mode === 'photo') {
+    messages = [{
+      role: "user",
+      content: [
+        { type: "image", source: { type: "base64", media_type: "image/jpeg", data: content } },
+        { type: "text", text: RECIPE_PROMPT },
+      ],
+    }];
+  } else {
+    const label = mode === 'url' ? 'HTML page content' : 'recipe text';
+    messages = [{
+      role: "user",
+      content: `${RECIPE_PROMPT}\n\n${label}:\n${content}`,
+    }];
+  }
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1024,
+    messages,
+    output_config: {
+      format: zodOutputFormat(RecipeScanOutputSchema),
+    },
+  });
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new Error("No text response from Claude.");
+  }
+
+  return RecipeScanOutputSchema.parse(JSON.parse(textBlock.text));
 }
 
 export async function organizeByAisle(items: string, layout: unknown): Promise<OrganizeOutput> {
