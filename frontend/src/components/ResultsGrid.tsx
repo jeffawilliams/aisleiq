@@ -91,7 +91,7 @@ export function ResultsGrid({ result, isStale, deals, ordered, showDeals = true,
       {hasAnyDeals && !dealsBannerDismissed && (
         <div className="test-banner">
           <span className="test-banner__text">
-            <strong>Test feature.</strong> Deal prices are from a sandbox environment and are not real offers.
+            Product Deals use Test data and do not reflect current offers in-store.
           </span>
           <button className="test-banner__dismiss" onClick={dismissDealsBanner} aria-label="Dismiss">×</button>
         </div>
