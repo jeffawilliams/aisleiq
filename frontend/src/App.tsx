@@ -19,7 +19,7 @@ export function App() {
   const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError, reset: resetAisle } = useOrganizeByAisle();
   const { user, role, authLoading, signIn, signInWithGoogle, signOut } = useAuth();
   const { stores } = useStores();
-  const { deals, fetchDeals } = useDeals();
+  const { deals, fetchDeals, resetDeals } = useDeals();
   const [isStale, setIsStale] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -213,9 +213,12 @@ export function App() {
           activeListId={activeListId}
           stores={stores}
           activeStoreId={activeStoreId}
-          onSetListStore={(storeId) => activeListId && setListStore(activeListId, storeId)}
+          onSetListStore={(storeId) => { if (storeId === null) resetDeals(); activeListId && setListStore(activeListId, storeId); }}
           onSignOut={signOut}
-          onSelectList={(id) => { switchList(id); reset(); resetAisle(); setIsStale(false); }}
+          onSelectList={(id) => {
+            if (id !== activeListId) { reset(); resetAisle(); resetDeals(); setIsStale(false); }
+            switchList(id);
+          }}
           onCreateList={(name) => { createList(name, []); reset(); resetAisle(); setIsStale(false); }}
           onDeleteList={deleteList}
           onRenameList={renameList}
@@ -255,7 +258,7 @@ export function App() {
             <ResultsGrid
               result={(aisleResult ?? result)!}
               isStale={isStale}
-              deals={activeStore ? deals : undefined}
+              deals={deals}
               ordered={!!aisleResult}
               showDeals={showDeals}
               onToggleDeals={toggleDeals}

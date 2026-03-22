@@ -35,5 +35,7 @@ export function useDeals() {
     }
   };
 
-  return { deals, isLoading, error, fetchDeals };
+  function resetDeals() { setDeals([]); }
+
+  return { deals, isLoading, error, fetchDeals, resetDeals };
 }
