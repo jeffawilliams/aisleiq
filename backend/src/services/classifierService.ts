@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const MODELS_DIR = join(__dirname, "../../../models");
+const MODELS_DIR = join(__dirname, "../../models");
 
 const IMAGENET_MEAN = [0.485, 0.456, 0.406];
 const IMAGENET_STD = [0.229, 0.224, 0.225];
