@@ -72,9 +72,9 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
     setChecked(new Set());
   }, [result]);
 
-  // Fire callback whenever checked state or deals change
+  // Fire callback whenever checked state or deals change — skip if nothing checked yet
   useEffect(() => {
-    if (!onCheckChange) return;
+    if (!onCheckChange || checked.size === 0) return;
     const checkedLower = new Set([...checked].map(i => i.toLowerCase()));
     const checkedDeals = exactDeals.filter(d => checkedLower.has(d.listItem.toLowerCase()));
     const dealCount = checkedDeals.length;
