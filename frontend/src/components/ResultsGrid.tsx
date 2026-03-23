@@ -75,7 +75,8 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
   // Fire callback whenever checked state or deals change
   useEffect(() => {
     if (!onCheckChange) return;
-    const checkedDeals = exactDeals.filter(d => checked.has(d.listItem.toLowerCase()));
+    const checkedLower = new Set([...checked].map(i => i.toLowerCase()));
+    const checkedDeals = exactDeals.filter(d => checkedLower.has(d.listItem.toLowerCase()));
     const dealCount = checkedDeals.length;
     const totalSavings = checkedDeals.reduce((sum, d) => sum + d.savings, 0);
     onCheckChange(dealCount, totalSavings);
