@@ -127,7 +127,8 @@ Rules:
    - quantity: the measurement exactly as written in the recipe (e.g. "2 cups", "1 tbsp", "3 large", "½ tsp"), or null if no quantity is given
 3. Normalize ingredient names to Title Case.
 4. Exclude non-ingredient lines such as instructions, section headers, serving notes, cook times, and nutritional information.
-5. If no ingredients are found, return an empty array for ingredients.`;
+5. If no ingredients are found, return an empty array for ingredients.
+6. If the same ingredient appears more than once (e.g. across multiple recipe sections), consolidate into a single entry. Add the quantities together if they use the same unit (e.g. "2½ cups" + "1½ cups" = "4 cups"). If the units differ or the quantities cannot be cleanly combined, keep the larger amount and note the total in the quantity field.`;
 
 export async function scanRecipe(mode: 'photo' | 'url' | 'text', content: string): Promise<RecipeScanOutput> {
   let messages: Anthropic.MessageParam[];
