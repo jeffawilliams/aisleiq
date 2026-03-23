@@ -36,8 +36,10 @@ export function CategoryCard({ category, dealMap, checked, onToggle }: CategoryC
                 <span className="checklist-label">{item}</span>
                 {deal && (
                   <span className="deal-badge">
-                    {deal.brand} · Sale ${deal.promoPrice.toFixed(2)} · Save ${deal.savings.toFixed(2)}
-                    {deal.expiresAt && ` · ends ${formatDate(deal.expiresAt)}`}
+                    <span className="deal-badge__product">{deal.productName}</span>
+                    <span className="deal-badge__pricing">
+                      Sale ${deal.promoPrice.toFixed(2)} (reg ${deal.regularPrice.toFixed(2)}) · Save ${deal.savings.toFixed(2)}{deal.expiresAt && ` · Expires ${formatDate(deal.expiresAt)}`}
+                    </span>
                   </span>
                 )}
               </span>
