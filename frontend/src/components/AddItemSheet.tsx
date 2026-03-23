@@ -231,6 +231,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
   };
 
   const handleProductConfirm = (item: string) => {
+    console.log("[photo] handleProductConfirm", { item, hasCapturedPhoto: !!capturedPhoto, hasCallback: !!onAddItemWithPhoto });
     if (capturedPhoto && onAddItemWithPhoto) {
       onAddItemWithPhoto(item, capturedPhoto);
     } else {

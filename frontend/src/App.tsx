@@ -113,8 +113,9 @@ export function App() {
   };
 
   const addItemWithPhoto = (item: string, photo: string) => {
+    console.log("[photo] addItemWithPhoto", { item, photoLength: photo?.length });
     setListItems(prev => [...prev, item]);
-    setItemPhotos(prev => [...prev, photo]);
+    setItemPhotos(prev => { console.log("[photo] setItemPhotos", { prevLen: prev.length, newLen: prev.length + 1 }); return [...prev, photo]; });
     if (result || aisleResult) setIsStale(true);
   };
 
