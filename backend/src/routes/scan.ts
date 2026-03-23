@@ -2,8 +2,29 @@ import { Router, Request, Response, NextFunction } from "express";
 import { ScanRequestSchema } from "../schemas/aisleSchema.js";
 import { scanImage } from "../services/claudeService.js";
 import { classifyProduce } from "../services/classifierService.js";
+import { supabase } from "../services/supabaseClient.js";
 
 export const scanRouter = Router();
+
+function logScanEvent(
+  userId: string | undefined,
+  confidence: string,
+  claudeCalled: boolean,
+  topScore?: number,
+  topFineName?: string,
+  topCoarseName?: string,
+): void {
+  supabase.from("scan_events").insert({
+    user_id: userId ?? null,
+    confidence,
+    claude_called: claudeCalled,
+    top_score: topScore ?? null,
+    top_fine_name: topFineName ?? null,
+    top_coarse_name: topCoarseName ?? null,
+  }).then(({ error }) => {
+    if (error) console.error("scan_events insert failed:", error.message);
+  });
+}
 
 scanRouter.post(
   "/scan",
@@ -16,7 +37,7 @@ scanRouter.post(
       return;
     }
 
-    const { image, mode } = parsed.data;
+    const { image, mode, userId } = parsed.data;
 
     // Classifier runs only for product scans — list scans go straight to Claude
     if (mode === "product") {
@@ -25,6 +46,7 @@ scanRouter.post(
 
         if (classifier.confidence === "high") {
           // Skip Claude entirely — classifier is confident enough
+          logScanEvent(userId, "high", false, classifier.topScore, classifier.topFineName, classifier.topCoarseName);
           res.json({ items: [classifier.topFineName] });
           return;
         }
@@ -39,11 +61,13 @@ scanRouter.post(
               }
             : undefined;
 
+        logScanEvent(userId, classifier.confidence, true, classifier.topScore, classifier.topFineName, classifier.topCoarseName);
         const result = await scanImage(image, mode, hints);
         res.json({ items: result.items });
         return;
       } catch {
         // Classifier failed — fall through to Claude with no hints
+        logScanEvent(userId, "classifier_error", true);
       }
     }
 

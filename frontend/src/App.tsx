@@ -242,6 +242,7 @@ export function App() {
           onEditItemWithQuantity={editItemWithQuantity}
           onAddItemWithPhoto={addItemWithPhoto}
           onAddRecipeItems={handleAddRecipeItems}
+          userId={user?.id}
           onSubmit={handleOrganize}
           onOrganizeByAisle={handleOrganizeByAisle}
           isGroupLoading={isLoading}

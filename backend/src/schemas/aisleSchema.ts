@@ -23,7 +23,8 @@ export type OrganizeOutput = z.infer<typeof OrganizeOutputSchema>;
 
 export const ScanRequestSchema = z.object({
   image: z.string().min(1),
-  mode: z.enum(['product', 'list'])
+  mode: z.enum(['product', 'list']),
+  userId: z.string().uuid().optional(),
 });
 
 export const ScanOutputSchema = z.object({
