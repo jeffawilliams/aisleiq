@@ -80,7 +80,7 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
     const dealCount = checkedDeals.length;
     const totalSavings = checkedDeals.reduce((sum, d) => sum + d.savings, 0);
     onCheckChange(dealCount, totalSavings);
-  }, [checked, exactDeals.length]);
+  }, [checked, exactDeals.length, onCheckChange]);
 
   function toggleItem(item: string) {
     setChecked(prev => {
