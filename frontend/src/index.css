@@ -682,11 +682,17 @@ button:disabled {
 /* Checklist items */
 .checklist-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   cursor: pointer;
   user-select: none;
   padding: 0.15rem 0;
+}
+
+.checklist-item__content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .checklist-box {
@@ -703,6 +709,7 @@ button:disabled {
   color: #fff;
   background: #fff;
   transition: background 0.15s, border-color 0.15s;
+  margin-top: 0.15rem;
 }
 
 .checklist-item--checked .checklist-box {
@@ -2085,60 +2092,10 @@ button:disabled {
 
 /* ── Deal badge ──────────────────────────────────────────── */
 .deal-badge {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  background: #e8f5e9;
-  color: #1b4332;
-  border: 1px solid #a8d5ba;
-  border-radius: 4px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.15rem 0.5rem;
-  margin-left: 0.5rem;
-  line-height: 1.6;
-}
-
-.deal-badge__product {
-  display: block;
-  width: 100%;
-  font-weight: 400;
-  color: #2d6a4f;
-  font-size: 0.68rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.deal-badge__match {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #888;
-}
-
-.deal-badge__category {
-  font-size: 0.65rem;
-  font-weight: 400;
-  color: #888;
-}
-
-.deal-badge__price {
-  color: #1b4332;
-}
-
-.deal-badge__savings {
+  font-size: 0.78rem;
   color: #2d6a4f;
   font-weight: 500;
-}
-
-.deal-badge__expiry {
-  color: #666;
-  font-weight: 400;
-  font-size: 0.68rem;
+  margin-top: 0.1rem;
 }
 
 /* ── Store picker in nav panel ───────────────────────────── */

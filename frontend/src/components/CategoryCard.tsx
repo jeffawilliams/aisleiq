@@ -32,17 +32,15 @@ export function CategoryCard({ category, dealMap, checked, onToggle }: CategoryC
               onClick={() => onToggle(item)}
             >
               <span className="checklist-box">{isChecked ? "✓" : ""}</span>
-              <span className="checklist-label">{item}</span>
-              {deal && (
-                <span className="deal-badge">
-                  <span className="deal-badge__product">{deal.productName}</span>
-                  <span className="deal-badge__price">Sale ${deal.promoPrice.toFixed(2)}</span>
-                  <span className="deal-badge__savings"> · Save ${deal.savings.toFixed(2)}</span>
-                  {deal.expiresAt && (
-                    <span className="deal-badge__expiry"> · ends {formatDate(deal.expiresAt)}</span>
-                  )}
-                </span>
-              )}
+              <span className="checklist-item__content">
+                <span className="checklist-label">{item}</span>
+                {deal && (
+                  <span className="deal-badge">
+                    {deal.brand} · Sale ${deal.promoPrice.toFixed(2)} · Save ${deal.savings.toFixed(2)}
+                    {deal.expiresAt && ` · ends ${formatDate(deal.expiresAt)}`}
+                  </span>
+                )}
+              </span>
             </li>
           );
         })}
