@@ -275,6 +275,9 @@ def setup_file_logger(log_path: Path) -> logging.Logger:
     """Create a logger that appends to log_path with no timestamp prefix."""
     logger = logging.getLogger("classifier_training")
     logger.setLevel(logging.INFO)
+    # Clear any handlers left over from a previous run in the same Python session
+    # (Colab re-uses the kernel, so the logger registry persists between script runs)
+    logger.handlers.clear()
     handler = logging.FileHandler(log_path, mode="a", encoding="utf-8")
     handler.setFormatter(logging.Formatter("%(message)s"))
     logger.addHandler(handler)
@@ -325,18 +328,21 @@ def format_per_class_table(
     fine_id_to_name: dict[int, str],
     num_classes: int,
 ) -> str:
+    # Only report on classes that actually appear in the test set — avoids
+    # polluting the table with zero rows for excluded categories (e.g. Packages)
+    present_labels = sorted(set(true_labels))
     report = classification_report(
         true_labels,
         pred_labels,
-        labels=list(range(num_classes)),
-        target_names=[fine_id_to_name.get(i, str(i)) for i in range(num_classes)],
+        labels=present_labels,
+        target_names=[fine_id_to_name.get(i, str(i)) for i in present_labels],
         output_dict=True,
         zero_division=0,
     )
     header = f"  {'Class':<25}| {'Precision':>9} | {'Recall':>6} | {'F1':>5} | {'Support':>7}"
     separator = "  " + "-" * 25 + "|" + "-" * 11 + "|" + "-" * 8 + "|" + "-" * 7 + "|" + "-" * 8
     rows = [header, separator]
-    for class_id in range(num_classes):
+    for class_id in present_labels:
         name = fine_id_to_name.get(class_id, str(class_id))
         stats = report.get(name, {})
         p = stats.get("precision", 0.0)

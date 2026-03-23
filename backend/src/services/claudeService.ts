@@ -41,7 +41,24 @@ Standard grocery categories (use these names exactly):
 const PRODUCT_PROMPT = "Identify the product shown in this image. Return the full product name exactly as it appears on the package — include brand name, product name, flavor or variety, and size or quantity if visible. If you see multiple distinct products, return each as a separate item. Return a JSON array of strings. Return only the JSON array.";
 const LIST_PROMPT = "This image contains a shopping list or list of items. Extract every item you can read from the list. Return them as a JSON array of strings. Return only the JSON array.";
 
-export async function scanImage(image: string, mode: 'product' | 'list'): Promise<ScanOutput> {
+export interface ClassifierHints {
+  topCoarseName: string;
+  top3FineNames: string[];
+}
+
+export async function scanImage(
+  image: string,
+  mode: "product" | "list",
+  hints?: ClassifierHints
+): Promise<ScanOutput> {
+  let promptText = mode === "product" ? PRODUCT_PROMPT : LIST_PROMPT;
+
+  if (mode === "product" && hints) {
+    promptText +=
+      `\n\nPre-analysis hint: Category — ${hints.topCoarseName}. ` +
+      `Top candidates — ${hints.top3FineNames.join(", ")}. Use the image to confirm.`;
+  }
+
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 1024,
@@ -49,7 +66,7 @@ export async function scanImage(image: string, mode: 'product' | 'list'): Promis
       role: "user",
       content: [
         { type: "image", source: { type: "base64", media_type: "image/jpeg", data: image } },
-        { type: "text", text: mode === 'product' ? PRODUCT_PROMPT : LIST_PROMPT }
+        { type: "text", text: promptText }
       ]
     }],
     output_config: {

@@ -91,7 +91,7 @@ def export_to_onnx(
         dummy_input,
         str(onnx_path),
         export_params=True,
-        opset_version=17,           # Widely supported; covers all EfficientNet ops
+        opset_version=18,           # Minimum supported by current PyTorch ONNX exporter
         do_constant_folding=True,   # Fold constant subexpressions at export time
         input_names=["image"],
         output_names=["logits"],

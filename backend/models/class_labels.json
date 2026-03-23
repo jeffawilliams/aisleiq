@@ -1,0 +1,407 @@
+[
+  {
+    "name": "Golden-Delicious",
+    "coarse_id": 0,
+    "coarse_name": "Apple"
+  },
+  {
+    "name": "Granny-Smith",
+    "coarse_id": 0,
+    "coarse_name": "Apple"
+  },
+  {
+    "name": "Pink-Lady",
+    "coarse_id": 0,
+    "coarse_name": "Apple"
+  },
+  {
+    "name": "Red-Delicious",
+    "coarse_id": 0,
+    "coarse_name": "Apple"
+  },
+  {
+    "name": "Royal-Gala",
+    "coarse_id": 0,
+    "coarse_name": "Apple"
+  },
+  {
+    "name": "Avocado",
+    "coarse_id": 1,
+    "coarse_name": "Avocado"
+  },
+  {
+    "name": "Banana",
+    "coarse_id": 2,
+    "coarse_name": "Banana"
+  },
+  {
+    "name": "Kiwi",
+    "coarse_id": 3,
+    "coarse_name": "Kiwi"
+  },
+  {
+    "name": "Lemon",
+    "coarse_id": 4,
+    "coarse_name": "Lemon"
+  },
+  {
+    "name": "Lime",
+    "coarse_id": 5,
+    "coarse_name": "Lime"
+  },
+  {
+    "name": "Mango",
+    "coarse_id": 6,
+    "coarse_name": "Mango"
+  },
+  {
+    "name": "Cantaloupe",
+    "coarse_id": 7,
+    "coarse_name": "Melon"
+  },
+  {
+    "name": "Galia-Melon",
+    "coarse_id": 7,
+    "coarse_name": "Melon"
+  },
+  {
+    "name": "Honeydew-Melon",
+    "coarse_id": 7,
+    "coarse_name": "Melon"
+  },
+  {
+    "name": "Watermelon",
+    "coarse_id": 7,
+    "coarse_name": "Melon"
+  },
+  {
+    "name": "Nectarine",
+    "coarse_id": 8,
+    "coarse_name": "Nectarine"
+  },
+  {
+    "name": "Orange",
+    "coarse_id": 9,
+    "coarse_name": "Orange"
+  },
+  {
+    "name": "Papaya",
+    "coarse_id": 10,
+    "coarse_name": "Papaya"
+  },
+  {
+    "name": "Passion-Fruit",
+    "coarse_id": 11,
+    "coarse_name": "Passion-Fruit"
+  },
+  {
+    "name": "Peach",
+    "coarse_id": 12,
+    "coarse_name": "Peach"
+  },
+  {
+    "name": "Anjou",
+    "coarse_id": 13,
+    "coarse_name": "Pear"
+  },
+  {
+    "name": "Conference",
+    "coarse_id": 13,
+    "coarse_name": "Pear"
+  },
+  {
+    "name": "Kaiser",
+    "coarse_id": 13,
+    "coarse_name": "Pear"
+  },
+  {
+    "name": "Pineapple",
+    "coarse_id": 14,
+    "coarse_name": "Pineapple"
+  },
+  {
+    "name": "Plum",
+    "coarse_id": 15,
+    "coarse_name": "Plum"
+  },
+  {
+    "name": "Pomegranate",
+    "coarse_id": 16,
+    "coarse_name": "Pomegranate"
+  },
+  {
+    "name": "Red-Grapefruit",
+    "coarse_id": 17,
+    "coarse_name": "Red-Grapefruit"
+  },
+  {
+    "name": "Satsumas",
+    "coarse_id": 18,
+    "coarse_name": "Satsumas"
+  },
+  {
+    "name": "Bravo-Apple-Juice",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "Bravo-Orange-Juice",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "God-Morgon-Apple-Juice",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "God-Morgon-Orange-Juice",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "God-Morgon-Orange-Red-Grapefruit-Juice",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "God-Morgon-Red-Grapefruit-Juice",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "Tropicana-Apple-Juice",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "Tropicana-Golden-Grapefruit",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "Tropicana-Juice-Smooth",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "Tropicana-Mandarin-Morning",
+    "coarse_id": 19,
+    "coarse_name": "Juice"
+  },
+  {
+    "name": "Arla-Ecological-Medium-Fat-Milk",
+    "coarse_id": 20,
+    "coarse_name": "Milk"
+  },
+  {
+    "name": "Arla-Lactose-Medium-Fat-Milk",
+    "coarse_id": 20,
+    "coarse_name": "Milk"
+  },
+  {
+    "name": "Arla-Medium-Fat-Milk",
+    "coarse_id": 20,
+    "coarse_name": "Milk"
+  },
+  {
+    "name": "Arla-Standard-Milk",
+    "coarse_id": 20,
+    "coarse_name": "Milk"
+  },
+  {
+    "name": "Garant-Ecological-Medium-Fat-Milk",
+    "coarse_id": 20,
+    "coarse_name": "Milk"
+  },
+  {
+    "name": "Garant-Ecological-Standard-Milk",
+    "coarse_id": 20,
+    "coarse_name": "Milk"
+  },
+  {
+    "name": "Oatly-Natural-Oatghurt",
+    "coarse_id": 21,
+    "coarse_name": "Oatghurt"
+  },
+  {
+    "name": "Oatly-Oat-Milk",
+    "coarse_id": 22,
+    "coarse_name": "Oat-Milk"
+  },
+  {
+    "name": "Arla-Ecological-Sour-Cream",
+    "coarse_id": 23,
+    "coarse_name": "Sour-Cream"
+  },
+  {
+    "name": "Arla-Sour-Cream",
+    "coarse_id": 23,
+    "coarse_name": "Sour-Cream"
+  },
+  {
+    "name": "Arla-Sour-Milk",
+    "coarse_id": 24,
+    "coarse_name": "Sour-Milk"
+  },
+  {
+    "name": "Alpro-Blueberry-Soyghurt",
+    "coarse_id": 25,
+    "coarse_name": "Soyghurt"
+  },
+  {
+    "name": "Alpro-Vanilla-Soyghurt",
+    "coarse_id": 25,
+    "coarse_name": "Soyghurt"
+  },
+  {
+    "name": "Alpro-Fresh-Soy-Milk",
+    "coarse_id": 26,
+    "coarse_name": "Soy-Milk"
+  },
+  {
+    "name": "Alpro-Shelf-Soy-Milk",
+    "coarse_id": 26,
+    "coarse_name": "Soy-Milk"
+  },
+  {
+    "name": "Arla-Mild-Vanilla-Yoghurt",
+    "coarse_id": 27,
+    "coarse_name": "Yoghurt"
+  },
+  {
+    "name": "Arla-Natural-Mild-Low-Fat-Yoghurt",
+    "coarse_id": 27,
+    "coarse_name": "Yoghurt"
+  },
+  {
+    "name": "Arla-Natural-Yoghurt",
+    "coarse_id": 27,
+    "coarse_name": "Yoghurt"
+  },
+  {
+    "name": "Valio-Vanilla-Yoghurt",
+    "coarse_id": 27,
+    "coarse_name": "Yoghurt"
+  },
+  {
+    "name": "Yoggi-Strawberry-Yoghurt",
+    "coarse_id": 27,
+    "coarse_name": "Yoghurt"
+  },
+  {
+    "name": "Yoggi-Vanilla-Yoghurt",
+    "coarse_id": 27,
+    "coarse_name": "Yoghurt"
+  },
+  {
+    "name": "Asparagus",
+    "coarse_id": 28,
+    "coarse_name": "Asparagus"
+  },
+  {
+    "name": "Aubergine",
+    "coarse_id": 29,
+    "coarse_name": "Aubergine"
+  },
+  {
+    "name": "Cabbage",
+    "coarse_id": 30,
+    "coarse_name": "Cabbage"
+  },
+  {
+    "name": "Carrots",
+    "coarse_id": 31,
+    "coarse_name": "Carrots"
+  },
+  {
+    "name": "Cucumber",
+    "coarse_id": 32,
+    "coarse_name": "Cucumber"
+  },
+  {
+    "name": "Garlic",
+    "coarse_id": 33,
+    "coarse_name": "Garlic"
+  },
+  {
+    "name": "Ginger",
+    "coarse_id": 34,
+    "coarse_name": "Ginger"
+  },
+  {
+    "name": "Leek",
+    "coarse_id": 35,
+    "coarse_name": "Leek"
+  },
+  {
+    "name": "Brown-Cap-Mushroom",
+    "coarse_id": 36,
+    "coarse_name": "Mushroom"
+  },
+  {
+    "name": "Yellow-Onion",
+    "coarse_id": 37,
+    "coarse_name": "Onion"
+  },
+  {
+    "name": "Green-Bell-Pepper",
+    "coarse_id": 38,
+    "coarse_name": "Pepper"
+  },
+  {
+    "name": "Orange-Bell-Pepper",
+    "coarse_id": 38,
+    "coarse_name": "Pepper"
+  },
+  {
+    "name": "Red-Bell-Pepper",
+    "coarse_id": 38,
+    "coarse_name": "Pepper"
+  },
+  {
+    "name": "Yellow-Bell-Pepper",
+    "coarse_id": 38,
+    "coarse_name": "Pepper"
+  },
+  {
+    "name": "Floury-Potato",
+    "coarse_id": 39,
+    "coarse_name": "Potato"
+  },
+  {
+    "name": "Solid-Potato",
+    "coarse_id": 39,
+    "coarse_name": "Potato"
+  },
+  {
+    "name": "Sweet-Potato",
+    "coarse_id": 39,
+    "coarse_name": "Potato"
+  },
+  {
+    "name": "Red-Beet",
+    "coarse_id": 40,
+    "coarse_name": "Red-Beet"
+  },
+  {
+    "name": "Beef-Tomato",
+    "coarse_id": 41,
+    "coarse_name": "Tomato"
+  },
+  {
+    "name": "Regular-Tomato",
+    "coarse_id": 41,
+    "coarse_name": "Tomato"
+  },
+  {
+    "name": "Vine-Tomato",
+    "coarse_id": 41,
+    "coarse_name": "Tomato"
+  },
+  {
+    "name": "Zucchini",
+    "coarse_id": 42,
+    "coarse_name": "Zucchini"
+  }
+]
