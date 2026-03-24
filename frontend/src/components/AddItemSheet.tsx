@@ -356,7 +356,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
             </button>
             <button className="bottom-sheet-option" onClick={() => { setScanError(null); setView('recipe'); }}>
               <span className="bottom-sheet-option__icon">🍽️</span>
-              <span>Add from Recipe</span>
+              <span>Add Recipe Ingredients</span>
             </button>
             <button className="bottom-sheet-option bottom-sheet-option--cancel" onClick={onClose}>
               Cancel
@@ -383,7 +383,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
 
         {view === 'recipe' && (
           <>
-            <h3 className="bottom-sheet-title">Add from Recipe</h3>
+            <h3 className="bottom-sheet-title">Add Recipe Ingredients</h3>
 
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
               {(['photo', 'url', 'text'] as RecipeSubMode[]).map((mode) => (
