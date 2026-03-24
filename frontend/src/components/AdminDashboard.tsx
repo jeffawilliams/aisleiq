@@ -4,17 +4,16 @@ import { supabase } from "../lib/supabaseClient.js";
 import { LoadingSpinner } from "./LoadingSpinner.js";
 
 interface AdminStats {
-  user_count: number;
   list_count: number;
-  item_count: number;
-  organize_count: number;
   items_per_list_avg: number | null;
   items_per_list_max: number | null;
   items_per_list_min: number | null;
   deals_per_trip_avg: number | null;
   deals_per_trip_max: number | null;
+  deals_total: number | null;
   savings_per_trip_avg: number | null;
   savings_per_trip_max: number | null;
+  savings_total: number | null;
 }
 
 interface FeedbackRow {
@@ -94,27 +93,17 @@ setStats(statsResult.data as AdminStats);
         <h1 className="admin-dashboard__title">Dashboard</h1>
       </div>
 
-      <div className="admin-stats">
-        <div className="admin-stat-card">
-          <div className="admin-stat-card__value">{stats.user_count.toLocaleString()}</div>
-          <div className="admin-stat-card__label">Registered Users</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-card__value">{stats.list_count.toLocaleString()}</div>
-          <div className="admin-stat-card__label">Lists Created</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-card__value">{stats.item_count.toLocaleString()}</div>
-          <div className="admin-stat-card__label">Items Added</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-card__value">{stats.organize_count.toLocaleString()}</div>
-          <div className="admin-stat-card__label">Organizes Run</div>
-        </div>
-      </div>
-
       <div className="admin-analytics">
         <h2 className="admin-analytics__title">List Analytics</h2>
+        <div className="admin-analytics-cluster">
+          <div className="admin-analytics-cluster__label">Lists Created</div>
+          <div className="admin-analytics-cluster__stats">
+            <div className="admin-analytics-stat">
+              <div className="admin-analytics-stat__value">{stats.list_count.toLocaleString()}</div>
+              <div className="admin-analytics-stat__label">Total</div>
+            </div>
+          </div>
+        </div>
         <div className="admin-analytics-cluster">
           <div className="admin-analytics-cluster__label">Items per List</div>
           <div className="admin-analytics-cluster__stats">
@@ -135,32 +124,42 @@ setStats(statsResult.data as AdminStats);
 
         <h2 className="admin-analytics__title">Deal Analytics</h2>
         <div className="admin-analytics-cluster">
-          <div className="admin-analytics-cluster__label">Deals Purchased per Trip</div>
+          <div className="admin-analytics-cluster__label">Deals Redeemed</div>
           <div className="admin-analytics-cluster__stats">
             <div className="admin-analytics-stat">
+              <div className="admin-analytics-stat__value">{stats.deals_total?.toLocaleString() ?? "—"}</div>
+              <div className="admin-analytics-stat__label">Total</div>
+            </div>
+            <div className="admin-analytics-stat">
               <div className="admin-analytics-stat__value">{stats.deals_per_trip_avg ?? "—"}</div>
-              <div className="admin-analytics-stat__label">Avg</div>
+              <div className="admin-analytics-stat__label">Avg/Trip</div>
             </div>
             <div className="admin-analytics-stat">
               <div className="admin-analytics-stat__value">{stats.deals_per_trip_max ?? "—"}</div>
-              <div className="admin-analytics-stat__label">Max</div>
+              <div className="admin-analytics-stat__label">Max/Trip</div>
             </div>
           </div>
         </div>
         <div className="admin-analytics-cluster">
-          <div className="admin-analytics-cluster__label">Savings per Trip</div>
+          <div className="admin-analytics-cluster__label">Savings</div>
           <div className="admin-analytics-cluster__stats">
+            <div className="admin-analytics-stat">
+              <div className="admin-analytics-stat__value">
+                {stats.savings_total != null ? `$${Number(stats.savings_total).toFixed(2)}` : "—"}
+              </div>
+              <div className="admin-analytics-stat__label">Total</div>
+            </div>
             <div className="admin-analytics-stat">
               <div className="admin-analytics-stat__value">
                 {stats.savings_per_trip_avg != null ? `$${Number(stats.savings_per_trip_avg).toFixed(2)}` : "—"}
               </div>
-              <div className="admin-analytics-stat__label">Avg</div>
+              <div className="admin-analytics-stat__label">Avg/Trip</div>
             </div>
             <div className="admin-analytics-stat">
               <div className="admin-analytics-stat__value">
                 {stats.savings_per_trip_max != null ? `$${Number(stats.savings_per_trip_max).toFixed(2)}` : "—"}
               </div>
-              <div className="admin-analytics-stat__label">Max</div>
+              <div className="admin-analytics-stat__label">Max/Trip</div>
             </div>
           </div>
         </div>
