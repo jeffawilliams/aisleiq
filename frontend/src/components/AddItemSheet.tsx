@@ -231,7 +231,6 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
   };
 
   const handleProductConfirm = (item: string) => {
-    console.log("[photo] handleProductConfirm", { item, hasCapturedPhoto: !!capturedPhoto, hasCallback: !!onAddItemWithPhoto });
     if (capturedPhoto && onAddItemWithPhoto) {
       onAddItemWithPhoto(item, capturedPhoto);
     } else {
@@ -241,7 +240,11 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
   };
 
   const handleListConfirm = (items: string[]) => {
-    onAddItems(items);
+    if (capturedPhoto && onAddItemWithPhoto && items.length > 0) {
+      items.forEach(item => onAddItemWithPhoto(item, capturedPhoto));
+    } else {
+      onAddItems(items);
+    }
     onClose();
   };
 
