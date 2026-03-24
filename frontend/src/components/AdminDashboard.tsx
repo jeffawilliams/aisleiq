@@ -8,6 +8,8 @@ interface AdminStats {
   items_per_list_avg: number | null;
   items_per_list_max: number | null;
   items_per_list_min: number | null;
+  photo_items_total: number | null;
+  photo_items_pct: number | null;
   deals_per_trip_avg: number | null;
   deals_per_trip_max: number | null;
   deals_total: number | null;
@@ -101,6 +103,19 @@ setStats(statsResult.data as AdminStats);
             <div className="admin-analytics-stat">
               <div className="admin-analytics-stat__value">{stats.list_count.toLocaleString()}</div>
               <div className="admin-analytics-stat__label">Total</div>
+            </div>
+          </div>
+        </div>
+        <div className="admin-analytics-cluster">
+          <div className="admin-analytics-cluster__label">Photo Items</div>
+          <div className="admin-analytics-cluster__stats">
+            <div className="admin-analytics-stat">
+              <div className="admin-analytics-stat__value">{stats.photo_items_total?.toLocaleString() ?? "—"}</div>
+              <div className="admin-analytics-stat__label">Total</div>
+            </div>
+            <div className="admin-analytics-stat">
+              <div className="admin-analytics-stat__value">{stats.photo_items_pct != null ? `${stats.photo_items_pct}%` : "—"}</div>
+              <div className="admin-analytics-stat__label">% of Items</div>
             </div>
           </div>
         </div>

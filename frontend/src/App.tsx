@@ -169,6 +169,7 @@ export function App() {
           user_id: user.id,
           list_id: activeListId,
           item_count: listItems.length,
+          photo_item_count: itemPhotos.filter(p => p !== null).length,
         });
       }
     }
