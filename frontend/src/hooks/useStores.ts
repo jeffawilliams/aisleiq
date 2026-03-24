@@ -11,6 +11,7 @@ export function useStores(): { stores: Store[]; isLoading: boolean } {
       const { data } = await supabase
         .from("stores")
         .select("id, name, kroger_location_id")
+        .eq("active", true)
         .order("name");
 
       setStores((data as Store[]) ?? []);
