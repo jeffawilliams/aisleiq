@@ -60,6 +60,13 @@ export function useAuth() {
         }
       }
 
+      // Re-create anonymous session after sign-out — fire and forget,
+      // the subsequent SIGNED_IN event will update state
+      if (event === "SIGNED_OUT") {
+        supabase.auth.signInAnonymously();
+        return;
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
       setAuthLoading(false);
@@ -67,13 +74,6 @@ export function useAuth() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  // Re-create an anonymous session after sign-out so there is always a user present
-  useEffect(() => {
-    if (!authLoading && !user) {
-      supabase.auth.signInAnonymously();
-    }
-  }, [user, authLoading]);
 
   // Fetch role in a separate effect so onAuthStateChange stays synchronous.
   // Anonymous users are always standard — skip the DB call.
