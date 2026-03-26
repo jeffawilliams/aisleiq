@@ -7,6 +7,7 @@ import { Store } from "../types/index.js";
 interface Props {
   user: User | null;
   role: UserRole;
+  isAnonymous: boolean;
   lists: ListRecord[];
   activeListId: string | null;
   stores: Store[];
@@ -26,6 +27,7 @@ interface Props {
 export function HamburgerMenu({
   user,
   role,
+  isAnonymous,
   lists,
   activeListId,
   stores,
@@ -384,7 +386,7 @@ export function HamburgerMenu({
               </button>
             )}
 
-            {user && (
+            {user && !isAnonymous && (
               <button
                 className="nav-sign-out"
                 onClick={() => { onSignOut(); close(); }}

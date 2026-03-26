@@ -74,7 +74,10 @@ function mergeItems(
 }
 
 const ACTIVE_LIST_KEY = "sla_active_list_id";
-const PENDING_ITEMS_KEY = "sla_pending_items";
+
+function isAnonUser(user: User | null): boolean {
+  return !!(user as any)?.is_anonymous;
+}
 
 export function useLists(user: User | null): {
   lists: ListRecord[];
@@ -147,17 +150,23 @@ export function useLists(user: User | null): {
         .order("updated_at", { ascending: false });
 
       if (!data || data.length === 0) {
-        // New user — restore any items they added before signing in
-        const pendingRaw = localStorage.getItem(PENDING_ITEMS_KEY);
-        if (pendingRaw) {
-          try {
-            const pending = JSON.parse(pendingRaw);
-            if (Array.isArray(pending) && pending.length > 0) {
-              setListItems(pending);
-            }
-          } catch {}
+        if (isAnonUser(user)) {
+          // Anonymous user with no list — create a default one silently
+          const { data: newList } = await supabase
+            .from("lists")
+            .insert({ owner_id: user!.id, name: "My List", items: [], updated_at: new Date().toISOString() })
+            .select("id, name, items, updated_at, share_token, store_id")
+            .single();
+          if (newList) {
+            setLists([newList as ListRecord]);
+            setActiveListId(newList.id);
+            lastSavedAt.current = newList.updated_at;
+            localStorage.setItem(ACTIVE_LIST_KEY, newList.id);
+          }
+        } else {
+          // Registered user with no lists — prompt to name first list
+          setNeedsNaming(true);
         }
-        setNeedsNaming(true);
         setIsLoaded(true);
         initialLoadDone.current = true;
         return;
@@ -346,7 +355,6 @@ export function useLists(user: User | null): {
     setItemRecipeNames([]);
     lastSavedAt.current = newList.updated_at;
     localStorage.setItem(ACTIVE_LIST_KEY, newList.id);
-    localStorage.removeItem(PENDING_ITEMS_KEY);
     setNeedsNaming(false);
     initialLoadDone.current = true;
   }

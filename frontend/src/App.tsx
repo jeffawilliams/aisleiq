@@ -17,7 +17,7 @@ import { supabase } from "./lib/supabaseClient.js";
 export function App() {
   const { organize, result, isLoading, error, reset } = useOrganize();
   const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError, reset: resetAisle } = useOrganizeByAisle();
-  const { user, role, authLoading, signIn, signInWithGoogle, signOut } = useAuth();
+  const { user, role, authLoading, isAnonymous, signIn, signInWithGoogle, signOut } = useAuth();
   const { stores } = useStores();
   const { deals, fetchDeals, resetDeals } = useDeals();
   const [isStale, setIsStale] = useState(false);
@@ -77,9 +77,9 @@ export function App() {
     try { localStorage.setItem("sla_deals_show", String(val)); } catch { /* ignore */ }
   }
 
-  // Clear results on sign-out
+  // Clear results on sign-out (user transitions back to anonymous)
   useEffect(() => {
-    if (!user) {
+    if (!user || isAnonymous) {
       reset();
       resetAisle();
     }
@@ -190,17 +190,12 @@ export function App() {
         <p>Add your groceries. We'll organize them.</p>
         {!authLoading && (
           <div className="auth-bar">
-            {user ? (
-              <span className="auth-email">{user.email}</span>
+            {!isAnonymous ? (
+              <span className="auth-email">{user?.email}</span>
             ) : (
               <button
                 className="btn-auth-link"
-                onClick={() => {
-                  if (listItems.length > 0) {
-                    localStorage.setItem("sla_pending_items", JSON.stringify(listItems));
-                  }
-                  setShowSignIn(true);
-                }}
+                onClick={() => setShowSignIn(true)}
               >
                 Sign in to save your list
               </button>
@@ -210,6 +205,7 @@ export function App() {
         <HamburgerMenu
           user={user}
           role={role}
+          isAnonymous={isAnonymous}
           lists={lists}
           activeListId={activeListId}
           stores={stores}
