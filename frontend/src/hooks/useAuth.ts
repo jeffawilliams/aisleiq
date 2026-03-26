@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient.js";
 
@@ -25,11 +25,27 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  // When a registered sign-in needs migration, we hold the session here and
+  // delay setting user state until claim_anonymous_lists completes — this
+  // prevents useLists from loading before the migrated list is available.
+  const [pendingMigrationUid, setPendingMigrationUid] = useState<string | null>(null);
+  const pendingSessionRef = useRef<Session | null>(null);
 
   useEffect(() => {
+    // If the app was opened via a magic link or OAuth redirect, the anon_uid
+    // param we embedded in the redirect URL carries the anonymous UID into the
+    // new browser window where localStorage would otherwise be empty.
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlAnonUid = urlParams.get("anon_uid");
+    if (urlAnonUid) {
+      localStorage.setItem(ANON_UID_KEY, urlAnonUid);
+      urlParams.delete("anon_uid");
+      const cleanUrl = window.location.pathname + (urlParams.toString() ? "?" + urlParams.toString() : "");
+      window.history.replaceState({}, "", cleanUrl);
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        // Existing session — store anon UID if applicable, then settle auth state
         if (isAnonUser(session.user)) {
           localStorage.setItem(ANON_UID_KEY, session.user.id);
         }
@@ -50,12 +66,14 @@ export function useAuth() {
           // Anonymous session established — record UID for later migration
           localStorage.setItem(ANON_UID_KEY, session.user.id);
         } else {
-          // Registered user signed in — migrate any anonymous list to their account
+          // Registered user signed in — migrate anonymous list if one is pending
           const anonUid = localStorage.getItem(ANON_UID_KEY);
           if (anonUid && anonUid !== session.user.id) {
-            supabase
-              .rpc("claim_anonymous_lists", { anon_user_id: anonUid })
-              .then(() => localStorage.removeItem(ANON_UID_KEY));
+            // Hold auth loading state until migration finishes so useLists
+            // doesn't query before the list has been reassigned
+            pendingSessionRef.current = session;
+            setPendingMigrationUid(anonUid);
+            return;
           }
         }
       }
@@ -75,6 +93,22 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Run migration then settle auth — keeps useLists from loading before the list is migrated
+  useEffect(() => {
+    if (!pendingMigrationUid || !pendingSessionRef.current) return;
+    const targetSession = pendingSessionRef.current;
+
+    supabase.rpc("claim_anonymous_lists", { anon_user_id: pendingMigrationUid })
+      .then(() => {
+        localStorage.removeItem(ANON_UID_KEY);
+        pendingSessionRef.current = null;
+        setPendingMigrationUid(null);
+        setSession(targetSession);
+        setUser(targetSession.user);
+        setAuthLoading(false);
+      });
+  }, [pendingMigrationUid]);
+
   // Fetch role in a separate effect so onAuthStateChange stays synchronous.
   // Anonymous users are always standard — skip the DB call.
   useEffect(() => {
@@ -86,17 +120,27 @@ export function useAuth() {
   }, [user?.id]);
 
   const signIn = async (email: string) => {
+    // Embed the anonymous UID in the redirect URL so it survives being opened
+    // in a new browser window (magic link flow)
+    const anonUid = localStorage.getItem(ANON_UID_KEY);
+    const redirectTo = anonUid
+      ? `${window.location.origin}?anon_uid=${anonUid}`
+      : window.location.origin;
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: redirectTo },
     });
     return { error };
   };
 
   const signInWithGoogle = async () => {
+    const anonUid = localStorage.getItem(ANON_UID_KEY);
+    const redirectTo = anonUid
+      ? `${window.location.origin}?anon_uid=${anonUid}`
+      : window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo },
     });
     return { error };
   };
