@@ -160,6 +160,11 @@ export function useLists(user: User | null): {
           if (newList) {
             setLists([newList as ListRecord]);
             setActiveListId(newList.id);
+            setListItems([]);
+            setItemPhotos([]);
+            setItemQuantities([]);
+            setItemSources([]);
+            setItemRecipeNames([]);
             lastSavedAt.current = newList.updated_at;
             localStorage.setItem(ACTIVE_LIST_KEY, newList.id);
           }
