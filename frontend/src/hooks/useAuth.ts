@@ -44,8 +44,14 @@ export function useAuth() {
       window.history.replaceState({}, "", cleanUrl);
     }
 
+    // When opened via magic link or OAuth (urlAnonUid present), skip settling
+    // on any existing session in localStorage — the browser may have a stale
+    // anonymous session from a previous test or visit. Let onAuthStateChange
+    // handle everything once Supabase processes the auth token in the hash.
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (urlAnonUid) return;
       if (session) {
+        // Only record anon UID from getSession if we didn't receive one from the URL
         if (isAnonUser(session.user)) {
           localStorage.setItem(ANON_UID_KEY, session.user.id);
         }
