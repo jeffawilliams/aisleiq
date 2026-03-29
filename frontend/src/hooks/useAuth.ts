@@ -67,12 +67,18 @@ export function useAuth() {
     // Synchronous callback — async here prevents React from reliably
     // processing state updates on sign-out (Supabase doesn't await the Promise)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
+      // Handle both SIGNED_IN and INITIAL_SESSION — when the magic link hash is
+      // processed before our listener registers, Supabase fires INITIAL_SESSION
+      // (not SIGNED_IN) with the already-established registered user session.
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
         if (isAnonUser(session.user)) {
-          // Anonymous session established — record UID for later migration
-          localStorage.setItem(ANON_UID_KEY, session.user.id);
+          // Only record this anon UID if we don't already have one to migrate.
+          // URL-param anon_uid takes precedence over any existing anonymous session.
+          if (!localStorage.getItem(ANON_UID_KEY)) {
+            localStorage.setItem(ANON_UID_KEY, session.user.id);
+          }
         } else {
-          // Registered user signed in — migrate anonymous list if one is pending
+          // Registered user — migrate anonymous list if one is pending
           const anonUid = localStorage.getItem(ANON_UID_KEY);
           if (anonUid && anonUid !== session.user.id) {
             // Hold auth loading state until migration finishes so useLists
