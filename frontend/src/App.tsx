@@ -82,7 +82,7 @@ export function App() {
   // list switch since the flag is one-way (never reset to false).
   useEffect(() => {
     if (showDeals && activeListId && user) {
-      supabase.from("lists").update({ deals_shown: true }).eq("id", activeListId);
+      supabase.from("lists").update({ deals_shown: true }).eq("id", activeListId).then();
     }
   }, [showDeals, activeListId]);
 
