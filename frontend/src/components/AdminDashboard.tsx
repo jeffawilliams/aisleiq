@@ -23,6 +23,9 @@ interface AnalyticsLists {
 
 interface AnalyticsEngagement {
   lists_organized_pct: number | null;
+  organized_sort_count: number;
+  organized_group_count: number;
+  organized_unclassified_count: number;
   items_total: number;
   items_recipe_count: number;
   items_photo_count: number;
@@ -219,8 +222,12 @@ export function AdminDashboard() {
 
         <StatCluster label="List Organization Conversion">
           <StatCard label="Lists organized ≥1×" value={engagement.lists_organized_pct != null ? `${engagement.lists_organized_pct}%` : "—"} />
+          <StatCard label="Sort" value={engagement.organized_sort_count.toLocaleString()} />
+          <StatCard label="Group" value={engagement.organized_group_count.toLocaleString()} />
+          {engagement.organized_unclassified_count > 0 && (
+            <StatCard label="Pre-instrumentation" value={engagement.organized_unclassified_count.toLocaleString()} />
+          )}
         </StatCluster>
-        <Phase2Placeholder label="Sort vs. Group split (requires action_type on organize_events)" />
 
         <StatCluster label="Item Origin Breakdown">
           <StatCard label="Total items" value={engagement.items_total.toLocaleString()} />

@@ -170,16 +170,26 @@ export function App() {
           list_id: activeListId,
           item_count: listItems.length,
           photo_item_count: itemPhotos.filter(p => p !== null).length,
+          action_type: "group",
         });
       }
     }
   };
 
-  const handleOrganizeByAisle = () => {
+  const handleOrganizeByAisle = async () => {
     if (listItems.length > 0 && activeStoreId) {
       setIsStale(false);
       reset();
-      organizeByAisle(listItems.join("\n"), activeStoreId);
+      const success = await organizeByAisle(listItems.join("\n"), activeStoreId);
+      if (success && user && activeListId) {
+        await supabase.from("organize_events").insert({
+          user_id: user.id,
+          list_id: activeListId,
+          item_count: listItems.length,
+          photo_item_count: itemPhotos.filter(p => p !== null).length,
+          action_type: "sort",
+        });
+      }
     }
   };
 
