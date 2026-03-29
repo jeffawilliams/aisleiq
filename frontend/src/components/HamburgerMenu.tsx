@@ -382,7 +382,7 @@ export function HamburgerMenu({
                 className="nav-dashboard-btn"
                 onClick={() => { close(); onOpenDashboard(); }}
               >
-                Dashboard
+                Analytics
               </button>
             )}
 
