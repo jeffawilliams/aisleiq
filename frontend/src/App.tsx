@@ -75,6 +75,9 @@ export function App() {
   function toggleDeals(val: boolean) {
     setShowDeals(val);
     try { localStorage.setItem("sla_deals_show", String(val)); } catch { /* ignore */ }
+    if (val && activeListId) {
+      supabase.from("lists").update({ deals_shown: true }).eq("id", activeListId);
+    }
   }
 
   // Clear results on sign-out (user transitions back to anonymous)

@@ -31,6 +31,8 @@ interface AnalyticsEngagement {
   items_photo_count: number;
   items_unknown_count: number;
   lists_shared_pct: number | null;
+  lists_deals_shown_pct: number | null;
+  lists_deals_shown_count: number;
   total_savings: number;
   avg_savings_per_list: number | null;
 }
@@ -243,7 +245,10 @@ export function AdminDashboard() {
 
         <Phase2Placeholder label="Lists with any checked item (requires checked field on items)" />
 
-        <Phase2Placeholder label="Lists with deals ever enabled (requires deals_shown column)" />
+        <StatCluster label="Lists with Deals Enabled">
+          <StatCard label="Count" value={engagement.lists_deals_shown_count.toLocaleString()} />
+          <StatCard label="% of all lists" value={engagement.lists_deals_shown_pct != null ? `${engagement.lists_deals_shown_pct}%` : "—"} />
+        </StatCluster>
 
         <StatCluster label="Savings">
           <StatCard label="Total lifetime" value={fmt(engagement.total_savings, "$")} />
