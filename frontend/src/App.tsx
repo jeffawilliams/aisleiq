@@ -75,10 +75,16 @@ export function App() {
   function toggleDeals(val: boolean) {
     setShowDeals(val);
     try { localStorage.setItem("sla_deals_show", String(val)); } catch { /* ignore */ }
-    if (val && activeListId) {
+  }
+
+  // Write deals_shown = true whenever deals are on for the active list.
+  // Handles both the default-on state and explicit toggle — safe to fire on
+  // list switch since the flag is one-way (never reset to false).
+  useEffect(() => {
+    if (showDeals && activeListId && user) {
       supabase.from("lists").update({ deals_shown: true }).eq("id", activeListId);
     }
-  }
+  }, [showDeals, activeListId]);
 
   // Clear results on sign-out (user transitions back to anonymous)
   useEffect(() => {
