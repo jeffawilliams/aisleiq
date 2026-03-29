@@ -177,20 +177,20 @@ export function AdminDashboard() {
       <div className="admin-analytics">
         <h2 className="admin-analytics__title">Usage</h2>
 
-        <StatCluster label="U2 — Total Users">
+        <StatCluster label="Total Users">
           <StatCard label="Registered" value={users.total_registered.toLocaleString()} />
           <StatCard label="Anonymous" value={users.total_anonymous.toLocaleString()} />
         </StatCluster>
 
-        <StatCluster label="U4 — Total Lists">
+        <StatCluster label="Total Lists">
           <StatCard label="All time" value={lists.total_lists.toLocaleString()} />
         </StatCluster>
 
-        <StatCluster label="U5 — Lists per Registered User">
+        <StatCluster label="Lists per Registered User">
           <StatCard label="Avg" value={lists.avg_lists_per_registered_user ?? "—"} />
         </StatCluster>
 
-        <StatCluster label="U6–U8 — Items per List">
+        <StatCluster label="Items per List">
           <StatCard label="Avg" value={lists.avg_items_per_list ?? "—"} />
           <StatCard label="Max" value={lists.max_items_in_list ?? "—"} />
           <StatCard label="Min (non-empty)" value={lists.min_items_in_nonempty_list ?? "—"} />
@@ -198,16 +198,16 @@ export function AdminDashboard() {
 
         <div className="analytics-weekly">
           <div className="analytics-weekly__section">
-            <div className="analytics-weekly__label">U1 — New Registered Users by Week</div>
+            <div className="analytics-weekly__label">New Registered Users by Week</div>
             <WeeklyTable data={users.weekly_new_registered} />
           </div>
           <div className="analytics-weekly__section">
-            <div className="analytics-weekly__label">U1 — New Anonymous Users by Week</div>
+            <div className="analytics-weekly__label">New Anonymous Users by Week</div>
             <p className="analytics-tracking-note">Tracking begins 2026-03-29</p>
             <WeeklyTable data={users.weekly_new_anonymous} />
           </div>
           <div className="analytics-weekly__section">
-            <div className="analytics-weekly__label">U3 — Lists Created by Week</div>
+            <div className="analytics-weekly__label">Lists Created by Week</div>
             <WeeklyTable data={lists.weekly_lists_created} />
           </div>
         </div>
@@ -217,12 +217,12 @@ export function AdminDashboard() {
       <div className="admin-analytics">
         <h2 className="admin-analytics__title">Engagement</h2>
 
-        <StatCluster label="E1 — List Organization Conversion">
+        <StatCluster label="List Organization Conversion">
           <StatCard label="Lists organized ≥1×" value={engagement.lists_organized_pct != null ? `${engagement.lists_organized_pct}%` : "—"} />
         </StatCluster>
-        <Phase2Placeholder label="E1a — Sort vs. Group split (requires action_type on organize_events)" />
+        <Phase2Placeholder label="Sort vs. Group split (requires action_type on organize_events)" />
 
-        <StatCluster label="E2 — Item Origin Breakdown">
+        <StatCluster label="Item Origin Breakdown">
           <StatCard label="Total items" value={engagement.items_total.toLocaleString()} />
           <StatCard label="Recipe" value={`${engagement.items_recipe_count.toLocaleString()} (${recipePct}%)`} />
           <StatCard label="Photo" value={`${engagement.items_photo_count.toLocaleString()} (${photoPct}%)`} />
@@ -230,15 +230,15 @@ export function AdminDashboard() {
         </StatCluster>
         <p className="analytics-note">Typed, Pasted, and List Scan tracking begins Phase 2</p>
 
-        <StatCluster label="E3 — Shared Lists">
+        <StatCluster label="Shared Lists">
           <StatCard label="Lists ever shared" value={engagement.lists_shared_pct != null ? `${engagement.lists_shared_pct}%` : "—"} />
         </StatCluster>
 
-        <Phase2Placeholder label="E4 — Lists with any checked item (requires checked field on items)" />
+        <Phase2Placeholder label="Lists with any checked item (requires checked field on items)" />
 
-        <Phase2Placeholder label="E5a — Lists with deals ever enabled (requires deals_shown column)" />
+        <Phase2Placeholder label="Lists with deals ever enabled (requires deals_shown column)" />
 
-        <StatCluster label="E5d — Savings">
+        <StatCluster label="Savings">
           <StatCard label="Total lifetime" value={fmt(engagement.total_savings, "$")} />
           <StatCard label="Avg per list" value={engagement.avg_savings_per_list != null ? `$${Number(engagement.avg_savings_per_list).toFixed(2)}` : "—"} />
         </StatCluster>
@@ -248,15 +248,15 @@ export function AdminDashboard() {
       <div className="admin-analytics">
         <h2 className="admin-analytics__title">AI Performance</h2>
 
-        <StatCluster label="AI2a — Items Added via Photo">
+        <StatCluster label="Items Added via Photo">
           <StatCard label="Count" value={ai.items_with_photo_count.toLocaleString()} />
           <StatCard label="% of all items" value={ai.items_with_photo_pct != null ? `${ai.items_with_photo_pct}%` : "—"} />
         </StatCluster>
         <p className="analytics-note">Using photo field presence as proxy. Standardized source tagging begins Phase 2.</p>
 
-        <Phase2Placeholder label="AI1 — Grouping category breakdown (requires group_categories on organize_events)" />
-        <Phase2Placeholder label="AI2b — Classifier vs. Claude resolution split (requires scan_events writes)" />
-        <Phase2Placeholder label="AI2c — Resolution breakdown by category (requires scan_events writes)" />
+        <Phase2Placeholder label="Grouping category breakdown (requires group_categories on organize_events)" />
+        <Phase2Placeholder label="Classifier vs. Claude resolution split (requires scan_events writes)" />
+        <Phase2Placeholder label="Resolution breakdown by category (requires scan_events writes)" />
       </div>
 
       {/* ── Users ── */}
