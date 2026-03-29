@@ -29,6 +29,9 @@ interface AnalyticsEngagement {
   items_total: number;
   items_recipe_count: number;
   items_photo_count: number;
+  items_typed_count: number;
+  items_pasted_count: number;
+  items_list_scan_count: number;
   items_unknown_count: number;
   lists_shared_pct: number | null;
   lists_deals_shown_pct: number | null;
@@ -160,9 +163,7 @@ export function AdminDashboard() {
 
   // E2 derived percentages
   const itemsTotal = engagement.items_total || 1; // guard against /0
-  const recipePct = ((engagement.items_recipe_count / itemsTotal) * 100).toFixed(1);
-  const photoPct = ((engagement.items_photo_count / itemsTotal) * 100).toFixed(1);
-  const unknownPct = ((engagement.items_unknown_count / itemsTotal) * 100).toFixed(1);
+  const pct = (n: number) => `${((n / itemsTotal) * 100).toFixed(1)}%`;
 
   return (
     <div className="admin-dashboard">
@@ -233,11 +234,15 @@ export function AdminDashboard() {
 
         <StatCluster label="Item Origin Breakdown">
           <StatCard label="Total items" value={engagement.items_total.toLocaleString()} />
-          <StatCard label="Recipe" value={`${engagement.items_recipe_count.toLocaleString()} (${recipePct}%)`} />
-          <StatCard label="Photo" value={`${engagement.items_photo_count.toLocaleString()} (${photoPct}%)`} />
-          <StatCard label="Unknown" value={`${engagement.items_unknown_count.toLocaleString()} (${unknownPct}%)`} />
+          <StatCard label="Typed" value={`${engagement.items_typed_count.toLocaleString()} (${pct(engagement.items_typed_count)})`} />
+          <StatCard label="Pasted" value={`${engagement.items_pasted_count.toLocaleString()} (${pct(engagement.items_pasted_count)})`} />
+          <StatCard label="Photo" value={`${engagement.items_photo_count.toLocaleString()} (${pct(engagement.items_photo_count)})`} />
+          <StatCard label="List Scan" value={`${engagement.items_list_scan_count.toLocaleString()} (${pct(engagement.items_list_scan_count)})`} />
+          <StatCard label="Recipe" value={`${engagement.items_recipe_count.toLocaleString()} (${pct(engagement.items_recipe_count)})`} />
+          {engagement.items_unknown_count > 0 && (
+            <StatCard label="Pre-instrumentation" value={`${engagement.items_unknown_count.toLocaleString()} (${pct(engagement.items_unknown_count)})`} />
+          )}
         </StatCluster>
-        <p className="analytics-note">Typed, Pasted, and List Scan tracking begins Phase 2</p>
 
         <StatCluster label="Shared Lists">
           <StatCard label="Lists ever shared" value={engagement.lists_shared_pct != null ? `${engagement.lists_shared_pct}%` : "—"} />

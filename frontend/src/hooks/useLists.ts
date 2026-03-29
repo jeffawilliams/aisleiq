@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient.js";
 
+export type ItemSource = 'typed' | 'pasted' | 'photo' | 'list_scan' | 'recipe';
+
 export interface ListItem {
   text: string;
   photo?: string;
   quantity?: string;       // recipe quantity sub-label (e.g. "2 cups")
-  source?: 'recipe';       // present only on recipe-imported items
+  source?: ItemSource;
   recipeName?: string;     // name of source recipe, for badge tooltip
 }
 
@@ -24,13 +26,13 @@ function splitItems(raw: (string | ListItem)[]): {
   texts: string[];
   photos: (string | null)[];
   quantities: (string | null)[];
-  sources: ('recipe' | null)[];
+  sources: (ItemSource | null)[];
   recipeNames: (string | null)[];
 } {
   const texts: string[] = [];
   const photos: (string | null)[] = [];
   const quantities: (string | null)[] = [];
-  const sources: ('recipe' | null)[] = [];
+  const sources: (ItemSource | null)[] = [];
   const recipeNames: (string | null)[] = [];
 
   for (const item of raw) {
@@ -55,7 +57,7 @@ function mergeItems(
   texts: string[],
   photos: (string | null)[],
   quantities: (string | null)[],
-  sources: ('recipe' | null)[],
+  sources: (ItemSource | null)[],
   recipeNames: (string | null)[]
 ): ListItem[] {
   return texts.map((text, i) => {
@@ -90,8 +92,8 @@ export function useLists(user: User | null): {
   setItemPhotos: React.Dispatch<React.SetStateAction<(string | null)[]>>;
   itemQuantities: (string | null)[];
   setItemQuantities: React.Dispatch<React.SetStateAction<(string | null)[]>>;
-  itemSources: ('recipe' | null)[];
-  setItemSources: React.Dispatch<React.SetStateAction<('recipe' | null)[]>>;
+  itemSources: (ItemSource | null)[];
+  setItemSources: React.Dispatch<React.SetStateAction<(ItemSource | null)[]>>;
   itemRecipeNames: (string | null)[];
   setItemRecipeNames: React.Dispatch<React.SetStateAction<(string | null)[]>>;
   isLoaded: boolean;
@@ -109,7 +111,7 @@ export function useLists(user: User | null): {
   const [listItems, setListItems] = useState<string[]>([]);
   const [itemPhotos, setItemPhotos] = useState<(string | null)[]>([]);
   const [itemQuantities, setItemQuantities] = useState<(string | null)[]>([]);
-  const [itemSources, setItemSources] = useState<('recipe' | null)[]>([]);
+  const [itemSources, setItemSources] = useState<(ItemSource | null)[]>([]);
   const [itemRecipeNames, setItemRecipeNames] = useState<(string | null)[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [needsNaming, setNeedsNaming] = useState(false);

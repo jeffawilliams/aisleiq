@@ -3,6 +3,7 @@ import { CameraCapture } from "./CameraCapture.js";
 import { ProductConfirm } from "./ProductConfirm.js";
 import { ListReview } from "./ListReview.js";
 import { RecipeIngredient } from "../types/index.js";
+import { ItemSource } from "../hooks/useLists.js";
 
 type View = 'menu' | 'type' | 'product-confirm' | 'list-review' | 'recipe' | 'recipe-review';
 type RecipeSubMode = 'photo' | 'url' | 'text';
@@ -10,7 +11,7 @@ type RecipeSubMode = 'photo' | 'url' | 'text';
 interface AddItemSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddItems: (items: string[]) => void;
+  onAddItems: (items: string[], source?: ItemSource) => void;
   onAddItemWithPhoto?: (item: string, photo: string) => void;
   onAddRecipeItems?: (items: { name: string; quantity: string | null; recipeName: string | null }[]) => void;
   userId?: string | null;
@@ -213,7 +214,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
       const text = await navigator.clipboard.readText();
       const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
       if (lines.length > 0) {
-        onAddItems(lines);
+        onAddItems(lines, "pasted");
         onClose();
       } else {
         setScanError('Clipboard is empty — copy your list into buffer, then tap Paste a list.');
@@ -225,7 +226,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
 
   const handleTypeEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && typeInput.trim()) {
-      onAddItems([typeInput.trim()]);
+      onAddItems([typeInput.trim()], "typed");
       setTypeInput('');
     }
   };
@@ -243,7 +244,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
     if (capturedPhoto && onAddItemWithPhoto && items.length > 0) {
       items.forEach(item => onAddItemWithPhoto(item, capturedPhoto));
     } else {
-      onAddItems(items);
+      onAddItems(items, "list_scan");
     }
     onClose();
   };

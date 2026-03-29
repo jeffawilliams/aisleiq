@@ -2,15 +2,16 @@ import { useState } from "react";
 import { FAB } from "./FAB.js";
 import { AddItemSheet } from "./AddItemSheet.js";
 import { Store } from "../types/index.js";
+import { ItemSource } from "../hooks/useLists.js";
 
 interface Props {
   items: string[];
   itemPhotos?: (string | null)[];
   itemQuantities?: (string | null)[];
-  itemSources?: ('recipe' | null)[];
+  itemSources?: (ItemSource | null)[];
   itemRecipeNames?: (string | null)[];
   onRemoveItem: (index: number) => void;
-  onAddItems: (items: string[]) => void;
+  onAddItems: (items: string[], source?: ItemSource) => void;
   onEditItem: (index: number, newValue: string) => void;
   onEditItemWithQuantity?: (index: number, text: string, quantity: string | null) => void;
   onAddItemWithPhoto?: (item: string, photo: string) => void;
@@ -109,7 +110,7 @@ export function ShoppingListInput({
     if (e.key === "Enter") {
       const trimmed = inlineValue.trim();
       if (trimmed) {
-        onAddItems([trimmed]);
+        onAddItems([trimmed], "typed");
         setInlineValue("");
       }
     }

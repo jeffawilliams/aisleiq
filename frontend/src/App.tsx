@@ -114,16 +114,18 @@ export function App() {
     }
   }, [result, aisleResult, isLoading, aisleLoading]);
 
-  const addItems = (newItems: string[]) => {
+  const addItems = (newItems: string[], source: import("./hooks/useLists.js").ItemSource = "typed") => {
     const filtered = newItems.filter(i => i.trim());
     setListItems(prev => [...prev, ...filtered]);
     setItemPhotos(prev => [...prev, ...filtered.map(() => null)]);
+    setItemSources(prev => [...prev, ...filtered.map(() => source)]);
     if (result || aisleResult) setIsStale(true);
   };
 
   const addItemWithPhoto = (item: string, photo: string) => {
     setListItems(prev => [...prev, item]);
     setItemPhotos(prev => [...prev, photo]);
+    setItemSources(prev => [...prev, "photo" as const]);
     if (result || aisleResult) setIsStale(true);
   };
 
