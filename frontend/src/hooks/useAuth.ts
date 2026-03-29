@@ -40,7 +40,9 @@ export function useAuth() {
     if (urlAnonUid) {
       localStorage.setItem(ANON_UID_KEY, urlAnonUid);
       urlParams.delete("anon_uid");
-      const cleanUrl = window.location.pathname + (urlParams.toString() ? "?" + urlParams.toString() : "");
+      const cleanUrl = window.location.pathname
+        + (urlParams.toString() ? "?" + urlParams.toString() : "")
+        + window.location.hash;
       window.history.replaceState({}, "", cleanUrl);
     }
 
