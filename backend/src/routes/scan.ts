@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { ScanRequestSchema } from "../schemas/aisleSchema.js";
 import { scanImage } from "../services/claudeService.js";
 import { classifyProduce } from "../services/classifierService.js";
-import { supabase } from "../services/supabaseClient.js";
+import { supabaseAdmin } from "../services/supabaseClient.js";
 
 export const scanRouter = Router();
 
@@ -16,7 +16,7 @@ function logScanEvent(
   topFineName?: string,
   topCoarseName?: string,
 ): void {
-  supabase.from("scan_events").insert({
+  supabaseAdmin.from("scan_events").insert({
     user_id: userId ?? null,
     list_id: listId ?? null,
     confidence,
