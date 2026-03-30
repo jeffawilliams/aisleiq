@@ -229,13 +229,11 @@ export function useLists(user: User | null): {
     const merged = mergeItems(listItems, itemPhotos, itemQuantities, itemSources, itemRecipeNames, itemChecked);
 
     saveTimer.current = setTimeout(async () => {
-      console.log("[useLists auto-save] firing", { activeListId, merged });
       const now = new Date().toISOString();
-      const { error } = await supabase
+      await supabase
         .from("lists")
         .update({ items: merged, updated_at: now })
         .eq("id", activeListId);
-      console.log("[useLists auto-save] result", { error });
 
       lastSavedAt.current = now;
 
