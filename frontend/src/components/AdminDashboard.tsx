@@ -34,6 +34,8 @@ interface AnalyticsEngagement {
   items_list_scan_count: number;
   items_unknown_count: number;
   lists_shared_pct: number | null;
+  lists_checked_count: number;
+  lists_checked_pct: number | null;
   lists_deals_shown_pct: number | null;
   lists_deals_shown_count: number;
   total_savings: number;
@@ -248,7 +250,10 @@ export function AdminDashboard() {
           <StatCard label="Lists ever shared" value={engagement.lists_shared_pct != null ? `${engagement.lists_shared_pct}%` : "—"} />
         </StatCluster>
 
-        <Phase2Placeholder label="Lists with any checked item (requires checked field on items)" />
+        <StatCluster label="Lists with Any Checked Item">
+          <StatCard label="Count" value={engagement.lists_checked_count.toLocaleString()} />
+          <StatCard label="% of all lists" value={engagement.lists_checked_pct != null ? `${engagement.lists_checked_pct}%` : "—"} />
+        </StatCluster>
 
         <StatCluster label="Lists with Deals Enabled">
           <StatCard label="Count" value={engagement.lists_deals_shown_count.toLocaleString()} />

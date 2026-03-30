@@ -39,6 +39,8 @@ export function App() {
     setItemSources,
     itemRecipeNames,
     setItemRecipeNames,
+    itemChecked,
+    setItemChecked,
     needsNaming,
     createList,
     deleteList,
@@ -146,7 +148,18 @@ export function App() {
     setItemQuantities(prev => prev.filter((_, i) => i !== index));
     setItemSources(prev => prev.filter((_, i) => i !== index));
     setItemRecipeNames(prev => prev.filter((_, i) => i !== index));
+    setItemChecked(prev => prev.filter((_, i) => i !== index));
     if (result || aisleResult) setIsStale(true);
+  };
+
+  const handleItemCheck = (itemName: string, checked: boolean) => {
+    const index = listItems.indexOf(itemName);
+    if (index === -1) return;
+    setItemChecked(prev => {
+      const next = [...prev];
+      next[index] = checked;
+      return next;
+    });
   };
 
   const editItem = (index: number, newValue: string) => {
@@ -284,6 +297,7 @@ export function App() {
               onToggleDeals={toggleDeals}
               isAdmin={isAdmin}
               onCheckChange={handleCheckChange}
+              onItemChecked={handleItemCheck}
             />
           </div>
         )}

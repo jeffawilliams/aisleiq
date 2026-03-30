@@ -12,6 +12,7 @@ interface ResultsGridProps {
   onToggleDeals?: (val: boolean) => void;
   isAdmin?: boolean;
   onCheckChange?: (dealCount: number, totalSavings: number) => void;
+  onItemChecked?: (item: string, checked: boolean) => void;
 }
 
 // Standard category order — common categories first, Other always last
@@ -55,7 +56,7 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange, onItemChecked }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
   const exactDeals = deals?.filter(d => d.matchType === "exact") ?? [];
   const hasAnyDeals = exactDeals.length > 0;
@@ -85,8 +86,10 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
   function toggleItem(item: string) {
     setChecked(prev => {
       const next = new Set(prev);
-      if (next.has(item)) next.delete(item);
-      else next.add(item);
+      const nowChecked = !next.has(item);
+      if (nowChecked) next.add(item);
+      else next.delete(item);
+      onItemChecked?.(item, nowChecked);
       return next;
     });
   }
