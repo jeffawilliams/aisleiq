@@ -17,6 +17,7 @@ interface Props {
   onAddItemWithPhoto?: (item: string, photo: string) => void;
   onAddRecipeItems?: (items: { name: string; quantity: string | null; recipeName: string | null }[]) => void;
   userId?: string | null;
+  listId?: string | null;
   onSubmit: () => void;
   onOrganizeByAisle?: () => void;
   isGroupLoading: boolean;
@@ -41,6 +42,7 @@ export function ShoppingListInput({
   onAddItemWithPhoto,
   onAddRecipeItems,
   userId,
+  listId,
   onSubmit,
   onOrganizeByAisle,
   isGroupLoading,
@@ -208,6 +210,7 @@ export function ShoppingListInput({
         onAddItemWithPhoto={onAddItemWithPhoto}
         onAddRecipeItems={onAddRecipeItems}
         userId={userId}
+        listId={listId}
       />
 
       {lightboxPhoto && (

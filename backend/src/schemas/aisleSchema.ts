@@ -25,6 +25,7 @@ export const ScanRequestSchema = z.object({
   image: z.string().min(1),
   mode: z.enum(['product', 'list']),
   userId: z.string().uuid().optional(),
+  listId: z.string().uuid().optional(),
 });
 
 export const ScanOutputSchema = z.object({

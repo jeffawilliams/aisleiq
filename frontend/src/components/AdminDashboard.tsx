@@ -46,6 +46,12 @@ interface AnalyticsAI {
   items_total: number;
   items_with_photo_count: number;
   items_with_photo_pct: number | null;
+  scans_total: number;
+  scans_high: number;
+  scans_medium: number;
+  scans_low: number;
+  scans_classifier_error: number;
+  scans_by_category: { category: string; count: number }[] | null;
 }
 
 interface FeedbackRow {
@@ -277,8 +283,38 @@ export function AdminDashboard() {
         <p className="analytics-note">Using photo field presence as proxy. Standardized source tagging begins Phase 2.</p>
 
         <Phase2Placeholder label="Grouping category breakdown (requires group_categories on organize_events)" />
-        <Phase2Placeholder label="Classifier vs. Claude resolution split (requires scan_events writes)" />
-        <Phase2Placeholder label="Resolution breakdown by category (requires scan_events writes)" />
+        {ai.scans_total === 0 ? (
+          <p className="analytics-note">No product scans recorded yet.</p>
+        ) : (
+          <>
+            <StatCluster label="Classifier vs. Claude Resolution (AI2b)">
+              <StatCard label="Total scans" value={ai.scans_total.toLocaleString()} />
+              <StatCard label="Classifier only" value={`${ai.scans_high.toLocaleString()} (${fmt(Math.round(ai.scans_high / ai.scans_total * 100))}%)`} />
+              <StatCard label="Classifier + Claude" value={`${ai.scans_medium.toLocaleString()} (${fmt(Math.round(ai.scans_medium / ai.scans_total * 100))}%)`} />
+              <StatCard label="Claude only" value={`${ai.scans_low.toLocaleString()} (${fmt(Math.round(ai.scans_low / ai.scans_total * 100))}%)`} />
+              {ai.scans_classifier_error > 0 && (
+                <StatCard label="Classifier error" value={ai.scans_classifier_error.toLocaleString()} />
+              )}
+            </StatCluster>
+
+            {ai.scans_by_category && ai.scans_by_category.length > 0 && (
+              <div className="admin-analytics-cluster">
+                <div className="admin-analytics-cluster__label">Scans by Category (AI2c)</div>
+                <table className="analytics-weekly-table">
+                  <thead><tr><th>Category</th><th>Scans</th></tr></thead>
+                  <tbody>
+                    {ai.scans_by_category.map(row => (
+                      <tr key={row.category}>
+                        <td>{row.category}</td>
+                        <td>{row.count.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* ── Users ── */}

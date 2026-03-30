@@ -8,16 +8,20 @@ export const scanRouter = Router();
 
 function logScanEvent(
   userId: string | undefined,
+  listId: string | null | undefined,
   confidence: string,
   claudeCalled: boolean,
+  resultText?: string | null,
   topScore?: number,
   topFineName?: string,
   topCoarseName?: string,
 ): void {
   supabase.from("scan_events").insert({
     user_id: userId ?? null,
+    list_id: listId ?? null,
     confidence,
     claude_called: claudeCalled,
+    result_text: resultText ?? null,
     top_score: topScore ?? null,
     top_fine_name: topFineName ?? null,
     top_coarse_name: topCoarseName ?? null,
@@ -37,7 +41,7 @@ scanRouter.post(
       return;
     }
 
-    const { image, mode, userId } = parsed.data;
+    const { image, mode, userId, listId } = parsed.data;
 
     // Classifier runs only for product scans — list scans go straight to Claude
     if (mode === "product") {
@@ -46,7 +50,7 @@ scanRouter.post(
 
         if (classifier.confidence === "high") {
           // Skip Claude entirely — classifier is confident enough
-          logScanEvent(userId, "high", false, classifier.topScore, classifier.topFineName, classifier.topCoarseName);
+          logScanEvent(userId, listId, "high", false, classifier.topFineName, classifier.topScore, classifier.topFineName, classifier.topCoarseName);
           res.json({ items: [classifier.topFineName] });
           return;
         }
@@ -61,13 +65,14 @@ scanRouter.post(
               }
             : undefined;
 
-        logScanEvent(userId, classifier.confidence, true, classifier.topScore, classifier.topFineName, classifier.topCoarseName);
+        // Log after Claude returns so we can capture result_text
         const result = await scanImage(image, mode, hints);
+        logScanEvent(userId, listId, classifier.confidence, true, result.items[0] ?? null, classifier.topScore, classifier.topFineName, classifier.topCoarseName);
         res.json({ items: result.items });
         return;
       } catch {
         // Classifier failed — fall through to Claude with no hints
-        logScanEvent(userId, "classifier_error", true);
+        logScanEvent(userId, listId, "classifier_error", true, null);
       }
     }
 

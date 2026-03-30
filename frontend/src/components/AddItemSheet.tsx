@@ -15,6 +15,7 @@ interface AddItemSheetProps {
   onAddItemWithPhoto?: (item: string, photo: string) => void;
   onAddRecipeItems?: (items: { name: string; quantity: string | null; recipeName: string | null }[]) => void;
   userId?: string | null;
+  listId?: string | null;
 }
 
 function compressImage(file: File): Promise<string> {
@@ -46,7 +47,7 @@ function compressImage(file: File): Promise<string> {
   });
 }
 
-export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, onAddRecipeItems, userId }: AddItemSheetProps) {
+export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, onAddRecipeItems, userId, listId }: AddItemSheetProps) {
   const [view, setView] = useState<View>('menu');
   const [typeInput, setTypeInput] = useState('');
   const [isScanLoading, setIsScanLoading] = useState(false);
@@ -90,7 +91,7 @@ export function AddItemSheet({ isOpen, onClose, onAddItems, onAddItemWithPhoto, 
       const res = await fetch(`${base}/api/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64, mode, ...(userId ? { userId } : {}) }),
+        body: JSON.stringify({ image: base64, mode, ...(userId ? { userId } : {}), ...(listId ? { listId } : {}) }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

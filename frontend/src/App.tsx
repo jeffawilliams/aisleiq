@@ -275,6 +275,7 @@ export function App() {
           onAddItemWithPhoto={addItemWithPhoto}
           onAddRecipeItems={handleAddRecipeItems}
           userId={user?.id}
+          listId={activeListId}
           onSubmit={handleOrganize}
           onOrganizeByAisle={handleOrganizeByAisle}
           isGroupLoading={isLoading}
