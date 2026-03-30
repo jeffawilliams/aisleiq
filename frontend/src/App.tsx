@@ -153,7 +153,8 @@ export function App() {
   };
 
   const handleItemCheck = (itemName: string, checked: boolean) => {
-    const index = listItems.indexOf(itemName);
+    const nameLower = itemName.toLowerCase();
+    const index = listItems.findIndex(item => item.toLowerCase() === nameLower);
     if (index === -1) return;
     setItemChecked(prev => {
       const next = [...prev];
