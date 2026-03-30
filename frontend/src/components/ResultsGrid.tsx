@@ -84,14 +84,14 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
   }, [checked, exactDeals.length, onCheckChange]);
 
   function toggleItem(item: string) {
+    const nowChecked = !checked.has(item);
     setChecked(prev => {
       const next = new Set(prev);
-      const nowChecked = !next.has(item);
       if (nowChecked) next.add(item);
       else next.delete(item);
-      onItemChecked?.(item, nowChecked);
       return next;
     });
+    onItemChecked?.(item, nowChecked);
   }
 
   function dismissDealsBanner() {
