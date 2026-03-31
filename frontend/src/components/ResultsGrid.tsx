@@ -13,6 +13,8 @@ interface ResultsGridProps {
   isAdmin?: boolean;
   onCheckChange?: (dealCount: number, totalSavings: number) => void;
   onItemChecked?: (item: string, checked: boolean) => void;
+  onDealResponse?: (item: string, accepted: boolean, dealProduct: string, dealSavings: number) => void;
+  itemDealAccepted?: (boolean | null)[];
 }
 
 // Standard category order — common categories first, Other always last
@@ -56,7 +58,7 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange, onItemChecked }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange, onItemChecked, onDealResponse, itemDealAccepted }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
   const exactDeals = deals?.filter(d => d.matchType === "exact") ?? [];
   const hasAnyDeals = exactDeals.length > 0;
@@ -67,6 +69,7 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
     try { return localStorage.getItem("sla_deals_test_dismissed") === "true"; } catch { return false; }
   });
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [dealPrompt, setDealPrompt] = useState<{ item: string; deal: Deal } | null>(null);
 
   // Reset checked state when results change (user re-organizes)
   useEffect(() => {
@@ -92,6 +95,23 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
       return next;
     });
     onItemChecked?.(item, nowChecked);
+
+    // If checking an item that has a deal, show acceptance prompt
+    if (nowChecked && onDealResponse) {
+      const deal = dealMap.get(item.toLowerCase());
+      if (deal) setDealPrompt({ item, deal });
+    }
+  }
+
+  function handleDealPromptResponse(accepted: boolean) {
+    if (!dealPrompt) return;
+    const { item, deal } = dealPrompt;
+    if (accepted) {
+      onDealResponse?.(item, true, deal.productName, deal.savings);
+    } else {
+      onDealResponse?.(item, false, deal.productName, deal.savings);
+    }
+    setDealPrompt(null);
   }
 
   function dismissDealsBanner() {
@@ -133,9 +153,22 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
             : "Your list has changed — tap Re-group to update."}
         </p>
       )}
+      {dealPrompt && (
+        <div className="deal-prompt-overlay">
+          <div className="deal-prompt">
+            <p className="deal-prompt__text">
+              Product <strong>{dealPrompt.deal.productName}</strong> added to cart?
+            </p>
+            <div className="deal-prompt__actions">
+              <button className="deal-prompt__btn deal-prompt__btn--yes" onClick={() => handleDealPromptResponse(true)}>Yes</button>
+              <button className="deal-prompt__btn deal-prompt__btn--no" onClick={() => handleDealPromptResponse(false)}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="results-grid">
         {sorted.map((category) => (
-          <CategoryCard key={category.name} category={category} dealMap={dealMap} checked={checked} onToggle={toggleItem} />
+          <CategoryCard key={category.name} category={category} dealMap={dealMap} checked={checked} onToggle={toggleItem} itemDealAccepted={itemDealAccepted} />
         ))}
       </div>
     </section>

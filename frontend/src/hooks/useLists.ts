@@ -11,6 +11,9 @@ export interface ListItem {
   source?: ItemSource;
   recipeName?: string;     // name of source recipe, for badge tooltip
   checked?: boolean;
+  deal_accepted?: boolean; // true = accepted, false = declined, absent = no response
+  deal_product?: string;   // deal product name persisted at prompt time
+  deal_savings?: number;   // deal savings amount persisted at prompt time
 }
 
 export interface ListRecord {
@@ -30,6 +33,9 @@ function splitItems(raw: (string | ListItem)[]): {
   sources: (ItemSource | null)[];
   recipeNames: (string | null)[];
   checked: boolean[];
+  dealAccepted: (boolean | null)[];
+  dealProduct: (string | null)[];
+  dealSavings: (number | null)[];
 } {
   const texts: string[] = [];
   const photos: (string | null)[] = [];
@@ -37,6 +43,9 @@ function splitItems(raw: (string | ListItem)[]): {
   const sources: (ItemSource | null)[] = [];
   const recipeNames: (string | null)[] = [];
   const checked: boolean[] = [];
+  const dealAccepted: (boolean | null)[] = [];
+  const dealProduct: (string | null)[] = [];
+  const dealSavings: (number | null)[] = [];
 
   for (const item of raw) {
     if (typeof item === "string") {
@@ -46,6 +55,9 @@ function splitItems(raw: (string | ListItem)[]): {
       sources.push(null);
       recipeNames.push(null);
       checked.push(false);
+      dealAccepted.push(null);
+      dealProduct.push(null);
+      dealSavings.push(null);
     } else {
       texts.push(item.text);
       photos.push(item.photo ?? null);
@@ -53,9 +65,12 @@ function splitItems(raw: (string | ListItem)[]): {
       sources.push(item.source ?? null);
       recipeNames.push(item.recipeName ?? null);
       checked.push(item.checked ?? false);
+      dealAccepted.push(item.deal_accepted ?? null);
+      dealProduct.push(item.deal_product ?? null);
+      dealSavings.push(item.deal_savings ?? null);
     }
   }
-  return { texts, photos, quantities, sources, recipeNames, checked };
+  return { texts, photos, quantities, sources, recipeNames, checked, dealAccepted, dealProduct, dealSavings };
 }
 
 function mergeItems(
@@ -64,21 +79,21 @@ function mergeItems(
   quantities: (string | null)[],
   sources: (ItemSource | null)[],
   recipeNames: (string | null)[],
-  checked: boolean[]
+  checked: boolean[],
+  dealAccepted: (boolean | null)[],
+  dealProduct: (string | null)[],
+  dealSavings: (number | null)[],
 ): ListItem[] {
   return texts.map((text, i) => {
-    const photo = photos[i] ?? null;
-    const quantity = quantities[i] ?? null;
-    const source = sources[i] ?? null;
-    const recipeName = recipeNames[i] ?? null;
-    const isChecked = checked[i] ?? false;
-
     const item: ListItem = { text };
-    if (photo) item.photo = photo;
-    if (quantity) item.quantity = quantity;
-    if (source) item.source = source;
-    if (recipeName) item.recipeName = recipeName;
-    if (isChecked) item.checked = true;
+    if (photos[i]) item.photo = photos[i]!;
+    if (quantities[i]) item.quantity = quantities[i]!;
+    if (sources[i]) item.source = sources[i]!;
+    if (recipeNames[i]) item.recipeName = recipeNames[i]!;
+    if (checked[i]) item.checked = true;
+    if (dealAccepted[i] != null) item.deal_accepted = dealAccepted[i]!;
+    if (dealProduct[i]) item.deal_product = dealProduct[i]!;
+    if (dealSavings[i] != null) item.deal_savings = dealSavings[i]!;
     return item;
   });
 }
@@ -106,6 +121,12 @@ export function useLists(user: User | null): {
   setItemRecipeNames: React.Dispatch<React.SetStateAction<(string | null)[]>>;
   itemChecked: boolean[];
   setItemChecked: React.Dispatch<React.SetStateAction<boolean[]>>;
+  itemDealAccepted: (boolean | null)[];
+  setItemDealAccepted: React.Dispatch<React.SetStateAction<(boolean | null)[]>>;
+  itemDealProduct: (string | null)[];
+  setItemDealProduct: React.Dispatch<React.SetStateAction<(string | null)[]>>;
+  itemDealSavings: (number | null)[];
+  setItemDealSavings: React.Dispatch<React.SetStateAction<(number | null)[]>>;
   isLoaded: boolean;
   needsNaming: boolean;
   createList: (name: string, items: string[]) => Promise<void>;
@@ -124,6 +145,9 @@ export function useLists(user: User | null): {
   const [itemSources, setItemSources] = useState<(ItemSource | null)[]>([]);
   const [itemRecipeNames, setItemRecipeNames] = useState<(string | null)[]>([]);
   const [itemChecked, setItemChecked] = useState<boolean[]>([]);
+  const [itemDealAccepted, setItemDealAccepted] = useState<(boolean | null)[]>([]);
+  const [itemDealProduct, setItemDealProduct] = useState<(string | null)[]>([]);
+  const [itemDealSavings, setItemDealSavings] = useState<(number | null)[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [needsNaming, setNeedsNaming] = useState(false);
 
@@ -151,6 +175,9 @@ export function useLists(user: User | null): {
       setItemSources([]);
       setItemRecipeNames([]);
       setItemChecked([]);
+      setItemDealAccepted([]);
+      setItemDealProduct([]);
+      setItemDealSavings([]);
       setIsLoaded(false);
       setNeedsNaming(false);
       return;
@@ -180,6 +207,9 @@ export function useLists(user: User | null): {
             setItemSources([]);
             setItemRecipeNames([]);
             setItemChecked([]);
+            setItemDealAccepted([]);
+            setItemDealProduct([]);
+            setItemDealSavings([]);
             lastSavedAt.current = newList.updated_at;
             localStorage.setItem(ACTIVE_LIST_KEY, newList.id);
           }
@@ -198,7 +228,7 @@ export function useLists(user: User | null): {
       // Restore last active list from localStorage, or fall back to most recently updated
       const savedId = localStorage.getItem(ACTIVE_LIST_KEY);
       const target = loadedLists.find(l => l.id === savedId) ?? loadedLists[0];
-      const { texts, photos, quantities, sources, recipeNames, checked } = splitItems(target.items);
+      const { texts, photos, quantities, sources, recipeNames, checked, dealAccepted, dealProduct, dealSavings } = splitItems(target.items);
       setActiveListId(target.id);
       setListItems(texts);
       setItemPhotos(photos);
@@ -206,6 +236,9 @@ export function useLists(user: User | null): {
       setItemSources(sources);
       setItemRecipeNames(recipeNames);
       setItemChecked(checked);
+      setItemDealAccepted(dealAccepted);
+      setItemDealProduct(dealProduct);
+      setItemDealSavings(dealSavings);
       lastSavedAt.current = target.updated_at;
       setIsLoaded(true);
       initialLoadDone.current = true;
@@ -226,7 +259,7 @@ export function useLists(user: User | null): {
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
-    const merged = mergeItems(listItems, itemPhotos, itemQuantities, itemSources, itemRecipeNames, itemChecked);
+    const merged = mergeItems(listItems, itemPhotos, itemQuantities, itemSources, itemRecipeNames, itemChecked, itemDealAccepted, itemDealProduct, itemDealSavings);
 
     saveTimer.current = setTimeout(async () => {
       const now = new Date().toISOString();
@@ -260,7 +293,7 @@ export function useLists(user: User | null): {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [listItems, itemPhotos, itemQuantities, itemSources, itemRecipeNames, itemChecked, user?.id, activeListId]);
+  }, [listItems, itemPhotos, itemQuantities, itemSources, itemRecipeNames, itemChecked, itemDealAccepted, itemDealProduct, itemDealSavings, user?.id, activeListId]);
 
   // Pad parallel arrays with nulls when listItems grows (e.g. after Supabase load or addItems)
   useEffect(() => {
@@ -289,6 +322,21 @@ export function useLists(user: User | null): {
     setItemChecked(prev => {
       if (prev.length >= len) return prev;
       return [...prev, ...Array(len - prev.length).fill(false)];
+    });
+
+    setItemDealAccepted(prev => {
+      if (prev.length >= len) return prev;
+      return [...prev, ...Array(len - prev.length).fill(null)];
+    });
+
+    setItemDealProduct(prev => {
+      if (prev.length >= len) return prev;
+      return [...prev, ...Array(len - prev.length).fill(null)];
+    });
+
+    setItemDealSavings(prev => {
+      if (prev.length >= len) return prev;
+      return [...prev, ...Array(len - prev.length).fill(null)];
     });
   }, [listItems.length]);
 
@@ -338,13 +386,16 @@ export function useLists(user: User | null): {
           if (incoming.updated_at > lastSavedAt.current) {
             if (saveTimer.current) clearTimeout(saveTimer.current);
             isRemoteUpdate.current = true;
-            const { texts, photos, quantities, sources, recipeNames, checked } = splitItems(incoming.items);
+            const { texts, photos, quantities, sources, recipeNames, checked, dealAccepted, dealProduct, dealSavings } = splitItems(incoming.items);
             setListItems(texts);
             setItemPhotos(photos);
             setItemQuantities(quantities);
             setItemSources(sources);
             setItemRecipeNames(recipeNames);
             setItemChecked(checked);
+            setItemDealAccepted(dealAccepted);
+            setItemDealProduct(dealProduct);
+            setItemDealSavings(dealSavings);
             lastSavedAt.current = incoming.updated_at;
           }
         }
@@ -381,6 +432,9 @@ export function useLists(user: User | null): {
     setItemSources([]);
     setItemRecipeNames([]);
     setItemChecked([]);
+    setItemDealAccepted([]);
+    setItemDealProduct([]);
+    setItemDealSavings([]);
     lastSavedAt.current = newList.updated_at;
     localStorage.setItem(ACTIVE_LIST_KEY, newList.id);
     setNeedsNaming(false);
@@ -398,7 +452,7 @@ export function useLists(user: User | null): {
     if (activeListId === id) {
       if (remaining.length > 0) {
         const next = remaining[0];
-        const { texts, photos, quantities, sources, recipeNames, checked } = splitItems(next.items);
+        const { texts, photos, quantities, sources, recipeNames, checked, dealAccepted, dealProduct, dealSavings } = splitItems(next.items);
         setActiveListId(next.id);
         setListItems(texts);
         setItemPhotos(photos);
@@ -406,6 +460,9 @@ export function useLists(user: User | null): {
         setItemSources(sources);
         setItemRecipeNames(recipeNames);
         setItemChecked(checked);
+        setItemDealAccepted(dealAccepted);
+        setItemDealProduct(dealProduct);
+        setItemDealSavings(dealSavings);
         lastSavedAt.current = next.updated_at;
         localStorage.setItem(ACTIVE_LIST_KEY, next.id);
       } else {
@@ -429,7 +486,7 @@ export function useLists(user: User | null): {
     const target = lists.find(l => l.id === id);
     if (!target) return;
 
-    const { texts, photos, quantities, sources, recipeNames, checked } = splitItems(target.items);
+    const { texts, photos, quantities, sources, recipeNames, checked, dealAccepted, dealProduct, dealSavings } = splitItems(target.items);
     setActiveListId(id);
     setListItems(texts);
     setItemPhotos(photos);
@@ -437,6 +494,9 @@ export function useLists(user: User | null): {
     setItemSources(sources);
     setItemRecipeNames(recipeNames);
     setItemChecked(checked);
+    setItemDealAccepted(dealAccepted);
+    setItemDealProduct(dealProduct);
+    setItemDealSavings(dealSavings);
     lastSavedAt.current = target.updated_at;
     localStorage.setItem(ACTIVE_LIST_KEY, id);
   }
@@ -498,6 +558,12 @@ export function useLists(user: User | null): {
     setItemRecipeNames,
     itemChecked,
     setItemChecked,
+    itemDealAccepted,
+    setItemDealAccepted,
+    itemDealProduct,
+    setItemDealProduct,
+    itemDealSavings,
+    setItemDealSavings,
     isLoaded,
     needsNaming,
     createList,

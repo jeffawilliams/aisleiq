@@ -41,6 +41,12 @@ export function App() {
     setItemRecipeNames,
     itemChecked,
     setItemChecked,
+    itemDealAccepted,
+    setItemDealAccepted,
+    itemDealProduct,
+    setItemDealProduct,
+    itemDealSavings,
+    setItemDealSavings,
     needsNaming,
     createList,
     deleteList,
@@ -60,15 +66,34 @@ export function App() {
     if (!user || !activeListId) return;
     if (checkoutDebounceRef.current) clearTimeout(checkoutDebounceRef.current);
     checkoutDebounceRef.current = setTimeout(async () => {
+      // Compute accepted savings from item-level deal acceptance state
+      const acceptedSavings = itemDealSavings.reduce((sum, s, i) => {
+        return itemDealAccepted[i] === true && s != null ? sum + s : sum;
+      }, 0);
+      const dealAcceptCount = itemDealAccepted.filter(v => v === true).length;
+      const dealDeclineCount = itemDealAccepted.filter(v => v === false).length;
+
       await supabase.from("checkout_events").upsert({
         user_id: user.id,
         list_id: activeListId,
         deal_count: dealCount,
         total_savings: totalSavings,
+        accepted_savings: acceptedSavings,
+        deal_accept_count: dealAcceptCount,
+        deal_decline_count: dealDeclineCount,
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,list_id" });
     }, 1500);
-  }, [user, activeListId]);
+  }, [user, activeListId, itemDealAccepted, itemDealSavings]);
+
+  const handleDealResponse = useCallback((itemName: string, accepted: boolean, dealProduct: string, dealSavingsAmt: number) => {
+    const nameLower = itemName.toLowerCase();
+    const index = listItems.findIndex(item => item.toLowerCase() === nameLower);
+    if (index === -1) return;
+    setItemDealAccepted(prev => { const next = [...prev]; next[index] = accepted; return next; });
+    setItemDealProduct(prev => { const next = [...prev]; next[index] = dealProduct; return next; });
+    setItemDealSavings(prev => { const next = [...prev]; next[index] = dealSavingsAmt; return next; });
+  }, [listItems]);
 
   const [showDeals, setShowDeals] = useState(() => {
     try { return localStorage.getItem("sla_deals_show") !== "false"; } catch { return true; }
@@ -149,6 +174,9 @@ export function App() {
     setItemSources(prev => prev.filter((_, i) => i !== index));
     setItemRecipeNames(prev => prev.filter((_, i) => i !== index));
     setItemChecked(prev => prev.filter((_, i) => i !== index));
+    setItemDealAccepted(prev => prev.filter((_, i) => i !== index));
+    setItemDealProduct(prev => prev.filter((_, i) => i !== index));
+    setItemDealSavings(prev => prev.filter((_, i) => i !== index));
     if (result || aisleResult) setIsStale(true);
   };
 
@@ -156,11 +184,13 @@ export function App() {
     const nameLower = itemName.toLowerCase();
     const index = listItems.findIndex(item => item.toLowerCase() === nameLower);
     if (index === -1) return;
-    setItemChecked(prev => {
-      const next = [...prev];
-      next[index] = checked;
-      return next;
-    });
+    setItemChecked(prev => { const next = [...prev]; next[index] = checked; return next; });
+    // Reset deal acceptance when item is unchecked
+    if (!checked) {
+      setItemDealAccepted(prev => { const next = [...prev]; next[index] = null; return next; });
+      setItemDealProduct(prev => { const next = [...prev]; next[index] = null; return next; });
+      setItemDealSavings(prev => { const next = [...prev]; next[index] = null; return next; });
+    }
   };
 
   const editItem = (index: number, newValue: string) => {
@@ -300,6 +330,8 @@ export function App() {
               isAdmin={isAdmin}
               onCheckChange={handleCheckChange}
               onItemChecked={handleItemCheck}
+              onDealResponse={handleDealResponse}
+              itemDealAccepted={itemDealAccepted}
             />
           </div>
         )}
