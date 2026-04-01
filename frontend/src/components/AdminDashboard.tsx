@@ -184,7 +184,7 @@ function GroupedBarChart({
   }));
   return (
     <ResponsiveContainer width="100%" height={160}>
-      <BarChart data={merged} margin={{ top: 4, right: 8, left: -18, bottom: 0 }} barCategoryGap="30%" barGap={3}>
+      <BarChart data={merged} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%" barGap={3}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} />
         <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
@@ -220,6 +220,30 @@ function MiniLineChart({
         />
         <Line type="monotone" dataKey="count" stroke={color} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
       </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+function SingleBarChart({
+  data,
+  color = "#2d6a4f",
+}: {
+  data: { week: string; count: number }[] | null;
+  color?: string;
+}) {
+  if (!data || data.length < 2) return <p className="analytics-empty">Not enough data yet.</p>;
+  const sorted = [...data]
+    .sort((a, b) => a.week.localeCompare(b.week))
+    .map(d => ({ ...d, label: formatWeek(d.week) }));
+  return (
+    <ResponsiveContainer width="100%" height={160}>
+      <BarChart data={sorted} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap="40%">
+        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} />
+        <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
+        <Tooltip contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }} labelStyle={{ color: "#555" }} />
+        <Bar dataKey="count" name="Lists" fill={color} radius={[3, 3, 0, 0]} />
+      </BarChart>
     </ResponsiveContainer>
   );
 }
@@ -353,15 +377,13 @@ export function AdminDashboard() {
         <div className="admin-grid admin-grid--mt">
           <div>
             <StatCluster label="Lists">
-              <StatCard label="Total"                 value={lists.total_lists.toLocaleString()} />
-              <StatCard label="Avg / registered user" value={lists.avg_lists_per_registered_user ?? "—"} />
-              <StatCard label="Avg items / list"      value={lists.avg_items_per_list ?? "—"} />
-              <StatCard label="Max items"             value={lists.max_items_in_list ?? "—"} />
+              <StatCard label="Total"            value={lists.total_lists.toLocaleString()} />
+              <StatCard label="Avg items / list" value={lists.avg_items_per_list ?? "—"} />
             </StatCluster>
           </div>
           <div className="admin-chart-panel">
             <div className="admin-chart-panel__label">Lists Created / Week</div>
-            <MiniLineChart data={lists.weekly_lists_created} color="#2d6a4f" />
+            <SingleBarChart data={lists.weekly_lists_created} color="#2d6a4f" />
           </div>
         </div>
       </div>
