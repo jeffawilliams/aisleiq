@@ -58,6 +58,7 @@ interface AnalyticsAI {
   items_with_photo_pct: number | null;
   // AI3 — grouping quality: Other rate
   other_item_count: number;
+  other_total_grouped: number;
   other_item_pct: number | null;
   scans_total: number;
   scans_high: number;
@@ -325,8 +326,9 @@ export function AdminDashboard() {
         <p className="analytics-note">Using photo field presence as proxy. Standardized source tagging begins Phase 2.</p>
 
         <StatCluster label="Grouping Quality — Other Rate (AI3)">
-          <StatCard label="Items grouped to 'Other'" value={ai.other_item_count.toLocaleString()} />
-          <StatCard label="% of grouped items" value={ai.other_item_pct != null ? `${ai.other_item_pct}%` : "—"} />
+          <StatCard label="Total items grouped" value={ai.other_total_grouped.toLocaleString()} />
+          <StatCard label="Placed in 'Other'" value={ai.other_item_count.toLocaleString()} />
+          <StatCard label="Other rate" value={ai.other_total_grouped > 0 ? `${ai.other_item_pct ?? 0}%` : "—"} />
         </StatCluster>
         {ai.scans_total === 0 ? (
           <p className="analytics-note">No product scans recorded yet.</p>
