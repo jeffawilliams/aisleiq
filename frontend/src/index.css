@@ -1909,6 +1909,14 @@ button:disabled {
   margin-bottom: 1rem;
 }
 
+.admin-chart-panel .admin-analytics-cluster {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+}
+
 .admin-analytics-cluster__label {
   font-size: 0.78rem;
   font-weight: 600;

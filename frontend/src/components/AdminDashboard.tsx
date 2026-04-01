@@ -190,7 +190,21 @@ function GroupedBarChart({
         <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} />
         <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
         <Tooltip contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }} labelStyle={{ color: "#555" }} />
-        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
+        <Legend
+          iconType="circle"
+          iconSize={8}
+          wrapperStyle={{ fontSize: "0.75rem" }}
+          content={({ payload }) => (
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", fontSize: "0.75rem" }}>
+              {[...(payload ?? [])].reverse().map((entry, i) => (
+                <span key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: String(entry.color) }} />
+                  {entry.value}
+                </span>
+              ))}
+            </div>
+          )}
+        />
         <Bar dataKey="a" name={labelA} fill={colorA} radius={[3, 3, 0, 0]} />
         <Bar dataKey="b" name={labelB} fill={colorB} radius={[3, 3, 0, 0]} />
       </BarChart>
