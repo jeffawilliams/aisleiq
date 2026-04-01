@@ -264,14 +264,20 @@ export function App() {
       setIsStale(false);
       resetAisle();
       setItemChecked(prev => prev.map(() => false));
-      const success = await organize(listItems.join("\n"));
-      if (success && user && activeListId) {
+      const organizeResult = await organize(listItems.join("\n"));
+      if (organizeResult && user && activeListId) {
+        const otherCat = organizeResult.categories.find(c => c.name.toLowerCase() === "other");
+        const otherCount = otherCat ? otherCat.items.length : 0;
+        const categoryCounts: Record<string, number> = {};
+        organizeResult.categories.forEach(c => { categoryCounts[c.name] = c.items.length; });
         await supabase.from("organize_events").insert({
           user_id: user.id,
           list_id: activeListId,
           item_count: listItems.length,
           photo_item_count: itemPhotos.filter(p => p !== null).length,
           action_type: "group",
+          other_item_count: otherCount,
+          category_counts: categoryCounts,
         });
       }
     }
@@ -282,8 +288,8 @@ export function App() {
       setIsStale(false);
       reset();
       setItemChecked(prev => prev.map(() => false));
-      const success = await organizeByAisle(listItems.join("\n"), activeStoreId);
-      if (success && user && activeListId) {
+      const aisleOrganizeResult = await organizeByAisle(listItems.join("\n"), activeStoreId);
+      if (aisleOrganizeResult && user && activeListId) {
         await supabase.from("organize_events").insert({
           user_id: user.id,
           list_id: activeListId,

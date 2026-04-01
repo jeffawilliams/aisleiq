@@ -40,12 +40,25 @@ interface AnalyticsEngagement {
   lists_deals_shown_count: number;
   total_savings: number;
   avg_savings_per_list: number | null;
+  // E5b/E5c/E5d — deal conversion (Phase 3)
+  deal_items_count: number;
+  deal_items_pct: number | null;
+  deal_accept_count: number;
+  deal_decline_count: number;
+  deal_conversion_pct: number | null;
+  accepted_savings: number;
+  avg_accepted_savings: number | null;
+  // E6 — category distribution (Phase 4)
+  category_distribution: { category: string; item_count: number; pct: number }[] | null;
 }
 
 interface AnalyticsAI {
   items_total: number;
   items_with_photo_count: number;
   items_with_photo_pct: number | null;
+  // AI3 — grouping quality: Other rate
+  other_item_count: number;
+  other_item_pct: number | null;
   scans_total: number;
   scans_high: number;
   scans_medium: number;
@@ -270,6 +283,35 @@ export function AdminDashboard() {
           <StatCard label="Total lifetime" value={fmt(engagement.total_savings, "$")} />
           <StatCard label="Avg per list" value={engagement.avg_savings_per_list != null ? `$${Number(engagement.avg_savings_per_list).toFixed(2)}` : "—"} />
         </StatCluster>
+
+        <StatCluster label="Deal Conversion">
+          <StatCard label="Items with deal match" value={engagement.deal_items_count > 0 ? `${engagement.deal_items_count.toLocaleString()} (${engagement.deal_items_pct ?? "—"}%)` : "—"} />
+          <StatCard label="Accepted" value={engagement.deal_accept_count.toLocaleString()} />
+          <StatCard label="Declined" value={engagement.deal_decline_count.toLocaleString()} />
+          <StatCard label="Conversion rate" value={engagement.deal_conversion_pct != null ? `${engagement.deal_conversion_pct}%` : "—"} />
+          <StatCard label="Accepted savings" value={engagement.accepted_savings > 0 ? `$${Number(engagement.accepted_savings).toFixed(2)}` : "—"} />
+          <StatCard label="Avg accepted savings" value={engagement.avg_accepted_savings != null && engagement.avg_accepted_savings > 0 ? `$${Number(engagement.avg_accepted_savings).toFixed(2)}` : "—"} />
+        </StatCluster>
+
+        {engagement.category_distribution && engagement.category_distribution.length > 0 && (
+          <div className="admin-analytics-cluster">
+            <div className="admin-analytics-cluster__label">Shopping List Category Distribution (E6)</div>
+            <table className="analytics-weekly-table">
+              <thead>
+                <tr><th>Category</th><th>Items</th><th>% of Total</th></tr>
+              </thead>
+              <tbody>
+                {engagement.category_distribution.map(row => (
+                  <tr key={row.category}>
+                    <td>{row.category}</td>
+                    <td>{row.item_count.toLocaleString()}</td>
+                    <td>{row.pct}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* ── Section 3: AI Performance ── */}
@@ -282,7 +324,10 @@ export function AdminDashboard() {
         </StatCluster>
         <p className="analytics-note">Using photo field presence as proxy. Standardized source tagging begins Phase 2.</p>
 
-        <Phase2Placeholder label="Grouping category breakdown (requires group_categories on organize_events)" />
+        <StatCluster label="Grouping Quality — Other Rate (AI3)">
+          <StatCard label="Items grouped to 'Other'" value={ai.other_item_count.toLocaleString()} />
+          <StatCard label="% of grouped items" value={ai.other_item_pct != null ? `${ai.other_item_pct}%` : "—"} />
+        </StatCluster>
         {ai.scans_total === 0 ? (
           <p className="analytics-note">No product scans recorded yet.</p>
         ) : (

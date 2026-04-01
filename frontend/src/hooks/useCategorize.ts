@@ -6,7 +6,7 @@ export function useOrganize() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const organize = async (items: string): Promise<boolean> => {
+  const organize = async (items: string): Promise<OrganizeResponse | null> => {
     setIsLoading(true);
     setError(null);
     setResult(null);
@@ -25,11 +25,12 @@ export function useOrganize() {
         throw new Error(data.error ?? "Something went wrong");
       }
 
-      setResult(data as OrganizeResponse);
-      return true;
+      const organized = data as OrganizeResponse;
+      setResult(organized);
+      return organized;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
-      return false;
+      return null;
     } finally {
       setIsLoading(false);
     }
