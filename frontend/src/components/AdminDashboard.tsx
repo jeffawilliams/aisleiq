@@ -24,6 +24,7 @@ interface AnalyticsLists {
   max_items_in_list: number | null;
   min_items_in_nonempty_list: number | null;
   weekly_lists_created: { week: string; count: number }[] | null;
+  weekly_items_created: { week: string; count: number }[] | null;
 }
 
 interface AnalyticsEngagement {
@@ -375,15 +376,22 @@ export function AdminDashboard() {
 
         {/* Lists row */}
         <div className="admin-grid admin-grid--mt">
-          <div>
+          <div className="admin-chart-panel">
             <StatCluster label="Lists">
               <StatCard label="Total"            value={lists.total_lists.toLocaleString()} />
               <StatCard label="Avg items / list" value={lists.avg_items_per_list ?? "—"} />
             </StatCluster>
           </div>
           <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">Lists Created / Week</div>
-            <SingleBarChart data={lists.weekly_lists_created} color="#2d6a4f" />
+            <div className="admin-chart-panel__label">Lists & Items / Week</div>
+            <GroupedBarChart
+              dataA={lists.weekly_lists_created}
+              dataB={lists.weekly_items_created}
+              labelA="Lists"
+              labelB="Items"
+              colorA="#1b4332"
+              colorB="#52b788"
+            />
           </div>
         </div>
       </div>
