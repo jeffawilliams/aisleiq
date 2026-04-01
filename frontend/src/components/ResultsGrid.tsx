@@ -14,7 +14,7 @@ interface ResultsGridProps {
   onCheckChange?: (dealCount: number, totalSavings: number) => void;
   onItemChecked?: (item: string, checked: boolean) => void;
   onDealResponse?: (item: string, accepted: boolean, dealProduct: string, dealSavings: number) => void;
-  itemDealAccepted?: (boolean | null)[];
+  dealAcceptedMap?: Map<string, boolean | null>;
 }
 
 // Standard category order — common categories first, Other always last
@@ -58,7 +58,7 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange, onItemChecked, onDealResponse, itemDealAccepted }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange, onItemChecked, onDealResponse, dealAcceptedMap }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
   const exactDeals = deals?.filter(d => d.matchType === "exact") ?? [];
   const hasAnyDeals = exactDeals.length > 0;
@@ -168,7 +168,7 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
       )}
       <div className="results-grid">
         {sorted.map((category) => (
-          <CategoryCard key={category.name} category={category} dealMap={dealMap} checked={checked} onToggle={toggleItem} itemDealAccepted={itemDealAccepted} />
+          <CategoryCard key={category.name} category={category} dealMap={dealMap} checked={checked} onToggle={toggleItem} dealAcceptedMap={dealAcceptedMap} />
         ))}
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
@@ -85,6 +85,15 @@ export function App() {
       }, { onConflict: "user_id,list_id" });
     }, 1500);
   }, [user, activeListId, itemDealAccepted, itemDealSavings]);
+
+  // Map from item name (lowercase) → deal acceptance state, for CategoryCard badge display
+  const dealAcceptedMap = useMemo(() => {
+    const map = new Map<string, boolean | null>();
+    listItems.forEach((item, i) => {
+      map.set(item.toLowerCase(), itemDealAccepted[i] ?? null);
+    });
+    return map;
+  }, [listItems, itemDealAccepted]);
 
   const handleDealResponse = useCallback((itemName: string, accepted: boolean, dealProduct: string, dealSavingsAmt: number) => {
     const nameLower = itemName.toLowerCase();
@@ -331,7 +340,7 @@ export function App() {
               onCheckChange={handleCheckChange}
               onItemChecked={handleItemCheck}
               onDealResponse={handleDealResponse}
-              itemDealAccepted={itemDealAccepted}
+              dealAcceptedMap={dealAcceptedMap}
             />
           </div>
         )}

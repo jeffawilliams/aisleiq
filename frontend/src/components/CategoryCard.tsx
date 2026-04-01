@@ -5,7 +5,7 @@ interface CategoryCardProps {
   dealMap?: Map<string, Deal>;
   checked: Set<string>;
   onToggle: (item: string) => void;
-  itemDealAccepted?: (boolean | null)[];
+  dealAcceptedMap?: Map<string, boolean | null>;
 }
 
 function formatDate(dateStr: string): string {
@@ -16,17 +16,17 @@ function formatDate(dateStr: string): string {
   }
 }
 
-export function CategoryCard({ category, dealMap, checked, onToggle, itemDealAccepted }: CategoryCardProps) {
+export function CategoryCard({ category, dealMap, checked, onToggle, dealAcceptedMap }: CategoryCardProps) {
   const sortedItems = [...category.items].sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="aisle-card">
       <h3 className="aisle-card-title">{category.name}</h3>
       <ul className="aisle-card-items">
-        {sortedItems.map((item, idx) => {
+        {sortedItems.map((item) => {
           const isChecked = checked.has(item);
           const deal = dealMap?.get(item.toLowerCase());
-          const dealAccepted = itemDealAccepted?.[idx] ?? null;
+          const dealAccepted = dealAcceptedMap?.get(item.toLowerCase()) ?? null;
           // Hide deal badge if user explicitly declined
           const showDeal = deal && dealAccepted !== false;
           return (
