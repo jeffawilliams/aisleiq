@@ -109,16 +109,15 @@ export function App() {
     return map;
   }, [listItems, itemDealAccepted]);
 
-  // Set of lowercase item names that were checked when this list was last loaded/switched
+  // Set of lowercase item names currently checked — passed to ResultsGrid so it can
+  // restore visual checked state when a list is switched back to or a result is restored.
   const initialCheckedSet = useMemo(() => {
     const set = new Set<string>();
     listItems.forEach((item, i) => {
       if (itemChecked[i]) set.add(item.toLowerCase());
     });
     return set;
-  // Intentionally only recompute on list switch, not on every check/uncheck
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeListId]);
+  }, [listItems, itemChecked]);
 
   const handleDealResponse = useCallback((itemName: string, accepted: boolean, dealProduct: string, dealSavingsAmt: number) => {
     const nameLower = itemName.toLowerCase();
