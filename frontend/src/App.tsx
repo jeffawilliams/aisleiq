@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { OrganizeResponse } from "./types/index.js";
 import { ShoppingListInput } from "./components/ShoppingListInput.js";
 import { ResultsGrid } from "./components/ResultsGrid.js";
 import { LoadingSpinner } from "./components/LoadingSpinner.js";
@@ -14,10 +15,22 @@ import { useStores } from "./hooks/useStores.js";
 import { useDeals } from "./hooks/useDeals.js";
 import { supabase } from "./lib/supabaseClient.js";
 
+function getStoredOrganized(listId: string): { result: OrganizeResponse; mode: "group" | "sort" } | null {
+  try {
+    const raw = localStorage.getItem(`sla_organized_${listId}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function storeOrganized(listId: string, result: OrganizeResponse, mode: "group" | "sort") {
+  try { localStorage.setItem(`sla_organized_${listId}`, JSON.stringify({ result, mode })); } catch { /* ignore */ }
+}
+
 export function App() {
-  const { organize, result, isLoading, error, reset } = useOrganize();
-  const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError, reset: resetAisle } = useOrganizeByAisle();
+  const { organize, result, isLoading, error, reset, restore: restoreResult } = useOrganize();
+  const { organizeByAisle, result: aisleResult, isLoading: aisleLoading, error: aisleError, reset: resetAisle, restore: restoreAisle } = useOrganizeByAisle();
   const { user, role, authLoading, isAnonymous, signIn, signInWithGoogle, signOut } = useAuth();
+  const skipScrollRef = useRef(false);
   const { stores } = useStores();
   const { deals, fetchDeals, resetDeals } = useDeals();
   const [isStale, setIsStale] = useState(false);
@@ -47,6 +60,7 @@ export function App() {
     setItemDealProduct,
     itemDealSavings,
     setItemDealSavings,
+    isLoaded,
     needsNaming,
     createList,
     deleteList,
@@ -95,6 +109,17 @@ export function App() {
     return map;
   }, [listItems, itemDealAccepted]);
 
+  // Set of lowercase item names that were checked when this list was last loaded/switched
+  const initialCheckedSet = useMemo(() => {
+    const set = new Set<string>();
+    listItems.forEach((item, i) => {
+      if (itemChecked[i]) set.add(item.toLowerCase());
+    });
+    return set;
+  // Intentionally only recompute on list switch, not on every check/uncheck
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeListId]);
+
   const handleDealResponse = useCallback((itemName: string, accepted: boolean, dealProduct: string, dealSavingsAmt: number) => {
     const nameLower = itemName.toLowerCase();
     const index = listItems.findIndex(item => item.toLowerCase() === nameLower);
@@ -130,21 +155,33 @@ export function App() {
     }
   }, [user]);
 
-  // After either organize action resolves, fetch deals in the background if a store is selected
+  // After either organize action resolves, save to localStorage and fetch deals
   useEffect(() => {
-    if (result && activeStore?.kroger_location_id) {
-      fetchDeals(listItems, activeStore.kroger_location_id);
-    }
+    if (!result) return;
+    if (activeListId) storeOrganized(activeListId, result, "group");
+    if (activeStore?.kroger_location_id) fetchDeals(listItems, activeStore.kroger_location_id);
   }, [result]);
 
   useEffect(() => {
-    if (aisleResult && activeStore?.kroger_location_id) {
-      fetchDeals(listItems, activeStore.kroger_location_id);
-    }
+    if (!aisleResult) return;
+    if (activeListId) storeOrganized(activeListId, aisleResult, "sort");
+    if (activeStore?.kroger_location_id) fetchDeals(listItems, activeStore.kroger_location_id);
   }, [aisleResult]);
 
-  // Scroll to results after either organize action completes
+  // Restore persisted organized result when switching to a list that has one
   useEffect(() => {
+    if (!activeListId || !isLoaded || result || aisleResult) return;
+    const stored = getStoredOrganized(activeListId);
+    if (!stored) return;
+    skipScrollRef.current = true; // Don't auto-scroll on silent restore
+    if (stored.mode === "sort") restoreAisle(stored.result);
+    else restoreResult(stored.result);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeListId, isLoaded]);
+
+  // Scroll to results after either organize action completes (skip on silent restore)
+  useEffect(() => {
+    if (skipScrollRef.current) { skipScrollRef.current = false; return; }
     if ((result || aisleResult) && !(isLoading || aisleLoading)) {
       resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -227,6 +264,7 @@ export function App() {
     if (listItems.length > 0) {
       setIsStale(false);
       resetAisle();
+      setItemChecked(prev => prev.map(() => false));
       const success = await organize(listItems.join("\n"));
       if (success && user && activeListId) {
         await supabase.from("organize_events").insert({
@@ -244,6 +282,7 @@ export function App() {
     if (listItems.length > 0 && activeStoreId) {
       setIsStale(false);
       reset();
+      setItemChecked(prev => prev.map(() => false));
       const success = await organizeByAisle(listItems.join("\n"), activeStoreId);
       if (success && user && activeListId) {
         await supabase.from("organize_events").insert({
@@ -341,6 +380,7 @@ export function App() {
               onItemChecked={handleItemCheck}
               onDealResponse={handleDealResponse}
               dealAcceptedMap={dealAcceptedMap}
+              initialChecked={initialCheckedSet}
             />
           </div>
         )}

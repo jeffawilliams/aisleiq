@@ -24,7 +24,7 @@ export function CategoryCard({ category, dealMap, checked, onToggle, dealAccepte
       <h3 className="aisle-card-title">{category.name}</h3>
       <ul className="aisle-card-items">
         {sortedItems.map((item) => {
-          const isChecked = checked.has(item);
+          const isChecked = checked.has(item.toLowerCase());
           const deal = dealMap?.get(item.toLowerCase());
           const dealAccepted = dealAcceptedMap?.get(item.toLowerCase()) ?? null;
           // Hide deal badge if user explicitly declined

@@ -15,6 +15,7 @@ interface ResultsGridProps {
   onItemChecked?: (item: string, checked: boolean) => void;
   onDealResponse?: (item: string, accepted: boolean, dealProduct: string, dealSavings: number) => void;
   dealAcceptedMap?: Map<string, boolean | null>;
+  initialChecked?: Set<string>;
 }
 
 // Standard category order — common categories first, Other always last
@@ -58,7 +59,7 @@ function sortCategories(categories: OrganizeResponse["categories"]) {
   });
 }
 
-export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange, onItemChecked, onDealResponse, dealAcceptedMap }: ResultsGridProps) {
+export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered, showDeals = true, onToggleDeals, isAdmin = false, onCheckChange, onItemChecked, onDealResponse, dealAcceptedMap, initialChecked }: ResultsGridProps) {
   const sorted = ordered ? result.categories : sortCategories(result.categories);
   const exactDeals = deals?.filter(d => d.matchType === "exact") ?? [];
   const hasAnyDeals = exactDeals.length > 0;
@@ -68,37 +69,39 @@ export function ResultsGrid({ result, isStale, deals, hasStore = false, ordered,
   const [dealsBannerDismissed, setDealsBannerDismissed] = useState(() => {
     try { return localStorage.getItem("sla_deals_test_dismissed") === "true"; } catch { return false; }
   });
-  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [checked, setChecked] = useState<Set<string>>(() => new Set(initialChecked));
   const [dealPrompt, setDealPrompt] = useState<{ item: string; deal: Deal } | null>(null);
 
-  // Reset checked state when results change (user re-organizes)
+  // Sync checked state when result changes (new organize or restored result)
   useEffect(() => {
-    setChecked(new Set());
+    setChecked(new Set(initialChecked));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result]);
 
   // Fire callback whenever checked state or deals change — skip if nothing checked yet
   useEffect(() => {
     if (!onCheckChange || checked.size === 0) return;
-    const checkedLower = new Set([...checked].map(i => i.toLowerCase()));
-    const checkedDeals = exactDeals.filter(d => checkedLower.has(d.listItem.toLowerCase()));
+    // checked stores lowercase keys
+    const checkedDeals = exactDeals.filter(d => checked.has(d.listItem.toLowerCase()));
     const dealCount = checkedDeals.length;
     const totalSavings = checkedDeals.reduce((sum, d) => sum + d.savings, 0);
     onCheckChange(dealCount, totalSavings);
   }, [checked, exactDeals.length, onCheckChange]);
 
   function toggleItem(item: string) {
-    const nowChecked = !checked.has(item);
+    const key = item.toLowerCase();
+    const nowChecked = !checked.has(key);
     setChecked(prev => {
       const next = new Set(prev);
-      if (nowChecked) next.add(item);
-      else next.delete(item);
+      if (nowChecked) next.add(key);
+      else next.delete(key);
       return next;
     });
     onItemChecked?.(item, nowChecked);
 
     // If checking an item that has a deal, show acceptance prompt
     if (nowChecked && onDealResponse) {
-      const deal = dealMap.get(item.toLowerCase());
+      const deal = dealMap.get(key);
       if (deal) setDealPrompt({ item, deal });
     }
   }

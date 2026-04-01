@@ -36,6 +36,7 @@ export function useOrganizeByAisle() {
   };
 
   const reset = () => { setResult(null); setError(null); };
+  const restore = (r: OrganizeResponse) => { setResult(r); setError(null); };
 
-  return { organizeByAisle, result, isLoading, error, reset };
+  return { organizeByAisle, result, isLoading, error, reset, restore };
 }
