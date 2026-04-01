@@ -5,6 +5,7 @@ import { LoadingSpinner } from "./LoadingSpinner.js";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
   LineChart, Line, XAxis, YAxis, CartesianGrid,
+  BarChart, Bar,
 } from "recharts";
 
 // ── RPC response types ────────────────────────────────────────────────────────
@@ -72,7 +73,8 @@ interface AnalyticsAI {
 // ── Chart colors ──────────────────────────────────────────────────────────────
 
 const COLORS_GREEN = ['#2d6a4f', '#52b788', '#95d5b2', '#40916c', '#74c69d', '#1b4332', '#b7e4c7', '#d8f3dc'];
-const COLORS_DEAL  = ['#52b788', '#e76f51'];       // accepted green, declined orange
+const COLORS_USERS = ['#1b4332', '#95d5b2'];        // registered dark green, anonymous light mint
+const COLORS_DEAL  = ['#52b788', '#e76f51'];        // accepted green, declined orange
 const COLORS_GROUP = ['#52b788', '#f4a261'];        // categorized green, Other amber
 const COLORS_SCAN  = ['#2d6a4f', '#52b788', '#95d5b2', '#e76f51'];
 
@@ -116,24 +118,28 @@ function MiniDonut({
   data,
   colors = COLORS_GREEN,
   height = 230,
+  showLabels = false,
 }: {
   data: { name: string; value: number }[];
   colors?: string[];
   height?: number;
+  showLabels?: boolean;
 }) {
   const active = data.filter(d => d.value > 0);
   if (active.length === 0) return <p className="analytics-empty">No data yet.</p>;
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <PieChart>
+      <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
         <Pie
           data={active}
           cx="50%"
           cy="50%"
-          innerRadius={58}
-          outerRadius={85}
+          innerRadius={52}
+          outerRadius={74}
           paddingAngle={2}
           dataKey="value"
+          label={showLabels ? (({ value }: { value: number }) => value.toLocaleString()) : undefined}
+          labelLine={showLabels}
         >
           {active.map((_, i) => (
             <Cell key={i} fill={colors[i % colors.length]} />
@@ -145,6 +151,48 @@ function MiniDonut({
         />
         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
       </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+function GroupedBarChart({
+  dataA,
+  dataB,
+  labelA,
+  labelB,
+  colorA = "#1b4332",
+  colorB = "#52b788",
+}: {
+  dataA: { week: string; count: number }[] | null;
+  dataB: { week: string; count: number }[] | null;
+  labelA: string;
+  labelB: string;
+  colorA?: string;
+  colorB?: string;
+}) {
+  const weeks = Array.from(new Set([
+    ...(dataA ?? []).map(d => d.week),
+    ...(dataB ?? []).map(d => d.week),
+  ])).sort();
+  if (weeks.length < 2) return <p className="analytics-empty">Not enough data yet.</p>;
+  const mapA = new Map((dataA ?? []).map(d => [d.week, d.count]));
+  const mapB = new Map((dataB ?? []).map(d => [d.week, d.count]));
+  const merged = weeks.map(w => ({
+    label: formatWeek(w),
+    a: mapA.get(w) ?? 0,
+    b: mapB.get(w) ?? 0,
+  }));
+  return (
+    <ResponsiveContainer width="100%" height={160}>
+      <BarChart data={merged} margin={{ top: 4, right: 8, left: -18, bottom: 0 }} barCategoryGap="30%" barGap={3}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} />
+        <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
+        <Tooltip contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }} labelStyle={{ color: "#555" }} />
+        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
+        <Bar dataKey="a" name={labelA} fill={colorA} radius={[3, 3, 0, 0]} />
+        <Bar dataKey="b" name={labelB} fill={colorB} radius={[3, 3, 0, 0]} />
+      </BarChart>
     </ResponsiveContainer>
   );
 }
@@ -275,34 +323,45 @@ export function AdminDashboard() {
       <div className="admin-section">
         <h2 className="admin-section__title">Usage</h2>
 
-        <div className="admin-grid admin-grid--3col">
-          <StatCluster label="Users">
-            <StatCard label="Registered" value={users.total_registered.toLocaleString()} />
-            <StatCard label="Anonymous"  value={users.total_anonymous.toLocaleString()} />
-          </StatCluster>
-          <StatCluster label="Lists">
-            <StatCard label="Total"               value={lists.total_lists.toLocaleString()} />
-            <StatCard label="Avg / registered user" value={lists.avg_lists_per_registered_user ?? "—"} />
-          </StatCluster>
-          <StatCluster label="Items per List">
-            <StatCard label="Avg"          value={lists.avg_items_per_list ?? "—"} />
-            <StatCard label="Max"          value={lists.max_items_in_list ?? "—"} />
-            <StatCard label="Min (non-empty)" value={lists.min_items_in_nonempty_list ?? "—"} />
-          </StatCluster>
-        </div>
-
-        <div className="admin-grid admin-grid--3col admin-grid--mt">
+        {/* Users row */}
+        <div className="admin-grid admin-grid--mt">
           <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">New Registered Users / Week</div>
-            <MiniLineChart data={users.weekly_new_registered} color="#2d6a4f" />
+            <div className="admin-chart-panel__label">User Type</div>
+            <MiniDonut
+              data={[
+                { name: `Registered`, value: users.total_registered },
+                { name: `Anonymous`,  value: users.total_anonymous },
+              ]}
+              colors={COLORS_USERS}
+              showLabels
+            />
           </div>
           <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">New Anonymous Users / Week</div>
-            <MiniLineChart data={users.weekly_new_anonymous} color="#52b788" />
+            <div className="admin-chart-panel__label">New Users / Week</div>
+            <GroupedBarChart
+              dataA={users.weekly_new_registered}
+              dataB={users.weekly_new_anonymous}
+              labelA="Registered"
+              labelB="Anonymous"
+              colorA="#1b4332"
+              colorB="#52b788"
+            />
+          </div>
+        </div>
+
+        {/* Lists row */}
+        <div className="admin-grid admin-grid--mt">
+          <div>
+            <StatCluster label="Lists">
+              <StatCard label="Total"                 value={lists.total_lists.toLocaleString()} />
+              <StatCard label="Avg / registered user" value={lists.avg_lists_per_registered_user ?? "—"} />
+              <StatCard label="Avg items / list"      value={lists.avg_items_per_list ?? "—"} />
+              <StatCard label="Max items"             value={lists.max_items_in_list ?? "—"} />
+            </StatCluster>
           </div>
           <div className="admin-chart-panel">
             <div className="admin-chart-panel__label">Lists Created / Week</div>
-            <MiniLineChart data={lists.weekly_lists_created} color="#40916c" />
+            <MiniLineChart data={lists.weekly_lists_created} color="#2d6a4f" />
           </div>
         </div>
       </div>

@@ -1869,6 +1869,7 @@ button:disabled {
   border-radius: 10px;
   padding: 1rem 1.25rem;
   border: 1px solid #e8f5ee;
+  overflow: visible;
 }
 
 .admin-chart-panel__label {
