@@ -68,8 +68,8 @@ export function App() {
     checkoutDebounceRef.current = setTimeout(async () => {
       // Compute accepted savings from item-level deal acceptance state
       const acceptedSavings = itemDealSavings.reduce((sum, s, i) => {
-        return itemDealAccepted[i] === true && s != null ? sum + s : sum;
-      }, 0);
+        return itemDealAccepted[i] === true && s != null ? (sum ?? 0) + s : (sum ?? 0);
+      }, 0 as number);
       const dealAcceptCount = itemDealAccepted.filter(v => v === true).length;
       const dealDeclineCount = itemDealAccepted.filter(v => v === false).length;
 
