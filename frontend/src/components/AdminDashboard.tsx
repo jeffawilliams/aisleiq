@@ -2,8 +2,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth.js";
 import { supabase } from "../lib/supabaseClient.js";
 import { LoadingSpinner } from "./LoadingSpinner.js";
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
+} from "recharts";
 
-// ── RPC response types ───────────────────────────────────────────────────────
+// ── RPC response types ────────────────────────────────────────────────────────
 
 interface AnalyticsUsers {
   total_registered: number;
@@ -40,7 +44,6 @@ interface AnalyticsEngagement {
   lists_deals_shown_count: number;
   total_savings: number;
   avg_savings_per_list: number | null;
-  // E5b/E5c/E5d — deal conversion (Phase 3)
   deal_items_count: number;
   deal_items_pct: number | null;
   deal_accept_count: number;
@@ -48,7 +51,6 @@ interface AnalyticsEngagement {
   deal_conversion_pct: number | null;
   accepted_savings: number;
   avg_accepted_savings: number | null;
-  // E6 — category distribution (Phase 4)
   category_distribution: { category: string; item_count: number; pct: number }[] | null;
 }
 
@@ -56,7 +58,6 @@ interface AnalyticsAI {
   items_total: number;
   items_with_photo_count: number;
   items_with_photo_pct: number | null;
-  // AI3 — grouping quality: Other rate
   other_item_count: number;
   other_total_grouped: number;
   other_item_pct: number | null;
@@ -68,21 +69,24 @@ interface AnalyticsAI {
   scans_by_category: { category: string; count: number }[] | null;
 }
 
-interface FeedbackRow {
-  id: string;
-  email: string | null;
-  category: string;
-  message: string;
-  created_at: string;
+// ── Chart colors ──────────────────────────────────────────────────────────────
+
+const COLORS_GREEN = ['#2d6a4f', '#52b788', '#95d5b2', '#40916c', '#74c69d', '#1b4332', '#b7e4c7', '#d8f3dc'];
+const COLORS_DEAL  = ['#52b788', '#e76f51'];       // accepted green, declined orange
+const COLORS_GROUP = ['#52b788', '#f4a261'];        // categorized green, Other amber
+const COLORS_SCAN  = ['#2d6a4f', '#52b788', '#95d5b2', '#e76f51'];
+
+// ── Display helpers ───────────────────────────────────────────────────────────
+
+function fmt(n: number | null, prefix = "", suffix = ""): string | null {
+  if (n == null) return null;
+  return `${prefix}${Number(n).toLocaleString()}${suffix}`;
 }
 
-interface UserRow {
-  id: string;
-  email: string | null;
-  role: string;
+function fmtMoney(n: number | null): string {
+  if (n == null || n === 0) return "—";
+  return `$${Number(n).toFixed(2)}`;
 }
-
-// ── Small display helpers ────────────────────────────────────────────────────
 
 function StatCard({ label, value }: { label: string; value: string | number | null }) {
   return (
@@ -102,43 +106,77 @@ function StatCluster({ label, children }: { label: string; children: React.React
   );
 }
 
-function WeeklyTable({ data }: { data: { week: string; count: number }[] | null }) {
-  if (!data || data.length === 0) return <p className="analytics-empty">No data yet.</p>;
+function formatWeek(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  } catch { return dateStr; }
+}
+
+function MiniDonut({
+  data,
+  colors = COLORS_GREEN,
+  height = 230,
+}: {
+  data: { name: string; value: number }[];
+  colors?: string[];
+  height?: number;
+}) {
+  const active = data.filter(d => d.value > 0);
+  if (active.length === 0) return <p className="analytics-empty">No data yet.</p>;
   return (
-    <table className="analytics-weekly-table">
-      <thead>
-        <tr>
-          <th>Week of</th>
-          <th>Count</th>
-        </tr>
-      </thead>
-      <tbody>
-        {[...data].reverse().map(row => (
-          <tr key={row.week}>
-            <td>{new Date(row.week).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</td>
-            <td>{row.count.toLocaleString()}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <ResponsiveContainer width="100%" height={height}>
+      <PieChart>
+        <Pie
+          data={active}
+          cx="50%"
+          cy="50%"
+          innerRadius={58}
+          outerRadius={85}
+          paddingAngle={2}
+          dataKey="value"
+        >
+          {active.map((_, i) => (
+            <Cell key={i} fill={colors[i % colors.length]} />
+          ))}
+        </Pie>
+        <Tooltip
+          formatter={(val: unknown) => typeof val === "number" ? val.toLocaleString() : String(val)}
+          contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }}
+        />
+        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
+      </PieChart>
+    </ResponsiveContainer>
   );
 }
 
-function Phase2Placeholder({ label }: { label: string }) {
+function MiniLineChart({
+  data,
+  color = "#2d6a4f",
+}: {
+  data: { week: string; count: number }[] | null;
+  color?: string;
+}) {
+  if (!data || data.length < 2) return <p className="analytics-empty">Not enough data yet.</p>;
+  const sorted = [...data]
+    .sort((a, b) => a.week.localeCompare(b.week))
+    .map(d => ({ ...d, label: formatWeek(d.week) }));
   return (
-    <div className="analytics-placeholder">
-      <span className="analytics-placeholder__label">{label}</span>
-      <span className="analytics-placeholder__badge">Phase 2 — instrumentation required</span>
-    </div>
+    <ResponsiveContainer width="100%" height={150}>
+      <LineChart data={sorted} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} />
+        <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
+        <Tooltip
+          contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }}
+          labelStyle={{ color: "#555" }}
+        />
+        <Line type="monotone" dataKey="count" stroke={color} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+      </LineChart>
+    </ResponsiveContainer>
   );
 }
 
-function fmt(n: number | null, prefix = "", suffix = ""): string | null {
-  if (n == null) return null;
-  return `${prefix}${Number(n).toLocaleString()}${suffix}`;
-}
-
-// ── Main component ───────────────────────────────────────────────────────────
+// ── Main component ────────────────────────────────────────────────────────────
 
 export function AdminDashboard() {
   const { user, role, authLoading } = useAuth();
@@ -147,8 +185,6 @@ export function AdminDashboard() {
   const [lists, setAnalyticsLists] = useState<AnalyticsLists | null>(null);
   const [engagement, setEngagement] = useState<AnalyticsEngagement | null>(null);
   const [ai, setAI] = useState<AnalyticsAI | null>(null);
-  const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
-  const [adminUsers, setAdminUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -163,15 +199,11 @@ export function AdminDashboard() {
       supabase.rpc("get_analytics_lists"),
       supabase.rpc("get_analytics_engagement"),
       supabase.rpc("get_analytics_ai"),
-      supabase.from("feedback").select("id, email, category, message, created_at").order("created_at", { ascending: false }).limit(20),
-      supabase.rpc("get_admin_users"),
-    ]).then(([u, l, e, a, fb, au]) => {
+    ]).then(([u, l, e, a]) => {
       setAnalyticsUsers(u.data as AnalyticsUsers);
       setAnalyticsLists(l.data as AnalyticsLists);
       setEngagement(e.data as AnalyticsEngagement);
       setAI(a.data as AnalyticsAI);
-      setFeedback((fb.data ?? []) as FeedbackRow[]);
-      setAdminUsers((au.data ?? []) as UserRow[]);
       setLastUpdated(new Date());
       setLoading(false);
     });
@@ -183,12 +215,50 @@ export function AdminDashboard() {
 
   if (!users || !lists || !engagement || !ai) return null;
 
-  // E2 derived percentages
-  const itemsTotal = engagement.items_total || 1; // guard against /0
-  const pct = (n: number) => `${((n / itemsTotal) * 100).toFixed(1)}%`;
+  // ── Derived chart data ──────────────────────────────────────────────────────
+
+  const itemOriginData = [
+    { name: "Typed",    value: engagement.items_typed_count },
+    { name: "Pasted",   value: engagement.items_pasted_count },
+    { name: "Photo",    value: engagement.items_photo_count },
+    { name: "Recipe",   value: engagement.items_recipe_count },
+    { name: "List Scan", value: engagement.items_list_scan_count },
+    ...(engagement.items_unknown_count > 0
+      ? [{ name: "Pre-instrumentation", value: engagement.items_unknown_count }]
+      : []),
+  ].filter(d => d.value > 0);
+
+  const catData = (engagement.category_distribution ?? [])
+    .slice(0, 8)
+    .map(d => ({ name: d.category, value: d.item_count }));
+
+  const dealResponseData = [
+    { name: "Accepted", value: engagement.deal_accept_count },
+    { name: "Declined", value: engagement.deal_decline_count },
+  ].filter(d => d.value > 0);
+
+  const groupingData = ai.other_total_grouped > 0
+    ? [
+        { name: "Categorized", value: ai.other_total_grouped - ai.other_item_count },
+        { name: "Other",       value: ai.other_item_count },
+      ].filter(d => d.value > 0)
+    : [];
+
+  const scanData = ai.scans_total > 0
+    ? [
+        { name: "Classifier only",     value: ai.scans_high },
+        { name: "Classifier + Claude", value: ai.scans_medium },
+        { name: "Claude only",         value: ai.scans_low },
+        ...(ai.scans_classifier_error > 0
+          ? [{ name: "Classifier error", value: ai.scans_classifier_error }]
+          : []),
+      ].filter(d => d.value > 0)
+    : [];
 
   return (
     <div className="admin-dashboard">
+
+      {/* ── Header ── */}
       <div className="admin-dashboard__header">
         <button className="admin-dashboard__back" onClick={() => { window.location.href = "/"; }}>
           ← Back
@@ -202,151 +272,147 @@ export function AdminDashboard() {
       </div>
 
       {/* ── Section 1: Usage ── */}
-      <div className="admin-analytics">
-        <h2 className="admin-analytics__title">Usage</h2>
+      <div className="admin-section">
+        <h2 className="admin-section__title">Usage</h2>
 
-        <StatCluster label="Total Users">
-          <StatCard label="Registered" value={users.total_registered.toLocaleString()} />
-          <StatCard label="Anonymous" value={users.total_anonymous.toLocaleString()} />
-        </StatCluster>
+        <div className="admin-grid admin-grid--3col">
+          <StatCluster label="Users">
+            <StatCard label="Registered" value={users.total_registered.toLocaleString()} />
+            <StatCard label="Anonymous"  value={users.total_anonymous.toLocaleString()} />
+          </StatCluster>
+          <StatCluster label="Lists">
+            <StatCard label="Total"               value={lists.total_lists.toLocaleString()} />
+            <StatCard label="Avg / registered user" value={lists.avg_lists_per_registered_user ?? "—"} />
+          </StatCluster>
+          <StatCluster label="Items per List">
+            <StatCard label="Avg"          value={lists.avg_items_per_list ?? "—"} />
+            <StatCard label="Max"          value={lists.max_items_in_list ?? "—"} />
+            <StatCard label="Min (non-empty)" value={lists.min_items_in_nonempty_list ?? "—"} />
+          </StatCluster>
+        </div>
 
-        <StatCluster label="Total Lists">
-          <StatCard label="All time" value={lists.total_lists.toLocaleString()} />
-        </StatCluster>
-
-        <StatCluster label="Lists per Registered User">
-          <StatCard label="Avg" value={lists.avg_lists_per_registered_user ?? "—"} />
-        </StatCluster>
-
-        <StatCluster label="Items per List">
-          <StatCard label="Avg" value={lists.avg_items_per_list ?? "—"} />
-          <StatCard label="Max" value={lists.max_items_in_list ?? "—"} />
-          <StatCard label="Min (non-empty)" value={lists.min_items_in_nonempty_list ?? "—"} />
-        </StatCluster>
-
-        <div className="analytics-weekly">
-          <div className="analytics-weekly__section">
-            <div className="analytics-weekly__label">New Registered Users by Week</div>
-            <WeeklyTable data={users.weekly_new_registered} />
+        <div className="admin-grid admin-grid--3col admin-grid--mt">
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">New Registered Users / Week</div>
+            <MiniLineChart data={users.weekly_new_registered} color="#2d6a4f" />
           </div>
-          <div className="analytics-weekly__section">
-            <div className="analytics-weekly__label">New Anonymous Users by Week</div>
-            <p className="analytics-tracking-note">Tracking begins 2026-03-29</p>
-            <WeeklyTable data={users.weekly_new_anonymous} />
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">New Anonymous Users / Week</div>
+            <MiniLineChart data={users.weekly_new_anonymous} color="#52b788" />
           </div>
-          <div className="analytics-weekly__section">
-            <div className="analytics-weekly__label">Lists Created by Week</div>
-            <WeeklyTable data={lists.weekly_lists_created} />
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">Lists Created / Week</div>
+            <MiniLineChart data={lists.weekly_lists_created} color="#40916c" />
           </div>
         </div>
       </div>
 
       {/* ── Section 2: Engagement ── */}
-      <div className="admin-analytics">
-        <h2 className="admin-analytics__title">Engagement</h2>
+      <div className="admin-section">
+        <h2 className="admin-section__title">Engagement</h2>
 
-        <StatCluster label="List Organization Conversion">
-          <StatCard label="Lists organized ≥1×" value={engagement.lists_organized_pct != null ? `${engagement.lists_organized_pct}%` : "—"} />
-          <StatCard label="Sort" value={engagement.organized_sort_count.toLocaleString()} />
-          <StatCard label="Group" value={engagement.organized_group_count.toLocaleString()} />
-          {engagement.organized_unclassified_count > 0 && (
-            <StatCard label="Pre-instrumentation" value={engagement.organized_unclassified_count.toLocaleString()} />
-          )}
-        </StatCluster>
+        <div className="admin-grid">
+          <div>
+            <StatCluster label="List Organization">
+              <StatCard label="Lists organized ≥1×" value={engagement.lists_organized_pct != null ? `${engagement.lists_organized_pct}%` : "—"} />
+              <StatCard label="Sort"  value={engagement.organized_sort_count.toLocaleString()} />
+              <StatCard label="Group" value={engagement.organized_group_count.toLocaleString()} />
+              {engagement.organized_unclassified_count > 0 && (
+                <StatCard label="Pre-instrumentation" value={engagement.organized_unclassified_count.toLocaleString()} />
+              )}
+            </StatCluster>
+            <StatCluster label="List Activity">
+              <StatCard label="Ever shared"      value={engagement.lists_shared_pct != null ? `${engagement.lists_shared_pct}%` : "—"} />
+              <StatCard label="Has checked item" value={engagement.lists_checked_count > 0 ? `${engagement.lists_checked_count.toLocaleString()} (${engagement.lists_checked_pct ?? "—"}%)` : "—"} />
+            </StatCluster>
+          </div>
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">How Items Are Added</div>
+            <MiniDonut data={itemOriginData} colors={COLORS_GREEN} />
+          </div>
+        </div>
 
-        <StatCluster label="Item Origin Breakdown">
-          <StatCard label="Total items" value={engagement.items_total.toLocaleString()} />
-          <StatCard label="Typed" value={`${engagement.items_typed_count.toLocaleString()} (${pct(engagement.items_typed_count)})`} />
-          <StatCard label="Pasted" value={`${engagement.items_pasted_count.toLocaleString()} (${pct(engagement.items_pasted_count)})`} />
-          <StatCard label="Photo" value={`${engagement.items_photo_count.toLocaleString()} (${pct(engagement.items_photo_count)})`} />
-          <StatCard label="List Scan" value={`${engagement.items_list_scan_count.toLocaleString()} (${pct(engagement.items_list_scan_count)})`} />
-          <StatCard label="Recipe" value={`${engagement.items_recipe_count.toLocaleString()} (${pct(engagement.items_recipe_count)})`} />
-          {engagement.items_unknown_count > 0 && (
-            <StatCard label="Pre-instrumentation" value={`${engagement.items_unknown_count.toLocaleString()} (${pct(engagement.items_unknown_count)})`} />
-          )}
-        </StatCluster>
-
-        <StatCluster label="Shared Lists">
-          <StatCard label="Lists ever shared" value={engagement.lists_shared_pct != null ? `${engagement.lists_shared_pct}%` : "—"} />
-        </StatCluster>
-
-        <StatCluster label="Lists with Any Checked Item">
-          <StatCard label="Count" value={engagement.lists_checked_count.toLocaleString()} />
-          <StatCard label="% of all lists" value={engagement.lists_checked_pct != null ? `${engagement.lists_checked_pct}%` : "—"} />
-        </StatCluster>
-
-        <StatCluster label="Lists with Deals Enabled">
-          <StatCard label="Count" value={engagement.lists_deals_shown_count.toLocaleString()} />
-          <StatCard label="% of all lists" value={engagement.lists_deals_shown_pct != null ? `${engagement.lists_deals_shown_pct}%` : "—"} />
-        </StatCluster>
-
-        <StatCluster label="Savings">
-          <StatCard label="Total lifetime" value={fmt(engagement.total_savings, "$")} />
-          <StatCard label="Avg per list" value={engagement.avg_savings_per_list != null ? `$${Number(engagement.avg_savings_per_list).toFixed(2)}` : "—"} />
-        </StatCluster>
-
-        <StatCluster label="Deal Conversion">
-          <StatCard label="Items with deal match" value={engagement.deal_items_count > 0 ? `${engagement.deal_items_count.toLocaleString()} (${engagement.deal_items_pct ?? "—"}%)` : "—"} />
-          <StatCard label="Accepted" value={engagement.deal_accept_count.toLocaleString()} />
-          <StatCard label="Declined" value={engagement.deal_decline_count.toLocaleString()} />
-          <StatCard label="Conversion rate" value={engagement.deal_conversion_pct != null ? `${engagement.deal_conversion_pct}%` : "—"} />
-          <StatCard label="Accepted savings" value={engagement.accepted_savings > 0 ? `$${Number(engagement.accepted_savings).toFixed(2)}` : "—"} />
-          <StatCard label="Avg accepted savings" value={engagement.avg_accepted_savings != null && engagement.avg_accepted_savings > 0 ? `$${Number(engagement.avg_accepted_savings).toFixed(2)}` : "—"} />
-        </StatCluster>
-
-        {engagement.category_distribution && engagement.category_distribution.length > 0 && (
-          <div className="admin-analytics-cluster">
-            <div className="admin-analytics-cluster__label">Shopping List Category Distribution (E6)</div>
-            <table className="analytics-weekly-table">
-              <thead>
-                <tr><th>Category</th><th>Items</th><th>% of Total</th></tr>
-              </thead>
-              <tbody>
-                {engagement.category_distribution.map(row => (
-                  <tr key={row.category}>
-                    <td>{row.category}</td>
-                    <td>{row.item_count.toLocaleString()}</td>
-                    <td>{row.pct}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {catData.length > 0 && (
+          <div className="admin-grid admin-grid--mt">
+            <div className="admin-chart-panel">
+              <div className="admin-chart-panel__label">Shopping Category Distribution</div>
+              <MiniDonut data={catData} colors={COLORS_GREEN} />
+            </div>
+            <div className="admin-chart-panel">
+              <div className="admin-chart-panel__label">Category Breakdown</div>
+              <table className="analytics-weekly-table">
+                <thead><tr><th>Category</th><th>Items</th><th>%</th></tr></thead>
+                <tbody>
+                  {(engagement.category_distribution ?? []).map(row => (
+                    <tr key={row.category}>
+                      <td>{row.category}</td>
+                      <td>{row.item_count.toLocaleString()}</td>
+                      <td>{row.pct}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
 
-      {/* ── Section 3: AI Performance ── */}
-      <div className="admin-analytics">
-        <h2 className="admin-analytics__title">AI Performance</h2>
+      {/* ── Section 3: Deals & Promotions ── */}
+      <div className="admin-section">
+        <h2 className="admin-section__title">Deals & Promotions</h2>
 
-        <StatCluster label="Items Added via Photo">
-          <StatCard label="Count" value={ai.items_with_photo_count.toLocaleString()} />
-          <StatCard label="% of all items" value={ai.items_with_photo_pct != null ? `${ai.items_with_photo_pct}%` : "—"} />
-        </StatCluster>
-        <p className="analytics-note">Using photo field presence as proxy. Standardized source tagging begins Phase 2.</p>
-
-        <StatCluster label="Grouping Quality — Other Rate (AI3)">
-          <StatCard label="Total items grouped" value={ai.other_total_grouped.toLocaleString()} />
-          <StatCard label="Placed in 'Other'" value={ai.other_item_count.toLocaleString()} />
-          <StatCard label="Other rate" value={ai.other_total_grouped > 0 ? `${ai.other_item_pct ?? 0}%` : "—"} />
-        </StatCluster>
-        {ai.scans_total === 0 ? (
-          <p className="analytics-note">No product scans recorded yet.</p>
-        ) : (
-          <>
-            <StatCluster label="Classifier vs. Claude Resolution (AI2b)">
-              <StatCard label="Total scans" value={ai.scans_total.toLocaleString()} />
-              <StatCard label="Classifier only" value={`${ai.scans_high.toLocaleString()} (${fmt(Math.round(ai.scans_high / ai.scans_total * 100))}%)`} />
-              <StatCard label="Classifier + Claude" value={`${ai.scans_medium.toLocaleString()} (${fmt(Math.round(ai.scans_medium / ai.scans_total * 100))}%)`} />
-              <StatCard label="Claude only" value={`${ai.scans_low.toLocaleString()} (${fmt(Math.round(ai.scans_low / ai.scans_total * 100))}%)`} />
-              {ai.scans_classifier_error > 0 && (
-                <StatCard label="Classifier error" value={ai.scans_classifier_error.toLocaleString()} />
-              )}
+        <div className="admin-grid">
+          <div>
+            <StatCluster label="Deal Reach">
+              <StatCard label="Lists with deals shown"  value={engagement.lists_deals_shown_count > 0 ? `${engagement.lists_deals_shown_count.toLocaleString()} (${engagement.lists_deals_shown_pct ?? "—"}%)` : "—"} />
+              <StatCard label="Items matched to a deal" value={engagement.deal_items_count > 0 ? `${engagement.deal_items_count.toLocaleString()} (${engagement.deal_items_pct ?? "—"}%)` : "—"} />
+              <StatCard label="Conversion rate"         value={engagement.deal_conversion_pct != null ? `${engagement.deal_conversion_pct}%` : "—"} />
             </StatCluster>
+            <StatCluster label="Savings">
+              <StatCard label="Total savings shown"    value={fmtMoney(engagement.total_savings)} />
+              <StatCard label="Avg / list"             value={fmtMoney(engagement.avg_savings_per_list)} />
+              <StatCard label="Accepted savings"       value={fmtMoney(engagement.accepted_savings)} />
+              <StatCard label="Avg accepted / list"    value={fmtMoney(engagement.avg_accepted_savings)} />
+            </StatCluster>
+          </div>
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">Deal Response (Accepted vs. Declined)</div>
+            <MiniDonut data={dealResponseData} colors={COLORS_DEAL} />
+          </div>
+        </div>
+      </div>
 
+      {/* ── Section 4: AI Performance ── */}
+      <div className="admin-section">
+        <h2 className="admin-section__title">AI Performance</h2>
+
+        <div className="admin-grid">
+          <div>
+            <StatCluster label="Grouping Quality">
+              <StatCard label="Total items grouped"  value={ai.other_total_grouped.toLocaleString()} />
+              <StatCard label="Placed in 'Other'"    value={ai.other_item_count.toLocaleString()} />
+              <StatCard label="Other rate"           value={ai.other_total_grouped > 0 ? `${ai.other_item_pct ?? 0}%` : "—"} />
+            </StatCluster>
+            <StatCluster label="Photo Recognition">
+              <StatCard label="Items added via photo" value={ai.items_with_photo_count.toLocaleString()} />
+              <StatCard label="% of all items"        value={ai.items_with_photo_pct != null ? `${ai.items_with_photo_pct}%` : "—"} />
+            </StatCluster>
+          </div>
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">Grouped Items: Categorized vs. Other</div>
+            <MiniDonut data={groupingData} colors={COLORS_GROUP} />
+          </div>
+        </div>
+
+        {ai.scans_total > 0 && (
+          <div className="admin-grid admin-grid--mt">
+            <div className="admin-chart-panel">
+              <div className="admin-chart-panel__label">Product Scan Resolution</div>
+              <MiniDonut data={scanData} colors={COLORS_SCAN} />
+            </div>
             {ai.scans_by_category && ai.scans_by_category.length > 0 && (
-              <div className="admin-analytics-cluster">
-                <div className="admin-analytics-cluster__label">Scans by Category (AI2c)</div>
+              <div className="admin-chart-panel">
+                <div className="admin-chart-panel__label">Scans by Category</div>
                 <table className="analytics-weekly-table">
                   <thead><tr><th>Category</th><th>Scans</th></tr></thead>
                   <tbody>
@@ -360,51 +426,10 @@ export function AdminDashboard() {
                 </table>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 
-      {/* ── Users ── */}
-      <div className="admin-user-list">
-        <h2 className="admin-user-list__title">Users</h2>
-        {adminUsers.length === 0 ? (
-          <p className="admin-user-list__empty">No users found.</p>
-        ) : (
-          adminUsers.map((u) => (
-            <div key={u.id} className="admin-user-item">
-              <span className="admin-user-item__email">{u.email ?? "—"}</span>
-              {u.role === "admin" && (
-                <span className="admin-user-badge admin-user-badge--admin">admin</span>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* ── Feedback ── */}
-      <div className="admin-feedback-list">
-        <h2 className="admin-feedback-list__title">Feedback</h2>
-        {feedback.length === 0 ? (
-          <p className="admin-feedback-list__empty">No submissions yet.</p>
-        ) : (
-          feedback.map((row) => (
-            <div key={row.id} className="admin-feedback-item">
-              <div className="admin-feedback-item__meta">
-                <span className={`admin-feedback-badge admin-feedback-badge--${row.category}`}>
-                  {row.category}
-                </span>
-                <span className="admin-feedback-item__email">{row.email ?? "anonymous"}</span>
-                <span className="admin-feedback-item__date">
-                  {new Date(row.created_at).toLocaleDateString(undefined, {
-                    month: "short", day: "numeric", year: "numeric",
-                  })}
-                </span>
-              </div>
-              <p className="admin-feedback-item__message">{row.message}</p>
-            </div>
-          ))
-        )}
-      </div>
     </div>
   );
 }

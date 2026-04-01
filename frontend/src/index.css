@@ -1816,6 +1816,79 @@ button:disabled {
 }
 
 /* ── Admin analytics sections ────────────────────────────── */
+/* ── Admin section panels ─────────────────────────────────── */
+.admin-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.admin-section__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f4f4f4;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-section__title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 1rem;
+  background: #2d6a4f;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Admin content grid ───────────────────────────────────── */
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.admin-grid--3col {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.admin-grid--mt {
+  margin-top: 1rem;
+}
+
+/* ── Chart panels ─────────────────────────────────────────── */
+.admin-chart-panel {
+  background: #f8fdfb;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  border: 1px solid #e8f5ee;
+}
+
+.admin-chart-panel__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  margin-bottom: 0.75rem;
+}
+
+.analytics-empty {
+  font-size: 0.85rem;
+  color: #bbb;
+  font-style: italic;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* ── Legacy (kept for analytics-weekly-table used in new tables) */
 .admin-analytics {
   margin-top: 2.5rem;
 }
