@@ -244,11 +244,11 @@ function HorizontalBarChart({
         <XAxis type="number" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} />
         <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#555" }} tickLine={false} axisLine={false} width={yAxisWidth} />
         <Tooltip
-          formatter={(val: unknown, _: unknown, props: { payload?: { pct?: number } }) =>
-            props.payload?.pct != null
-              ? [`${val} (${props.payload.pct}%)`, "Items"]
-              : [val, "Count"]
-          }
+          formatter={(val: unknown, _: unknown, props: { payload?: { pct?: number } }) => {
+            const display = typeof val === "number" ? val.toLocaleString() : String(val);
+            const label = props.payload?.pct != null ? `${display} (${props.payload.pct}%)` : display;
+            return [label, ""];
+          }}
           contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }}
         />
         <Bar dataKey="value" fill={color} radius={[0, 3, 3, 0]} />
