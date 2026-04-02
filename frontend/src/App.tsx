@@ -236,6 +236,14 @@ export function App() {
       setItemDealProduct(prev => { const next = [...prev]; next[index] = null; return next; });
       setItemDealSavings(prev => { const next = [...prev]; next[index] = null; return next; });
     }
+    // Record the first time a user checks an item on this list (shopping session start)
+    if (checked && user && activeListId && !itemChecked.some(v => v === true)) {
+      supabase.from("lists")
+        .update({ first_shopped_at: new Date().toISOString() })
+        .eq("id", activeListId)
+        .is("first_shopped_at", null)
+        .then();
+    }
   };
 
   const editItem = (index: number, newValue: string) => {
