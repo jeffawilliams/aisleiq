@@ -225,6 +225,38 @@ function GroupedBarChart({
   );
 }
 
+function HorizontalBarChart({
+  data,
+  color = "#2d6a4f",
+  yAxisWidth = 80,
+}: {
+  data: { name: string; value: number; pct?: number }[];
+  color?: string;
+  yAxisWidth?: number;
+}) {
+  const active = [...data.filter(d => d.value > 0)].sort((a, b) => b.value - a.value);
+  if (active.length === 0) return <p className="analytics-empty">No data yet.</p>;
+  const height = Math.max(120, active.length * 38);
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart layout="vertical" data={active} margin={{ top: 4, right: 24, left: 0, bottom: 4 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+        <XAxis type="number" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} />
+        <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#555" }} tickLine={false} axisLine={false} width={yAxisWidth} />
+        <Tooltip
+          formatter={(val: unknown, _: unknown, props: { payload?: { pct?: number } }) =>
+            props.payload?.pct != null
+              ? [`${val} (${props.payload.pct}%)`, "Items"]
+              : [val, "Count"]
+          }
+          contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }}
+        />
+        <Bar dataKey="value" fill={color} radius={[0, 3, 3, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 function MiniLineChart({
   data,
   color = "#2d6a4f",
@@ -386,7 +418,7 @@ export function AdminDashboard() {
 
   const catData = (engagement.category_distribution ?? [])
     .slice(0, 8)
-    .map(d => ({ name: d.category, value: d.item_count }));
+    .map(d => ({ name: d.category, value: d.item_count, pct: d.pct }));
 
   const dealResponseData = [
     { name: "Accepted", value: engagement.deal_accept_count },
@@ -502,23 +534,27 @@ export function AdminDashboard() {
           />
         </div>
 
-        {/* 3 donuts */}
-        <div className="admin-grid admin-grid--3col admin-grid--mt">
+        {/* Organize donut + item origin bar */}
+        <div className="admin-grid admin-grid--mt">
           <div className="admin-chart-panel">
             <div className="admin-chart-panel__label">How Users Organize</div>
             <MiniDonut data={organizeMethodData} colors={COLORS_ORGANIZE} />
           </div>
           <div className="admin-chart-panel">
             <div className="admin-chart-panel__label">How Items Are Added</div>
-            <MiniDonut data={itemOriginData} colors={COLORS_GREEN} />
+            <HorizontalBarChart data={itemOriginData} color="#2d6a4f" yAxisWidth={70} />
           </div>
-          {catData.length > 0 && (
+        </div>
+
+        {/* Category distribution — full width horizontal bar */}
+        {catData.length > 0 && (
+          <div className="admin-grid--full admin-grid--mt">
             <div className="admin-chart-panel">
               <div className="admin-chart-panel__label">Shopping Category Distribution</div>
-              <MiniDonut data={catData} colors={COLORS_GREEN} />
+              <HorizontalBarChart data={catData} color="#52b788" yAxisWidth={150} />
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Engagement over time */}
         <div className="admin-grid--full admin-grid--mt">
