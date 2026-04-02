@@ -237,17 +237,23 @@ function HorizontalBarChart({
   data,
   color = "#2d6a4f",
   yAxisWidth = 80,
+  showZero = false,
 }: {
   data: { name: string; value: number; pct?: number }[];
   color?: string;
   yAxisWidth?: number;
+  showZero?: boolean;
 }) {
-  const active = [...data.filter(d => d.value > 0)].sort((a, b) => b.value - a.value);
+  const active = showZero
+    ? [...data].sort((a, b) => b.value - a.value)
+    : [...data.filter(d => d.value > 0)].sort((a, b) => b.value - a.value);
   if (active.length === 0) return <p className="analytics-empty">No data yet.</p>;
   const total = active.reduce((s, d) => s + d.value, 0);
   const withPct = active.map(d => ({
     ...d,
-    pctLabel: `${d.pct != null ? d.pct : Math.round(d.value / total * 100)}%`,
+    pctLabel: total > 0
+      ? `${d.pct != null ? d.pct : Math.round(d.value / total * 100)}%`
+      : "0%",
   }));
   const height = Math.max(120, active.length * 38);
   return (
@@ -469,7 +475,7 @@ export function AdminDashboard() {
     ...(ai.scans_classifier_error > 0
       ? [{ name: "Classifier Error", value: ai.scans_classifier_error }]
       : []),
-  ].filter(d => d.value > 0);
+  ];
 
   const groupingSuccessPct = ai.other_total_grouped > 0 && ai.other_item_pct != null
     ? 100 - ai.other_item_pct
@@ -670,17 +676,13 @@ export function AdminDashboard() {
       <div className="admin-section">
         <h2 className="admin-section__title">AI Performance</h2>
 
-        {/* Grouping KPI + donut */}
+        {/* Grouping KPI */}
         <div className="admin-grid admin-grid--mt">
           <KpiCard
             label="Grouping Success Rate"
             value={groupingSuccessPct != null ? `${groupingSuccessPct}%` : null}
             sub={`${(ai.other_total_grouped - ai.other_item_count).toLocaleString()} of ${ai.other_total_grouped.toLocaleString()} grouped items successfully categorized`}
           />
-          <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">Categorized vs. Other</div>
-            <MiniDonut data={groupingData} colors={COLORS_GROUP} labelType="pct" />
-          </div>
         </div>
 
         {/* Photo Identification Performance — horizontal bar */}
@@ -688,7 +690,7 @@ export function AdminDashboard() {
           <div className="admin-grid--full admin-grid--mt">
             <div className="admin-chart-panel">
               <div className="admin-chart-panel__label">Photo Identification Performance</div>
-              <HorizontalBarChart data={photoIdData} color="#2d6a4f" yAxisWidth={200} />
+              <HorizontalBarChart data={photoIdData} color="#2d6a4f" yAxisWidth={200} showZero />
             </div>
           </div>
         )}
