@@ -343,11 +343,11 @@ function OverlayLineChart({
         <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
         <Tooltip contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }} labelStyle={{ color: "#555" }} />
         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
-        {dataA && dataA.length >= 2 && (
-          <Line type="monotone" dataKey="a" name={labelA} stroke={colorA} strokeWidth={2} dot={false} activeDot={{ r: 4 }} connectNulls />
+        {dataA && dataA.length >= 1 && (
+          <Line type="monotone" dataKey="a" name={labelA} stroke={colorA} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} connectNulls />
         )}
-        {dataB && dataB.length >= 2 && (
-          <Line type="monotone" dataKey="b" name={labelB} stroke={colorB} strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="5 3" connectNulls />
+        {dataB && dataB.length >= 1 && (
+          <Line type="monotone" dataKey="b" name={labelB} stroke={colorB} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} strokeDasharray="5 3" connectNulls />
         )}
       </LineChart>
     </ResponsiveContainer>
