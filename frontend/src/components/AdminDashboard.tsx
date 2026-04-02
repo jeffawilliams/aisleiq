@@ -54,6 +54,8 @@ interface AnalyticsEngagement {
   accepted_savings: number;
   avg_accepted_savings: number | null;
   category_distribution: { category: string; item_count: number; pct: number }[] | null;
+  weekly_organize_count: { week: string; count: number }[] | null;
+  weekly_shopping_count: { week: string; count: number }[] | null;
 }
 
 interface AnalyticsAI {
@@ -161,7 +163,7 @@ function MiniDonut({
           formatter={(val: unknown) => typeof val === "number" ? val.toLocaleString() : String(val)}
           contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }}
         />
-        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
+        <Legend iconType="circle" iconSize={8} layout="vertical" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: "0.72rem", lineHeight: "1.6" }} />
       </PieChart>
     </ResponsiveContainer>
   );
@@ -270,6 +272,52 @@ function SingleBarChart({
         <Tooltip contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }} labelStyle={{ color: "#555" }} />
         <Bar dataKey="count" name="Lists" fill={color} radius={[3, 3, 0, 0]} />
       </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function OverlayLineChart({
+  dataA,
+  dataB,
+  labelA,
+  labelB,
+  colorA = "#2d6a4f",
+  colorB = "#52b788",
+}: {
+  dataA: { week: string; count: number }[] | null;
+  dataB: { week: string; count: number }[] | null;
+  labelA: string;
+  labelB: string;
+  colorA?: string;
+  colorB?: string;
+}) {
+  const weeks = Array.from(new Set([
+    ...(dataA ?? []).map(d => d.week),
+    ...(dataB ?? []).map(d => d.week),
+  ])).sort();
+  if (weeks.length < 2) return <p className="analytics-empty">Not enough data yet.</p>;
+  const mapA = new Map((dataA ?? []).map(d => [d.week, d.count]));
+  const mapB = new Map((dataB ?? []).map(d => [d.week, d.count]));
+  const merged = weeks.map(w => ({
+    label: formatWeek(w),
+    a: mapA.get(w) ?? null,
+    b: mapB.get(w) ?? null,
+  }));
+  return (
+    <ResponsiveContainer width="100%" height={180}>
+      <LineChart data={merged} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} />
+        <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
+        <Tooltip contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }} labelStyle={{ color: "#555" }} />
+        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
+        {dataA && dataA.length >= 2 && (
+          <Line type="monotone" dataKey="a" name={labelA} stroke={colorA} strokeWidth={2} dot={false} activeDot={{ r: 4 }} connectNulls />
+        )}
+        {dataB && dataB.length >= 2 && (
+          <Line type="monotone" dataKey="b" name={labelB} stroke={colorB} strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="5 3" connectNulls />
+        )}
+      </LineChart>
     </ResponsiveContainer>
   );
 }
@@ -454,8 +502,8 @@ export function AdminDashboard() {
           />
         </div>
 
-        {/* Organize method + item origin */}
-        <div className="admin-grid admin-grid--mt">
+        {/* 3 donuts */}
+        <div className="admin-grid admin-grid--3col admin-grid--mt">
           <div className="admin-chart-panel">
             <div className="admin-chart-panel__label">How Users Organize</div>
             <MiniDonut data={organizeMethodData} colors={COLORS_ORGANIZE} />
@@ -464,17 +512,28 @@ export function AdminDashboard() {
             <div className="admin-chart-panel__label">How Items Are Added</div>
             <MiniDonut data={itemOriginData} colors={COLORS_GREEN} />
           </div>
-        </div>
-
-        {/* Category distribution */}
-        {catData.length > 0 && (
-          <div className="admin-grid--full admin-grid--mt">
+          {catData.length > 0 && (
             <div className="admin-chart-panel">
               <div className="admin-chart-panel__label">Shopping Category Distribution</div>
-              <MiniDonut data={catData} colors={COLORS_GREEN} height={260} />
+              <MiniDonut data={catData} colors={COLORS_GREEN} />
             </div>
+          )}
+        </div>
+
+        {/* Engagement over time */}
+        <div className="admin-grid--full admin-grid--mt">
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">Engagement Over Time</div>
+            <OverlayLineChart
+              dataA={engagement.weekly_organize_count}
+              dataB={engagement.weekly_shopping_count}
+              labelA="Organize Events"
+              labelB="Lists Used for Shopping"
+              colorA="#2d6a4f"
+              colorB="#52b788"
+            />
           </div>
-        )}
+        </div>
       </div>
 
       {/* ── Section 3: Deals & Promotions ── */}
