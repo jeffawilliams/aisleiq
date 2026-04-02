@@ -73,11 +73,12 @@ interface AnalyticsAI {
 
 // ── Chart colors ──────────────────────────────────────────────────────────────
 
-const COLORS_GREEN = ['#2d6a4f', '#52b788', '#95d5b2', '#40916c', '#74c69d', '#1b4332', '#b7e4c7', '#d8f3dc'];
-const COLORS_USERS = ['#1b4332', '#95d5b2'];        // registered dark green, anonymous light mint
-const COLORS_DEAL  = ['#52b788', '#e76f51'];        // accepted green, declined orange
-const COLORS_GROUP = ['#52b788', '#f4a261'];        // categorized green, Other amber
-const COLORS_SCAN  = ['#2d6a4f', '#52b788', '#95d5b2', '#e76f51'];
+const COLORS_GREEN    = ['#2d6a4f', '#52b788', '#95d5b2', '#40916c', '#74c69d', '#1b4332', '#b7e4c7', '#d8f3dc'];
+const COLORS_USERS    = ['#1b4332', '#95d5b2'];     // registered dark green, anonymous light mint
+const COLORS_ORGANIZE = ['#2d6a4f', '#74c69d'];     // Group dark, Sort light
+const COLORS_DEAL     = ['#52b788', '#e76f51'];     // accepted green, declined orange
+const COLORS_GROUP    = ['#52b788', '#f4a261'];     // categorized green, Other amber
+const COLORS_SCAN     = ['#2d6a4f', '#52b788', '#95d5b2', '#e76f51'];
 
 // ── Display helpers ───────────────────────────────────────────────────────────
 
@@ -96,6 +97,16 @@ function StatCard({ label, value }: { label: string; value: string | number | nu
     <div className="admin-analytics-stat">
       <div className="admin-analytics-stat__value">{value ?? "—"}</div>
       <div className="admin-analytics-stat__label">{label}</div>
+    </div>
+  );
+}
+
+function KpiCard({ label, value, sub }: { label: string; value: string | null; sub?: string }) {
+  return (
+    <div className="admin-chart-panel admin-kpi-card">
+      <div className="admin-chart-panel__label">{label}</div>
+      <div className="admin-kpi-card__value">{value ?? "—"}</div>
+      {sub && <div className="admin-kpi-card__sub">{sub}</div>}
     </div>
   );
 }
@@ -304,6 +315,16 @@ export function AdminDashboard() {
 
   // ── Derived chart data ──────────────────────────────────────────────────────
 
+  const totalOrganizeEvents = engagement.organized_sort_count + engagement.organized_group_count;
+  const groupAdoptionPct = totalOrganizeEvents > 0
+    ? Math.round(engagement.organized_group_count / totalOrganizeEvents * 100)
+    : null;
+
+  const organizeMethodData = [
+    { name: "Group", value: engagement.organized_group_count },
+    { name: "Sort",  value: engagement.organized_sort_count },
+  ].filter(d => d.value > 0);
+
   const itemOriginData = [
     { name: "Typed",    value: engagement.items_typed_count },
     { name: "Pasted",   value: engagement.items_pasted_count },
@@ -414,20 +435,35 @@ export function AdminDashboard() {
       <div className="admin-section">
         <h2 className="admin-section__title">Engagement</h2>
 
-        <div className="admin-grid">
-          <div>
-            <StatCluster label="List Organization">
-              <StatCard label="Lists organized ≥1×" value={engagement.lists_organized_pct != null ? `${engagement.lists_organized_pct}%` : "—"} />
-              <StatCard label="Sort"  value={engagement.organized_sort_count.toLocaleString()} />
-              <StatCard label="Group" value={engagement.organized_group_count.toLocaleString()} />
-              {engagement.organized_unclassified_count > 0 && (
-                <StatCard label="Pre-instrumentation" value={engagement.organized_unclassified_count.toLocaleString()} />
-              )}
-            </StatCluster>
-            <StatCluster label="List Activity">
-              <StatCard label="Ever shared"      value={engagement.lists_shared_pct != null ? `${engagement.lists_shared_pct}%` : "—"} />
-              <StatCard label="Has checked item" value={engagement.lists_checked_count > 0 ? `${engagement.lists_checked_count.toLocaleString()} (${engagement.lists_checked_pct ?? "—"}%)` : "—"} />
-            </StatCluster>
+        {/* KPI row */}
+        <div className="admin-grid admin-grid--4col">
+          <KpiCard
+            label="Lists Organized"
+            value={engagement.lists_organized_pct != null ? `${engagement.lists_organized_pct}%` : null}
+            sub="of all lists"
+          />
+          <KpiCard
+            label="Shopping Rate"
+            value={engagement.lists_checked_pct != null ? `${engagement.lists_checked_pct}%` : null}
+            sub={`${engagement.lists_checked_count.toLocaleString()} lists used in store`}
+          />
+          <KpiCard
+            label="Lists Shared"
+            value={engagement.lists_shared_pct != null ? `${engagement.lists_shared_pct}%` : null}
+            sub="of all lists"
+          />
+          <KpiCard
+            label="Group Adoption"
+            value={groupAdoptionPct != null ? `${groupAdoptionPct}%` : null}
+            sub="of organize events used Group"
+          />
+        </div>
+
+        {/* Organize method + item origin */}
+        <div className="admin-grid admin-grid--mt">
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">How Users Organize</div>
+            <MiniDonut data={organizeMethodData} colors={COLORS_ORGANIZE} />
           </div>
           <div className="admin-chart-panel">
             <div className="admin-chart-panel__label">How Items Are Added</div>
@@ -435,26 +471,12 @@ export function AdminDashboard() {
           </div>
         </div>
 
+        {/* Category distribution */}
         {catData.length > 0 && (
-          <div className="admin-grid admin-grid--mt">
+          <div className="admin-grid--full admin-grid--mt">
             <div className="admin-chart-panel">
               <div className="admin-chart-panel__label">Shopping Category Distribution</div>
-              <MiniDonut data={catData} colors={COLORS_GREEN} />
-            </div>
-            <div className="admin-chart-panel">
-              <div className="admin-chart-panel__label">Category Breakdown</div>
-              <table className="analytics-weekly-table">
-                <thead><tr><th>Category</th><th>Items</th><th>%</th></tr></thead>
-                <tbody>
-                  {(engagement.category_distribution ?? []).map(row => (
-                    <tr key={row.category}>
-                      <td>{row.category}</td>
-                      <td>{row.item_count.toLocaleString()}</td>
-                      <td>{row.pct}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <MiniDonut data={catData} colors={COLORS_GREEN} height={260} />
             </div>
           </div>
         )}
