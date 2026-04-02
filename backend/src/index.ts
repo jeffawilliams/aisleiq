@@ -20,6 +20,6 @@ app.use("/api", organizeByAisleRouter);
 app.use("/api", recipeRouter);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`ShoppingListAssist backend running on http://localhost:${PORT}`);
+app.listen(Number(PORT), "0.0.0.0", () => {
+  console.log(`ShoppingListAssist backend running on http://0.0.0.0:${PORT}`);
 });
