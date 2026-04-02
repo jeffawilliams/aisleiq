@@ -462,16 +462,18 @@ export function AdminDashboard() {
       ].filter(d => d.value > 0)
     : [];
 
-  const scanData = ai.scans_total > 0
-    ? [
-        { name: "Classifier only",     value: ai.scans_high },
-        { name: "Classifier + Claude", value: ai.scans_medium },
-        { name: "Claude only",         value: ai.scans_low },
-        ...(ai.scans_classifier_error > 0
-          ? [{ name: "Classifier error", value: ai.scans_classifier_error }]
-          : []),
-      ].filter(d => d.value > 0)
-    : [];
+  const photoIdData = [
+    { name: "Classifier Only (≥85%)",      value: ai.scans_high },
+    { name: "Classifier + Claude (50–84%)", value: ai.scans_medium },
+    { name: "Claude Only (<50%)",           value: ai.scans_low },
+    ...(ai.scans_classifier_error > 0
+      ? [{ name: "Classifier Error", value: ai.scans_classifier_error }]
+      : []),
+  ].filter(d => d.value > 0);
+
+  const groupingSuccessPct = ai.other_total_grouped > 0 && ai.other_item_pct != null
+    ? 100 - ai.other_item_pct
+    : null;
 
   return (
     <div className="admin-dashboard">
@@ -668,52 +670,29 @@ export function AdminDashboard() {
       <div className="admin-section">
         <h2 className="admin-section__title">AI Performance</h2>
 
-        {/* KPI row */}
-        <div className="admin-grid admin-grid--3col">
-          <KpiCard
-            label="Photo Recognition Rate"
-            value={ai.items_with_photo_pct != null ? `${ai.items_with_photo_pct}%` : null}
-            sub={`${ai.items_with_photo_count.toLocaleString()} items added via photo`}
-          />
-          <KpiCard
-            label="Grouping Other Rate"
-            value={ai.other_total_grouped > 0 && ai.other_item_pct != null ? `${ai.other_item_pct}%` : null}
-            sub={`${ai.other_item_count.toLocaleString()} of ${ai.other_total_grouped.toLocaleString()} grouped items placed in Other`}
-          />
-          <KpiCard
-            label="Total Scans"
-            value={ai.scans_total > 0 ? ai.scans_total.toLocaleString() : null}
-            sub={ai.scans_total > 0 ? `${ai.scans_high} high · ${ai.scans_medium} medium · ${ai.scans_low} low` : "No scans yet"}
-          />
-        </div>
-
-        {/* Grouping donut + scan resolution donut */}
+        {/* Grouping KPI + donut */}
         <div className="admin-grid admin-grid--mt">
+          <KpiCard
+            label="Grouping Success Rate"
+            value={groupingSuccessPct != null ? `${groupingSuccessPct}%` : null}
+            sub={`${(ai.other_total_grouped - ai.other_item_count).toLocaleString()} of ${ai.other_total_grouped.toLocaleString()} grouped items successfully categorized`}
+          />
           <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">Grouped Items: Categorized vs. Other</div>
+            <div className="admin-chart-panel__label">Categorized vs. Other</div>
             <MiniDonut data={groupingData} colors={COLORS_GROUP} labelType="pct" />
           </div>
-          {ai.scans_total > 0 && (
-            <div className="admin-chart-panel">
-              <div className="admin-chart-panel__label">Product Scan Resolution</div>
-              <MiniDonut data={scanData} colors={COLORS_SCAN} labelType="pct" />
-            </div>
-          )}
         </div>
 
-        {/* Scans by category — horizontal bar */}
-        {ai.scans_by_category && ai.scans_by_category.length > 0 && (
+        {/* Photo Identification Performance — horizontal bar */}
+        {ai.scans_total > 0 && (
           <div className="admin-grid--full admin-grid--mt">
             <div className="admin-chart-panel">
-              <div className="admin-chart-panel__label">Scans by Category</div>
-              <HorizontalBarChart
-                data={ai.scans_by_category.map(d => ({ name: d.category, value: d.count }))}
-                color="#52b788"
-                yAxisWidth={150}
-              />
+              <div className="admin-chart-panel__label">Photo Identification Performance</div>
+              <HorizontalBarChart data={photoIdData} color="#2d6a4f" yAxisWidth={200} />
             </div>
           </div>
         )}
+
       </div>
 
     </div>
