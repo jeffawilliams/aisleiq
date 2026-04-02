@@ -353,7 +353,21 @@ function OverlayLineChart({
         <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} interval={tickInterval || 0} />
         <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
         <Tooltip contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }} labelStyle={{ color: "#555" }} />
-        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
+        <Legend
+          iconType="circle"
+          iconSize={8}
+          wrapperStyle={{ fontSize: "0.75rem" }}
+          content={({ payload }) => (
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", fontSize: "0.75rem" }}>
+              {[...(payload ?? [])].reverse().map((entry, i) => (
+                <span key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: String(entry.color) }} />
+                  {entry.value}
+                </span>
+              ))}
+            </div>
+          )}
+        />
         {dataA && dataA.length >= 1 && (
           <Line type="monotone" dataKey="a" name={labelA} stroke={colorA} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} connectNulls />
         )}
