@@ -681,7 +681,7 @@ export function AdminDashboard() {
           <KpiCard
             label="Grouping Success Rate"
             value={groupingSuccessPct != null ? `${groupingSuccessPct}%` : null}
-            sub={`${(ai.other_total_grouped - ai.other_item_count).toLocaleString()} of ${ai.other_total_grouped.toLocaleString()} grouped items successfully categorized`}
+            sub="of items not in Other group"
           />
         </div>
 
