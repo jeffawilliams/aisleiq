@@ -135,15 +135,20 @@ function MiniDonut({
   data,
   colors = COLORS_GREEN,
   height = 230,
-  showLabels = false,
+  labelType,
 }: {
   data: { name: string; value: number }[];
   colors?: string[];
   height?: number;
-  showLabels?: boolean;
+  labelType?: "count" | "pct";
 }) {
   const active = data.filter(d => d.value > 0);
   if (active.length === 0) return <p className="analytics-empty">No data yet.</p>;
+  const labelRenderer = labelType === "count"
+    ? (({ value }: { value: number }) => value.toLocaleString())
+    : labelType === "pct"
+    ? (({ percent }: { percent?: number }) => percent != null ? `${Math.round(percent * 100)}%` : "")
+    : undefined;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
@@ -155,8 +160,8 @@ function MiniDonut({
           outerRadius={74}
           paddingAngle={2}
           dataKey="value"
-          label={showLabels ? (({ value }: { value: number }) => value.toLocaleString()) : undefined}
-          labelLine={showLabels}
+          label={labelRenderer}
+          labelLine={!!labelType}
         >
           {active.map((_, i) => (
             <Cell key={i} fill={colors[i % colors.length]} />
@@ -498,7 +503,7 @@ export function AdminDashboard() {
                 { name: `Anonymous`,  value: users.total_anonymous },
               ]}
               colors={COLORS_USERS}
-              showLabels
+              labelType="count"
             />
           </div>
           <div className="admin-chart-panel">
@@ -563,7 +568,7 @@ export function AdminDashboard() {
         <div className="admin-grid admin-grid--mt">
           <div className="admin-chart-panel">
             <div className="admin-chart-panel__label">How Users Organize</div>
-            <MiniDonut data={organizeMethodData} colors={COLORS_ORGANIZE} />
+            <MiniDonut data={organizeMethodData} colors={COLORS_ORGANIZE} labelType="pct" />
           </div>
           <div className="admin-chart-panel">
             <div className="admin-chart-panel__label">How Items Are Added</div>
@@ -663,46 +668,50 @@ export function AdminDashboard() {
       <div className="admin-section">
         <h2 className="admin-section__title">AI Performance</h2>
 
-        <div className="admin-grid">
-          <div>
-            <StatCluster label="Grouping Quality">
-              <StatCard label="Total items grouped"  value={ai.other_total_grouped.toLocaleString()} />
-              <StatCard label="Placed in 'Other'"    value={ai.other_item_count.toLocaleString()} />
-              <StatCard label="Other rate"           value={ai.other_total_grouped > 0 ? `${ai.other_item_pct ?? 0}%` : "—"} />
-            </StatCluster>
-            <StatCluster label="Photo Recognition">
-              <StatCard label="Items added via photo" value={ai.items_with_photo_count.toLocaleString()} />
-              <StatCard label="% of all items"        value={ai.items_with_photo_pct != null ? `${ai.items_with_photo_pct}%` : "—"} />
-            </StatCluster>
-          </div>
-          <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">Grouped Items: Categorized vs. Other</div>
-            <MiniDonut data={groupingData} colors={COLORS_GROUP} />
-          </div>
+        {/* KPI row */}
+        <div className="admin-grid admin-grid--3col">
+          <KpiCard
+            label="Photo Recognition Rate"
+            value={ai.items_with_photo_pct != null ? `${ai.items_with_photo_pct}%` : null}
+            sub={`${ai.items_with_photo_count.toLocaleString()} items added via photo`}
+          />
+          <KpiCard
+            label="Grouping Other Rate"
+            value={ai.other_total_grouped > 0 && ai.other_item_pct != null ? `${ai.other_item_pct}%` : null}
+            sub={`${ai.other_item_count.toLocaleString()} of ${ai.other_total_grouped.toLocaleString()} grouped items placed in Other`}
+          />
+          <KpiCard
+            label="Total Scans"
+            value={ai.scans_total > 0 ? ai.scans_total.toLocaleString() : null}
+            sub={ai.scans_total > 0 ? `${ai.scans_high} high · ${ai.scans_medium} medium · ${ai.scans_low} low` : "No scans yet"}
+          />
         </div>
 
-        {ai.scans_total > 0 && (
-          <div className="admin-grid admin-grid--mt">
+        {/* Grouping donut + scan resolution donut */}
+        <div className="admin-grid admin-grid--mt">
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">Grouped Items: Categorized vs. Other</div>
+            <MiniDonut data={groupingData} colors={COLORS_GROUP} labelType="pct" />
+          </div>
+          {ai.scans_total > 0 && (
             <div className="admin-chart-panel">
               <div className="admin-chart-panel__label">Product Scan Resolution</div>
-              <MiniDonut data={scanData} colors={COLORS_SCAN} />
+              <MiniDonut data={scanData} colors={COLORS_SCAN} labelType="pct" />
             </div>
-            {ai.scans_by_category && ai.scans_by_category.length > 0 && (
-              <div className="admin-chart-panel">
-                <div className="admin-chart-panel__label">Scans by Category</div>
-                <table className="analytics-weekly-table">
-                  <thead><tr><th>Category</th><th>Scans</th></tr></thead>
-                  <tbody>
-                    {ai.scans_by_category.map(row => (
-                      <tr key={row.category}>
-                        <td>{row.category}</td>
-                        <td>{row.count.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          )}
+        </div>
+
+        {/* Scans by category — horizontal bar */}
+        {ai.scans_by_category && ai.scans_by_category.length > 0 && (
+          <div className="admin-grid--full admin-grid--mt">
+            <div className="admin-chart-panel">
+              <div className="admin-chart-panel__label">Scans by Category</div>
+              <HorizontalBarChart
+                data={ai.scans_by_category.map(d => ({ name: d.category, value: d.count }))}
+                color="#52b788"
+                yAxisWidth={150}
+              />
+            </div>
           </div>
         )}
       </div>
