@@ -436,7 +436,7 @@ export function AdminDashboard() {
         <h2 className="admin-section__title">Engagement</h2>
 
         {/* KPI row */}
-        <div className="admin-grid admin-grid--4col">
+        <div className="admin-grid admin-grid--3col">
           <KpiCard
             label="Lists Organized"
             value={engagement.lists_organized_pct != null ? `${engagement.lists_organized_pct}%` : null}
@@ -451,11 +451,6 @@ export function AdminDashboard() {
             label="Lists Shared"
             value={engagement.lists_shared_pct != null ? `${engagement.lists_shared_pct}%` : null}
             sub="of all lists"
-          />
-          <KpiCard
-            label="Group Adoption"
-            value={groupAdoptionPct != null ? `${groupAdoptionPct}%` : null}
-            sub="of organize events used Group"
           />
         </div>
 
