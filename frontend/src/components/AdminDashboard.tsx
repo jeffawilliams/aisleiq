@@ -5,7 +5,7 @@ import { LoadingSpinner } from "./LoadingSpinner.js";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  BarChart, Bar,
+  BarChart, Bar, LabelList,
 } from "recharts";
 
 // ── RPC response types ────────────────────────────────────────────────────────
@@ -236,22 +236,28 @@ function HorizontalBarChart({
 }) {
   const active = [...data.filter(d => d.value > 0)].sort((a, b) => b.value - a.value);
   if (active.length === 0) return <p className="analytics-empty">No data yet.</p>;
+  const total = active.reduce((s, d) => s + d.value, 0);
+  const withPct = active.map(d => ({
+    ...d,
+    pctLabel: `${d.pct != null ? d.pct : Math.round(d.value / total * 100)}%`,
+  }));
   const height = Math.max(120, active.length * 38);
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart layout="vertical" data={active} margin={{ top: 4, right: 24, left: 0, bottom: 4 }}>
+      <BarChart layout="vertical" data={withPct} margin={{ top: 4, right: 48, left: 0, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
         <XAxis type="number" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} />
         <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#555" }} tickLine={false} axisLine={false} width={yAxisWidth} />
         <Tooltip
-          formatter={(val: unknown, _: unknown, props: { payload?: { pct?: number } }) => {
+          formatter={(val: unknown, _: unknown, props: { payload?: { pctLabel?: string } }) => {
             const display = typeof val === "number" ? val.toLocaleString() : String(val);
-            const label = props.payload?.pct != null ? `${display} (${props.payload.pct}%)` : display;
-            return [label, ""];
+            return [props.payload?.pctLabel ? `${display} (${props.payload.pctLabel})` : display, ""];
           }}
           contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }}
         />
-        <Bar dataKey="value" fill={color} radius={[0, 3, 3, 0]} />
+        <Bar dataKey="value" fill={color} radius={[0, 3, 3, 0]}>
+          <LabelList dataKey="pctLabel" position="right" style={{ fontSize: "0.72rem", fill: "#777", fontWeight: 600 }} />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
