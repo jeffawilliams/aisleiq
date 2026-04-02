@@ -636,7 +636,6 @@ export function AdminDashboard() {
               labelB="Deals Accepted"
               colorA="#2d6a4f"
               colorB="#52b788"
-              tickInterval={6}
             />
           </div>
           <div className="admin-chart-panel">
