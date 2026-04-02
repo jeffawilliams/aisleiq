@@ -324,6 +324,7 @@ function OverlayLineChart({
   labelB,
   colorA = "#2d6a4f",
   colorB = "#52b788",
+  tickInterval = 0,
 }: {
   dataA: { week: string; count: number }[] | null;
   dataB: { week: string; count: number }[] | null;
@@ -331,6 +332,7 @@ function OverlayLineChart({
   labelB: string;
   colorA?: string;
   colorB?: string;
+  tickInterval?: number;
 }) {
   const weeks = Array.from(new Set([
     ...(dataA ?? []).map(d => d.week),
@@ -348,7 +350,7 @@ function OverlayLineChart({
     <ResponsiveContainer width="100%" height={180}>
       <LineChart data={merged} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} interval={tickInterval || 0} />
         <YAxis tick={{ fontSize: 10, fill: "#bbb" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
         <Tooltip contentStyle={{ fontSize: "0.8rem", borderRadius: "6px", border: "1px solid #eee" }} labelStyle={{ color: "#555" }} />
         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "0.75rem" }} />
@@ -607,17 +609,17 @@ export function AdminDashboard() {
         {/* Deal Savings KPIs */}
         <div className="admin-grid admin-grid--3col admin-grid--mt">
           <KpiCard
-            label="Total Savings Surfaced"
+            label="Total Potential Savings"
             value={engagement.total_savings > 0 ? fmtMoney(engagement.total_savings) : null}
             sub="across all lists"
           />
           <KpiCard
-            label="Accepted Savings"
+            label="Total Actual Savings"
             value={engagement.accepted_savings > 0 ? fmtMoney(engagement.accepted_savings) : null}
             sub="from accepted deals"
           />
           <KpiCard
-            label="Avg Savings / List"
+            label="Avg Actual Savings / List"
             value={engagement.avg_savings_per_list != null ? fmtMoney(engagement.avg_savings_per_list) : null}
             sub="across lists with deals"
           />
@@ -634,6 +636,7 @@ export function AdminDashboard() {
               labelB="Deals Accepted"
               colorA="#2d6a4f"
               colorB="#52b788"
+              tickInterval={6}
             />
           </div>
           <div className="admin-chart-panel">
