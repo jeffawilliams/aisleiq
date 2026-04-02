@@ -56,6 +56,9 @@ interface AnalyticsEngagement {
   category_distribution: { category: string; item_count: number; pct: number }[] | null;
   weekly_organize_count: { week: string; count: number }[] | null;
   weekly_shopping_count: { week: string; count: number }[] | null;
+  weekly_deals_active: { week: string; count: number }[] | null;
+  weekly_deals_accepted: { week: string; count: number }[] | null;
+  weekly_deal_savings: { week: string; count: number }[] | null;
 }
 
 interface AnalyticsAI {
@@ -582,23 +585,60 @@ export function AdminDashboard() {
       <div className="admin-section">
         <h2 className="admin-section__title">Deals & Promotions</h2>
 
-        <div className="admin-grid">
-          <div>
-            <StatCluster label="Deal Reach">
-              <StatCard label="Lists with deals shown"  value={engagement.lists_deals_shown_count > 0 ? `${engagement.lists_deals_shown_count.toLocaleString()} (${engagement.lists_deals_shown_pct ?? "—"}%)` : "—"} />
-              <StatCard label="Items matched to a deal" value={engagement.deal_items_count > 0 ? `${engagement.deal_items_count.toLocaleString()} (${engagement.deal_items_pct ?? "—"}%)` : "—"} />
-              <StatCard label="Conversion rate"         value={engagement.deal_conversion_pct != null ? `${engagement.deal_conversion_pct}%` : "—"} />
-            </StatCluster>
-            <StatCluster label="Savings">
-              <StatCard label="Total savings shown"    value={fmtMoney(engagement.total_savings)} />
-              <StatCard label="Avg / list"             value={fmtMoney(engagement.avg_savings_per_list)} />
-              <StatCard label="Accepted savings"       value={fmtMoney(engagement.accepted_savings)} />
-              <StatCard label="Avg accepted / list"    value={fmtMoney(engagement.avg_accepted_savings)} />
-            </StatCluster>
+        {/* Deal Engagement KPIs */}
+        <div className="admin-grid admin-grid--3col">
+          <KpiCard
+            label="Deals Enabled"
+            value={engagement.lists_deals_shown_pct != null ? `${engagement.lists_deals_shown_pct}%` : null}
+            sub={`${engagement.lists_deals_shown_count.toLocaleString()} lists`}
+          />
+          <KpiCard
+            label="Items Matched"
+            value={engagement.deal_items_pct != null ? `${engagement.deal_items_pct}%` : null}
+            sub={`${engagement.deal_items_count.toLocaleString()} items found a deal`}
+          />
+          <KpiCard
+            label="Acceptance Rate"
+            value={engagement.deal_conversion_pct != null ? `${engagement.deal_conversion_pct}%` : null}
+            sub={`${engagement.deal_accept_count} accepted · ${engagement.deal_decline_count} declined`}
+          />
+        </div>
+
+        {/* Deal Savings KPIs */}
+        <div className="admin-grid admin-grid--3col admin-grid--mt">
+          <KpiCard
+            label="Total Savings Surfaced"
+            value={engagement.total_savings > 0 ? fmtMoney(engagement.total_savings) : null}
+            sub="across all lists"
+          />
+          <KpiCard
+            label="Accepted Savings"
+            value={engagement.accepted_savings > 0 ? fmtMoney(engagement.accepted_savings) : null}
+            sub="from accepted deals"
+          />
+          <KpiCard
+            label="Avg Savings / List"
+            value={engagement.avg_savings_per_list != null ? fmtMoney(engagement.avg_savings_per_list) : null}
+            sub="across lists with deals"
+          />
+        </div>
+
+        {/* Deals over time */}
+        <div className="admin-grid admin-grid--mt">
+          <div className="admin-chart-panel">
+            <div className="admin-chart-panel__label">Deal Activity / Week</div>
+            <OverlayLineChart
+              dataA={engagement.weekly_deals_active}
+              dataB={engagement.weekly_deals_accepted}
+              labelA="Deals Active"
+              labelB="Deals Accepted"
+              colorA="#2d6a4f"
+              colorB="#52b788"
+            />
           </div>
           <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">Deal Response (Accepted vs. Declined)</div>
-            <MiniDonut data={dealResponseData} colors={COLORS_DEAL} />
+            <div className="admin-chart-panel__label">Savings / Week</div>
+            <SingleBarChart data={engagement.weekly_deal_savings} color="#52b788" />
           </div>
         </div>
       </div>
