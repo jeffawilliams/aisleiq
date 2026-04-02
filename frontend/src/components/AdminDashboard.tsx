@@ -191,7 +191,7 @@ function GroupedBarChart({
     ...(dataA ?? []).map(d => d.week),
     ...(dataB ?? []).map(d => d.week),
   ])).sort();
-  if (weeks.length < 2) return <p className="analytics-empty">Not enough data yet.</p>;
+  if (weeks.length < 1) return <p className="analytics-empty">No data yet.</p>;
   const mapA = new Map((dataA ?? []).map(d => [d.week, d.count]));
   const mapB = new Map((dataB ?? []).map(d => [d.week, d.count]));
   const merged = weeks.map(w => ({
@@ -273,7 +273,7 @@ function MiniLineChart({
   data: { week: string; count: number }[] | null;
   color?: string;
 }) {
-  if (!data || data.length < 2) return <p className="analytics-empty">Not enough data yet.</p>;
+  if (!data || data.length < 1) return <p className="analytics-empty">No data yet.</p>;
   const sorted = [...data]
     .sort((a, b) => a.week.localeCompare(b.week))
     .map(d => ({ ...d, label: formatWeek(d.week) }));
@@ -300,7 +300,7 @@ function SingleBarChart({
   data: { week: string; count: number }[] | null;
   color?: string;
 }) {
-  if (!data || data.length < 2) return <p className="analytics-empty">Not enough data yet.</p>;
+  if (!data || data.length < 1) return <p className="analytics-empty">No data yet.</p>;
   const sorted = [...data]
     .sort((a, b) => a.week.localeCompare(b.week))
     .map(d => ({ ...d, label: formatWeek(d.week) }));
@@ -338,7 +338,7 @@ function OverlayLineChart({
     ...(dataA ?? []).map(d => d.week),
     ...(dataB ?? []).map(d => d.week),
   ])).sort();
-  if (weeks.length < 2) return <p className="analytics-empty">Not enough data yet.</p>;
+  if (weeks.length < 1) return <p className="analytics-empty">No data yet.</p>;
   const mapA = new Map((dataA ?? []).map(d => [d.week, d.count]));
   const mapB = new Map((dataB ?? []).map(d => [d.week, d.count]));
   const merged = weeks.map(w => ({
