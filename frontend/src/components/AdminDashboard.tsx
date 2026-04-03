@@ -647,7 +647,7 @@ export function AdminDashboard() {
           />
           <KpiCard
             label="Avg Actual Savings / List"
-            value={engagement.avg_savings_per_list != null ? fmtMoney(engagement.avg_savings_per_list) : null}
+            value={engagement.avg_accepted_savings != null ? fmtMoney(engagement.avg_accepted_savings) : null}
             sub="across lists with deals"
           />
         </div>
