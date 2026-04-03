@@ -655,7 +655,7 @@ export function AdminDashboard() {
         {/* Deals over time */}
         <div className="admin-grid admin-grid--mt">
           <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">Deal Activity / Week</div>
+            <div className="admin-chart-panel__label">Deal Activity / Last 10 Days</div>
             <OverlayLineChart
               dataA={engagement.weekly_deals_active}
               dataB={engagement.weekly_deals_accepted}
@@ -666,7 +666,7 @@ export function AdminDashboard() {
             />
           </div>
           <div className="admin-chart-panel">
-            <div className="admin-chart-panel__label">Savings / Week</div>
+            <div className="admin-chart-panel__label">Savings / Last 10 Days</div>
             <SingleBarChart data={engagement.weekly_deal_savings} color="#52b788" />
           </div>
         </div>
